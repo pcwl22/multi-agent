@@ -93,6 +93,7 @@ class TaskService:
             located_files=[],
             context="",
             patches=[],
+            patch_feedback=[],
             test_results=[],
             review_results=[],
             retry_count=0,
@@ -196,6 +197,7 @@ class TaskService:
                 if result["status"] == "created":
                     return result
                 raise ValueError("Prior publication has uncertain outcome; inspect GitHub manually")
+            owns_publisher = publisher is None
             if publisher is None:
                 if not self.settings.github_repository:
                     raise ValueError("Configure REPOPILOT_GITHUB_REPOSITORY before publication")
@@ -204,6 +206,8 @@ class TaskService:
                     self.settings.github_token.get_secret_value()
                     if self.settings.github_token
                     else "",
+                    subdirectory=self.settings.github_repository_subdirectory,
+                    base_branch=self.settings.github_base_branch,
                 )
             with self.lock:
                 self.conn.execute(
@@ -224,6 +228,9 @@ class TaskService:
                 raise ValueError(
                     "PR publication interrupted; inspect GitHub before retrying"
                 ) from exc
+            finally:
+                if owns_publisher:
+                    publisher.close()
             with self.lock:
                 self.conn.execute(
                     "UPDATE publications SET result=? WHERE task_id=?",

@@ -166,9 +166,9 @@ class Repository:
                 raise ValueError("Pytest configuration is immutable")
             if is_test and p.exists():
                 raise ValueError("Existing tests are immutable")
-            original = p.read_text(encoding="utf-8") if p.exists() else ""
-            if len(original) > 100000:
+            if p.exists() and p.stat().st_size > 100000:
                 raise ValueError("File exceeds edit limit")
+            original = p.read_text(encoding="utf-8") if p.exists() else ""
             if edit.old:
                 if original.count(edit.old) != 1:
                     raise ValueError("Edit precondition must match exactly once")
@@ -179,6 +179,8 @@ class Repository:
                 updated = edit.new
             if updated == original or not updated.strip():
                 raise ValueError("Empty or no-op edit")
+            if len(updated.encode("utf-8")) > 100000:
+                raise ValueError("Updated file exceeds 100000-byte edit limit")
             ast.parse(updated)
             staged[p] = updated
         for p, updated in staged.items():

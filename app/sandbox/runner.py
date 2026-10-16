@@ -8,6 +8,7 @@ from pathlib import Path
 
 from app.config.settings import Settings
 from app.models.schemas import TestResult
+from app.sandbox.output import CappedOutput
 
 ALLOWED_COMMAND = ("python", "-m", "pytest", "tests", "-q")
 
@@ -42,7 +43,7 @@ class DockerRunner:
             raise ValueError("Unsupported Docker mount path")
         try:
             ready = subprocess.run(
-                ["docker", "image", "inspect", self.settings.sandbox_image],
+                ["docker", "image", "inspect", "--format", "{{.Id}}", self.settings.sandbox_image],
                 capture_output=True,
                 timeout=10,
             )
@@ -54,6 +55,7 @@ class DockerRunner:
                         "Host execution is disabled."
                     ),
                 )
+            image_id = (ready.stdout or b"").decode("utf-8", errors="replace").strip() or None
             with tempfile.TemporaryDirectory(prefix="repopilot-results-") as output:
                 if os.name != "nt":
                     os.chmod(output, 0o777)
@@ -64,6 +66,7 @@ class DockerRunner:
                     "--name",
                     name,
                     "--network=none",
+                    "--log-driver=none",
                     "--cpus=1",
                     "--memory=512m",
                     "--memory-swap=512m",
@@ -89,21 +92,22 @@ class DockerRunner:
                     "no:cacheprovider",
                     "--junitxml=/results/junit.xml",
                 ]
-                # File-backed output avoids unbounded host RAM from malicious stdout.
-                with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
+                # Drain excess output without retaining it in host memory or temporary files.
+                with CappedOutput() as stdout, CappedOutput() as stderr:
                     result = subprocess.run(
                         args, stdout=stdout, stderr=stderr, timeout=self.settings.test_timeout
                     )
-                    stdout.seek(0)
-                    stderr.seek(0)
+                    stdout_bytes, stderr_bytes = stdout.finish(), stderr.finish()
                     counts = parse_junit(Path(output) / "junit.xml")
                     return TestResult(
                         status="passed"
                         if result.returncode == 0 and counts["passed"] > 0
                         else "failed",
                         exit_code=result.returncode,
-                        stdout=stdout.read(20000).decode("utf-8", errors="replace"),
-                        stderr=stderr.read(20000).decode("utf-8", errors="replace"),
+                        stdout=stdout_bytes.decode("utf-8", errors="replace"),
+                        stderr=stderr_bytes.decode("utf-8", errors="replace"),
+                        output_truncated=stdout.truncated or stderr.truncated,
+                        image_id=image_id,
                         duration_seconds=time.monotonic() - started,
                         **counts,
                     )
