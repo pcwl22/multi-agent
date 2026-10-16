@@ -4,8 +4,10 @@ import json
 import platform
 import shutil
 import statistics
+import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -72,6 +74,17 @@ def aggregate(records: list[dict]) -> dict:
         "blocked_runs": sum(r["execution_status"] == "blocked" for r in records),
         "invalid_case_runs": sum(r["execution_status"] == "invalid_case" for r in records),
         "token_observed_runs": sum(r["tokens"] is not None for r in records),
+        "provider_error_runs": sum(
+            "Model request failed:" in (r.get("error") or "") for r in records
+        ),
+        "recovered_after_retry_runs": sum(
+            r["retry_count"] > 0
+            and bool(r.get("acceptance") and r["acceptance"]["status"] == "passed")
+            for r in records
+        ),
+        "retry_exhausted_runs": sum(
+            "retry budget exhausted" in (r.get("error") or "").lower() for r in records
+        ),
     }
 
 
@@ -90,116 +103,171 @@ def holdout_workspace(workspace: Path, destination: Path, acceptance: Path) -> N
     shutil.copyfile(acceptance, destination / "tests" / "test_acceptance.py")
 
 
-def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: int = 1) -> dict:
-    dataset_root = Path(__file__).parent
-    dataset = json.loads((dataset_root / "dataset.json").read_text(encoding="utf-8"))
+def run_evaluation(
+    settings: Settings,
+    repository: Path,
+    output: Path,
+    repeats: int = 1,
+    *,
+    dataset_file: Path | None = None,
+    workers: int = 1,
+) -> dict:
+    dataset_file = (dataset_file or Path(__file__).parent / "dataset.json").resolve(strict=True)
+    dataset_root = dataset_file.parent
+    dataset = json.loads(dataset_file.read_text(encoding="utf-8"))
     if not 1 <= repeats <= 100:
         raise ValueError("repeats must be between 1 and 100")
+    if not 1 <= workers <= 3:
+        raise ValueError("workers must be between 1 and 3")
     if output.exists() and any(output.iterdir()):
         raise ValueError("Use a fresh output directory to avoid mixing evaluation records")
     case_ids = [case["id"] for case in dataset]
     if len(set(case_ids)) != len(case_ids):
         raise ValueError("Dataset case IDs must be unique")
+    # Resolve every case before creating artifacts or sending source to a model.
+    resolved_cases = []
+    for case in dataset:
+        if not case["id"] or any(
+            c not in "abcdefghijklmnopqrstuvwxyz0123456789-_" for c in case["id"]
+        ):
+            raise ValueError("Dataset case IDs must be lowercase path-safe identifiers")
+        source = (
+            (dataset_root / case["repository"]).resolve(strict=True)
+            if case.get("repository")
+            else repository.resolve(strict=True)
+        )
+        acceptance = (dataset_root / "acceptance" / case["acceptance"]).resolve(strict=True)
+        if not source.is_relative_to(settings.repository_root.resolve(strict=True)):
+            raise ValueError("Dataset repository is outside configured root")
+        if not acceptance.is_relative_to(dataset_root) or not acceptance.is_file():
+            raise ValueError("Dataset acceptance must be a file inside the dataset directory")
+        resolved_cases.append((case, source, acceptance))
     service = TaskService(settings)
     runner = DockerRunner(settings)
     records = []
     output.mkdir(parents=True, exist_ok=True)
-    try:
-        for case in dataset:
-            acceptance_file = dataset_root / "acceptance" / case["acceptance"]
-            baseline_path = output / "baselines" / case["id"]
-            holdout_workspace(repository.resolve(), baseline_path, acceptance_file)
-            baseline = runner.run(baseline_path).model_dump()
-            baseline_verified = (
-                baseline["status"] == "failed"
-                and baseline["failed"] > 0
-                and baseline["errors"] == 0
-            )
-            for repeat in range(repeats):
-                # Rotate order to reduce systematic warm-cache bias.
-                for mode in MODES[repeat % 3 :] + MODES[: repeat % 3]:
-                    started = time.monotonic()
-                    if not baseline_verified:
-                        record = {
-                            "case_id": case["id"],
-                            "repeat": repeat,
-                            "mode": mode,
-                            "task_id": None,
-                            "thread_id": None,
-                            "baseline": baseline,
-                            "baseline_verified": False,
-                            "execution_status": "blocked"
-                            if baseline["status"] in {"unavailable", "timeout"}
-                            else "invalid_case",
-                            "error": "Baseline did not establish a failing bug; repair was not run",
-                            "duration_seconds": 0,
-                            "model_calls": 0,
-                            "tokens": 0,
-                            "retry_count": 0,
-                            "test_result": None,
-                            "acceptance": None,
-                        }
-                        records.append(record)
-                        with (output / "runs.jsonl").open("a", encoding="utf-8") as stream:
-                            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
-                        continue
-                    task = service.create(
-                        TaskRequest(
-                            repository_path=str(repository),
-                            issue_description=case["issue"],
-                            mode=mode,
-                        )
-                    )
-                    state = service.run(task["task_id"])
-                    acceptance = None
-                    if state["test_results"] and state["test_results"][-1]["status"] == "passed":
-                        holdout = output / "holdouts" / task["task_id"]
-                        holdout_workspace(Path(state["workspace_path"]), holdout, acceptance_file)
-                        acceptance = runner.run(holdout).model_dump()
+    record_lock = threading.Lock()
+
+    def record_result(record):
+        with record_lock:
+            records.append(record)
+            with (output / "runs.jsonl").open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    def evaluate_case(item):
+        case, case_repository, acceptance_file = item
+        baseline_path = output / "baselines" / case["id"]
+        holdout_workspace(case_repository, baseline_path, acceptance_file)
+        baseline = runner.run(baseline_path).model_dump()
+        baseline_verified = (
+            baseline["status"] == "failed" and baseline["failed"] > 0 and baseline["errors"] == 0
+        )
+        for repeat in range(repeats):
+            # Rotate order to reduce systematic warm-cache bias.
+            for mode in MODES[repeat % 3 :] + MODES[: repeat % 3]:
+                started = time.monotonic()
+                if not baseline_verified:
                     record = {
                         "case_id": case["id"],
                         "repeat": repeat,
                         "mode": mode,
-                        "task_id": task["task_id"],
-                        "thread_id": task["thread_id"],
+                        "task_id": None,
+                        "thread_id": None,
                         "baseline": baseline,
-                        "baseline_verified": baseline_verified,
-                        "execution_status": state["execution_status"],
-                        "error": state["error"],
-                        "duration_seconds": time.monotonic() - started,
-                        "model_calls": state["model_calls"],
-                        "tokens": (state["input_tokens"] + state["output_tokens"])
-                        if state.get("token_usage_complete", True)
-                        else None,
-                        "retry_count": state["retry_count"],
-                        "test_result": state["test_results"][-1] if state["test_results"] else None,
-                        "acceptance": acceptance,
-                        "diff_digest": state["diff_digest"],
-                        "context_chars": len(state["context"]),
-                        "retrieved_files": len(state["located_files"]),
-                        "model_observations": [
-                            {
-                                key: event.get(key)
-                                for key in [
-                                    "model_requested",
-                                    "model_reported",
-                                    "provider_response_id",
-                                    "calls",
-                                ]
-                            }
-                            for event in state["execution_history"]
-                            if event["node"] == "model"
-                        ],
+                        "baseline_verified": False,
+                        "execution_status": "blocked"
+                        if baseline["status"] in {"unavailable", "timeout"}
+                        else "invalid_case",
+                        "error": "Baseline did not establish a failing bug; repair was not run",
+                        "duration_seconds": 0,
+                        "model_calls": 0,
+                        "tokens": 0,
+                        "retry_count": 0,
+                        "test_result": None,
+                        "acceptance": None,
                     }
-                    artifacts = output / "tasks" / task["task_id"]
-                    artifacts.mkdir(parents=True)
-                    (artifacts / "state.json").write_text(
-                        json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
+                    record_result(record)
+                    continue
+                task = service.create(
+                    TaskRequest(
+                        repository_path=str(case_repository),
+                        issue_description=case["issue"],
+                        mode=mode,
                     )
-                    (artifacts / "repair.patch").write_text(state["diff"], encoding="utf-8")
-                    records.append(record)
-                    with (output / "runs.jsonl").open("a", encoding="utf-8") as stream:
-                        stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+                )
+                state = service.run(task["task_id"])
+                acceptance = None
+                if state["test_results"] and state["test_results"][-1]["status"] == "passed":
+                    holdout = output / "holdouts" / task["task_id"]
+                    holdout_workspace(Path(state["workspace_path"]), holdout, acceptance_file)
+                    acceptance = runner.run(holdout).model_dump()
+                record = {
+                    "case_id": case["id"],
+                    "repeat": repeat,
+                    "mode": mode,
+                    "task_id": task["task_id"],
+                    "thread_id": task["thread_id"],
+                    "baseline": baseline,
+                    "baseline_verified": baseline_verified,
+                    "execution_status": state["execution_status"],
+                    "error": state["error"],
+                    "duration_seconds": time.monotonic() - started,
+                    "model_calls": state["model_calls"],
+                    "tokens": (state["input_tokens"] + state["output_tokens"])
+                    if state.get("token_usage_complete", True)
+                    else None,
+                    "retry_count": state["retry_count"],
+                    "attempts": state["attempts"],
+                    "attempt_evidence": [
+                        {
+                            k: test[k]
+                            for k in (
+                                "attempt",
+                                "status",
+                                "passed",
+                                "failed",
+                                "errors",
+                                "evidence",
+                            )
+                        }
+                        for test in state["test_results"]
+                    ],
+                    "patch_rejections": state.get("patch_feedback", []),
+                    "review_decisions": [
+                        {"attempt": review["attempt"], "approved": review["approved"]}
+                        for review in state["review_results"]
+                    ],
+                    "test_result": state["test_results"][-1] if state["test_results"] else None,
+                    "acceptance": acceptance,
+                    "diff_digest": state["diff_digest"],
+                    "context_chars": len(state["context"]),
+                    "retrieved_files": len(state["located_files"]),
+                    "model_observations": [
+                        {
+                            key: event.get(key)
+                            for key in [
+                                "model_requested",
+                                "model_reported",
+                                "provider_response_id",
+                                "calls",
+                                    "rate_limit_wait_seconds",
+                            ]
+                        }
+                        for event in state["execution_history"]
+                        if event["node"] == "model"
+                    ],
+                }
+                artifacts = output / "tasks" / task["task_id"]
+                artifacts.mkdir(parents=True)
+                (artifacts / "state.json").write_text(
+                    json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                (artifacts / "repair.patch").write_text(state["diff"], encoding="utf-8")
+                record_result(record)
+
+    try:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            list(executor.map(evaluate_case, resolved_cases))
     finally:
         service.close()
     report = {
@@ -210,21 +278,43 @@ def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: 
         else None,
         "dataset_cases": len(dataset),
         "repeats": repeats,
-        "dataset_sha256": hashlib.sha256((dataset_root / "dataset.json").read_bytes()).hexdigest(),
+        "dataset_sha256": hashlib.sha256(dataset_file.read_bytes()).hexdigest(),
+        "corpus_sha256": hashlib.sha256(
+            json.dumps(
+                [
+                    {
+                        "id": case["id"],
+                        "source": {
+                            p: hashlib.sha256(Repository(source).path(p).read_bytes()).hexdigest()
+                            for p in Repository(source).list_files()
+                        },
+                        "acceptance": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+                    }
+                    for case, source, acceptance in resolved_cases
+                ],
+                sort_keys=True,
+            ).encode()
+        ).hexdigest(),
         "python_version": platform.python_version(),
         "dependencies": {
             name: version(name)
             for name in ["langgraph", "langchain-openai", "mcp", "pydantic", "fastapi"]
         },
         "configuration": {
+            "workers": workers,
             "context_chars": settings.context_chars,
             "max_retries": settings.max_retries,
             "temperature": 0,
             "sandbox_image": settings.sandbox_image,
             "model_timeout": settings.model_timeout,
+            "model_min_interval": settings.model_min_interval,
             "test_timeout": settings.test_timeout,
         },
-        "note": "null means no execution evidence. Mock results do not measure LLM capability.",
+        "note": (
+            "null means no execution evidence. Mock results do not measure LLM capability. "
+            "Synthetic cases and repeated calls do not establish real-project generalization. "
+            "Concurrent durations include shared resources, provider load and request pacing."
+        ),
         "modes": {mode: aggregate([r for r in records if r["mode"] == mode]) for mode in MODES},
     }
     (output / "report.json").write_text(
@@ -266,13 +356,17 @@ def main():
     parser.add_argument("--repo", type=Path, default=Path("demo_repository"))
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--workers", type=int, choices=range(1, 4), default=1)
+    parser.add_argument("--dataset", type=Path, help="Optional dataset with per-case repositories")
     args = parser.parse_args()
     if not 1 <= args.repeats <= 100:
         parser.error("repeats must be between 1 and 100")
     output = args.output or Path(".repopilot/evaluations") / uuid.uuid4().hex
     if output.exists() and any(output.iterdir()):
         parser.error("Use a fresh output directory to avoid mixing evaluation records")
-    report = run_evaluation(Settings(), args.repo, output, args.repeats)
+    report = run_evaluation(
+        Settings(), args.repo, output, args.repeats, dataset_file=args.dataset, workers=args.workers
+    )
     print(json.dumps(report, ensure_ascii=False, indent=2))
     print(f"Reports: {output.resolve()}")
 

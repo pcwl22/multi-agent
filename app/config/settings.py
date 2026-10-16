@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     max_retries: int = Field(default=2, ge=0, le=5)
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)
+    model_min_interval: float = Field(default=0, ge=0, le=60)
     sandbox_image: str = "repopilot-sandbox:local"
     github_repository: str | None = None
     github_repository_subdirectory: str = ""

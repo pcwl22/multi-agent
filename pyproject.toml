@@ -33,6 +33,7 @@ include = ["app*"]
 
 [tool.setuptools.package-data]
 "app.evaluation" = ["dataset.json", "acceptance/*.py"]
+"app.evaluation.expanded" = ["*.json", "*.md", "acceptance/*.py", "repos/*/*.py", "repos/*/*.md", "repos/*/tests/*.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

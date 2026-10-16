@@ -5,6 +5,7 @@ from typing import Protocol, TypeVar
 from pydantic import BaseModel
 
 from app.agents.demo_fixtures import select_fixture
+from app.agents.pacing import endpoint_pacer
 from app.config.settings import Settings
 from app.models.schemas import Edit, Patch, Plan, Review
 
@@ -87,6 +88,8 @@ class LiveModel:
         from langchain_openai import ChatOpenAI
 
         self.model_name = settings.model_name
+        self.pacer = endpoint_pacer(settings.model_base_url)
+        self.min_interval = settings.model_min_interval
         self.client = ChatOpenAI(
             model=settings.model_name,
             temperature=0,
@@ -105,6 +108,7 @@ class LiveModel:
             "adapter": "live",
             "usage_complete": True,
             "model_requested": self.model_name,
+            "rate_limit_wait_seconds": 0.0,
         }
         messages = [
             (
@@ -121,6 +125,7 @@ class LiveModel:
             ("human", json.dumps(payload, ensure_ascii=False)),
         ]
         for attempt in range(2):
+            stats["rate_limit_wait_seconds"] += self.pacer.wait(self.min_interval)
             stats["calls"] += 1
             try:
                 response = self.client.with_structured_output(

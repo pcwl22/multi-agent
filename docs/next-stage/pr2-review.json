@@ -1,0 +1,21 @@
+{
+  "pr": "https://github.com/pcwl22/multi-agent/pull/2",
+  "head": "edb60e0a180efeed9a18fb5086cb1daea121ad17",
+  "base": "306727811c5e9f7a777662bcdaec23c9d35c19c5",
+  "diff_sha256": "58d9ff99d646fba6d67fdfcb315532916e858f85affd3216ce223b635288a13d",
+  "findings": [],
+  "scope": [
+    "diff-bound approval and immutable tests",
+    "remote preconditions before writes",
+    "patch rejection retry budget",
+    "bounded Docker output",
+    "metrics denominator and raw evidence"
+  ],
+  "local_tests": {
+    "passed": 78,
+    "skipped": 1
+  },
+  "ruff": "passed",
+  "ci": "all checks successful at reviewed head",
+  "merge": "pending digest-bound human approval"
+}
