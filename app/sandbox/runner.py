@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from app.config.settings import Settings
-from app.models.schemas import TestResult
+from app.models.schemas import TestCaseEvidence, TestResult
 from app.sandbox.output import CappedOutput
 
 ALLOWED_COMMAND = ("python", "-m", "pytest", "tests", "-q")
@@ -27,6 +27,29 @@ def parse_junit(path: Path) -> dict[str, int]:
         "errors": errors,
         "skipped": skipped,
     }
+
+
+def parse_junit_cases(path: Path) -> dict:
+    if not path.exists() or path.stat().st_size > 2_000_000:
+        return {"cases": [], "cases_truncated": True}
+    cases = []
+    for case in ET.parse(path).getroot().iter("testcase"):
+        failure = case.find("failure")
+        error = case.find("error")
+        detail = failure if failure is not None else error
+        status = ("failed" if failure is not None else "error" if error is not None
+                  else "skipped" if case.find("skipped") is not None else "passed")
+        line = case.get("line", "")
+        cases.append(TestCaseEvidence(
+            file=case.get("file", "")[:500], name=case.get("name", "")[:1000],
+            classname=case.get("classname", "")[:1000],
+            line=int(line) + 1 if line.isdigit() else None, status=status,
+            message=(detail.get("message", "") if detail is not None else "")[:2000],
+            details=(detail.text or "")[:6000] if detail is not None else "",
+        ).model_dump())
+    # Preserve failure observations first without changing full-suite counts.
+    cases.sort(key=lambda c: c["status"] not in {"failed", "error"})
+    return {"cases": cases[:512], "cases_truncated": len(cases) > 512}
 
 
 class DockerRunner:
@@ -91,6 +114,7 @@ class DockerRunner:
                     "-p",
                     "no:cacheprovider",
                     "--junitxml=/results/junit.xml",
+                    "-o", "junit_family=xunit1",
                 ]
                 # Drain excess output without retaining it in host memory or temporary files.
                 with CappedOutput() as stdout, CappedOutput() as stderr:
@@ -110,6 +134,7 @@ class DockerRunner:
                         image_id=image_id,
                         duration_seconds=time.monotonic() - started,
                         **counts,
+                        **parse_junit_cases(Path(output) / "junit.xml"),
                     )
         except FileNotFoundError:
             return TestResult(status="unavailable", stderr="Docker executable not found")

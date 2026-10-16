@@ -15,6 +15,7 @@ from app.graph.workflow import build_graph
 from app.models.schemas import TaskRequest
 from app.sandbox.runner import DockerRunner
 from app.services.attempts import (
+    controlled_path,
     file_manifest,
     prepare_candidate,
     save_candidate,
@@ -86,31 +87,27 @@ class TaskService:
             )
         task_id, thread_id = str(uuid.uuid4()), str(uuid.uuid4())
         task_dir = self.data / "tasks" / task_id
-        snapshot(repo, task_dir / "baseline")
         policy = request.retry_workspace_policy or self.settings.retry_workspace_policy
-        manifest = file_manifest(task_dir / "baseline") if policy == "isolated" else {}
-        if policy == "isolated":
-            candidate = prepare_candidate(task_dir, 1, manifest)
-        else:
-            snapshot(Repository(task_dir / "baseline"), task_dir / "workspace")
-            candidate = {"workspace_path": str(task_dir / "workspace"), "candidate_id": None,
-                         "candidate_number": 0}
+        creation_manifest = file_manifest(repo.root)
+        candidate = {"workspace_path": str(task_dir / "workspace"), "candidate_id": None,
+                     "candidate_number": 0}
         state = dict(
             task_id=task_id,
             thread_id=thread_id,
             issue_description=description,
             repository_path=str(source),
             **candidate,
-            task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest=manifest,
+            task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest={},
+            creation_manifest=creation_manifest, creation_attempts=0, creation_failures=[],
             attempt_history=[], previous_candidate_diff="", approved_candidate_id=None,
             mode=request.mode,
-            execution_status="queued",
+            execution_status="creating",
             plan=None,
             located_files=[],
             context="",
             patches=[],
             patch_feedback=[],
-            test_results=[],
+            test_results=[], repair_feedback=[], regression_results=[],
             review_results=[],
             retry_count=0,
             attempts=0,
@@ -133,6 +130,62 @@ class TaskService:
                 "INSERT INTO tasks VALUES (?, ?, ?)", (task_id, thread_id, json.dumps(state))
             )
             self.conn.commit()
+        return self._prepare_initial(state)
+
+    def _store_initial(self, state: dict) -> None:
+        with self.lock:
+            self.conn.execute("UPDATE tasks SET initial=? WHERE task_id=?",
+                              (json.dumps(state), state["task_id"]))
+            self.conn.commit()
+
+    def _check_creation(self, state: dict) -> None:
+        if (state["execution_status"] == "creation_failed" and
+                state.get("creation_attempts", 0) >= self.settings.max_retries + 1):
+            raise ValueError("Creation retry budget exhausted; create a new task")
+        root = controlled_path(self.data, f"tasks/{state['task_id']}", directory=True)
+        if root.exists():
+            baseline = controlled_path(root, "baseline", directory=True)
+            if baseline.exists():
+                if file_manifest(baseline) != state["creation_manifest"]:
+                    raise ValueError("Partial or changed creation baseline; preserved without reset")
+                return
+        if file_manifest(Path(state["repository_path"])) != state["creation_manifest"]:
+            raise ValueError("Original source changed after creation intent")
+
+    def _prepare_initial(self, state: dict) -> dict:
+        # Persist intent before filesystem writes, including the first creation failure.
+        state = dict(state)
+        try:
+            self._check_creation(state)
+            state["creation_attempts"] = max(1, state.get("creation_attempts", 0) +
+                (1 if state["execution_status"] == "creation_failed" else 0))
+            state.update(execution_status="creating", error=None)
+            self._store_initial(state)
+            root = controlled_path(self.data, f"tasks/{state['task_id']}", directory=True)
+            root.mkdir(parents=True, exist_ok=True)
+            baseline = controlled_path(root, "baseline", directory=True)
+            if not baseline.exists():
+                snapshot(Repository(state["repository_path"]), baseline)
+            if file_manifest(baseline) != state["creation_manifest"]:
+                raise ValueError("Partial or changed creation baseline; preserved without reset")
+            if state["retry_workspace_policy"] == "isolated":
+                state.update(prepare_candidate(root, 1, state["creation_manifest"]))
+                state["baseline_manifest"] = state["creation_manifest"]
+            else:
+                workspace = controlled_path(root, "workspace", directory=True)
+                if not workspace.exists():
+                    snapshot(Repository(baseline), workspace)
+                if file_manifest(workspace) != state["creation_manifest"]:
+                    raise ValueError("Unrecorded initial workspace writes; preserved without reset")
+                state["workspace_path"] = str(workspace)
+            state.update(execution_status="queued", error=None)
+        except (ValueError, OSError) as exc:
+            failure = {"type": type(exc).__name__, "winerror": getattr(exc, "winerror", None),
+                       "message": str(exc)[:1000], "timestamp": time.time(),
+                       "attempt": state.get("creation_attempts", 0)}
+            state["creation_failures"] = [*state.get("creation_failures", []), failure][-8:]
+            state.update(execution_status="creation_failed", error="Task creation failed: " + str(exc)[:1000])
+        self._store_initial(state)
         return state
 
     def get(self, task_id: str) -> dict:
@@ -142,11 +195,17 @@ class TaskService:
 
     def _task_lock(self, task_id):
         self._initial(task_id)
-        return FileLock(str(self.data / "tasks" / task_id / "execution.lock"), timeout=0)
+        root = controlled_path(self.data, f"tasks/{task_id}", directory=True)
+        root.mkdir(parents=True, exist_ok=True)
+        return FileLock(str(root / "execution.lock"), timeout=0)
 
     def run(self, task_id: str) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
+            if state["execution_status"] in {"creating", "creation_failed"}:
+                state = self._prepare_initial(state)
+                if state["execution_status"] == "creation_failed":
+                    return state
             validate_isolated(state, self.data / "tasks" / task_id)
             config = self._config(state["thread_id"])
             if state["execution_status"] in {"approved", "rejected", "failed", "awaiting_approval"}:
@@ -183,6 +242,9 @@ class TaskService:
 
     def check_resume(self, task_id: str) -> None:
         state = self.get(task_id)
+        if state["execution_status"] in {"creating", "creation_failed"}:
+            self._check_creation(state)
+            return
         validate_isolated(state, self.data / "tasks" / task_id)
         if state["execution_status"] not in {"queued", "running", "blocked", "retryable"}:
             raise ValueError("Task is not resumable; use approve/reject at human interrupt")
@@ -232,6 +294,9 @@ class TaskService:
 
     def diff(self, task_id: str) -> dict:
         state = self.get(task_id)
+        if state["execution_status"] in {"creating", "creation_failed"}:
+            return {"diff": "", "diff_digest": digest(""), "matches_recorded": False,
+                    "candidate_id": None}
         actual = diff_repositories(
             Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])
         )

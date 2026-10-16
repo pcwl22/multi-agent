@@ -67,7 +67,7 @@ try:
         if state["error"]:
             st.error(state["error"])
         diff = api("GET", f"/api/tasks/{task_id}/diff")
-        if state.get("retry_workspace_policy") == "isolated":
+        if state.get("retry_workspace_policy") == "isolated" and state.get("candidate_id"):
             st.caption(f"独立候选第 {state['candidate_number']} 轮 · {state['candidate_id']}")
             with st.expander("此前尝试（现场保留）"):
                 st.json(state.get("attempt_history", []))
@@ -80,6 +80,7 @@ try:
                     "plan": state["plan"],
                     "tests": state["test_results"],
                     "review": state["review_results"],
+                    "regression_evidence": state.get("regression_results", []),
                 }
             )
         with st.expander("Agent 日志和检索历史"):
@@ -124,6 +125,11 @@ try:
         elif state["execution_status"] in {"queued", "running"}:
             st.info("若服务曾中断，可刷新确认状态后从已保存节点继续。执行中的任务受锁保护。")
             if st.button("从已保存节点继续"):
+                api("POST", f"/api/tasks/{task_id}/resume")
+                st.rerun()
+        elif state["execution_status"] in {"creating", "creation_failed"}:
+            st.info("任务副本尚未准备完成，已有现场保留；可在访问恢复后继续准备。")
+            if st.button("继续准备任务副本"):
                 api("POST", f"/api/tasks/{task_id}/resume")
                 st.rerun()
         elif state["execution_status"] == "failed":

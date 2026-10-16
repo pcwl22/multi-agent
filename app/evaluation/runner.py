@@ -241,6 +241,10 @@ def run_evaluation(
                         for test in state["test_results"]
                     ],
                     "patch_rejections": state.get("patch_feedback", []),
+                    "repair_feedback": state.get("repair_feedback", []),
+                    "regression_results": state.get("regression_results", []),
+                    "creation_attempts": state.get("creation_attempts", 0),
+                    "creation_failures": state.get("creation_failures", []),
                     "review_decisions": [
                         {"attempt": review["attempt"], "approved": review["approved"]}
                         for review in state["review_results"]

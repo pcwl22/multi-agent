@@ -9,6 +9,11 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from app.agents.contracts import literal_input_examples, validate_literal_inputs
+from app.agents.feedback import (
+    compact_regression_evidence,
+    compact_test_evidence,
+    failure_feedback,
+)
 from app.agents.model import Model, ModelFailure
 from app.config.settings import Settings
 from app.models.schemas import AgentState, Patch, Plan, Review
@@ -18,6 +23,7 @@ from app.services.attempts import (
     save_candidate,
     validate_isolated,
 )
+from app.services.regressions import regression_witness
 from app.tools.repository import Repository, diff_repositories, digest, is_test_file, keywords
 
 logger = logging.getLogger("repopilot.graph")
@@ -129,6 +135,9 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "error": "Test retry budget exhausted",
             }
         if state["mode"] == "multi_full":
+            witnesses = state.get("regression_results", [])
+            if not witnesses or witnesses[-1]["attempt"] != state["attempts"]:
+                return {"next_node": "regression"}
             reviews = state["review_results"]
             if not reviews or reviews[-1]["attempt"] != state["attempts"]:
                 return {"next_node": "reviewer"}
@@ -222,7 +231,8 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "issue_description": state["issue_description"],
                 "plan": state["plan"],
                 "context": context,
-                "tests": state["test_results"][-1:],
+                "tests": [compact_test_evidence(t) for t in state["test_results"][-1:]],
+                "failure_diagnostics": state.get("repair_feedback", [])[-2:],
                 "reviews": state["review_results"][-1:],
                 "patch_feedback": state.get("patch_feedback", [])[-1:],
                 "literal_input_examples": literal_input_examples(state["issue_description"]),
@@ -284,8 +294,13 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
     def test(state):
         validate_isolated(state)
         result = runner.run(Path(state["workspace_path"]))
-        return {"test_results": [{**result.model_dump(), "attempt": state["attempts"],
-                                  **candidate_tags(state)}]}
+        value = result.model_dump()
+        feedback = []
+        if result.status == "failed":
+            feedback = [{**failure_feedback(value, state), **candidate_tags(state)}]
+        return {"test_results": [{**value, "attempt": state["attempts"],
+                                  "diff_digest": state["diff_digest"], **candidate_tags(state)}],
+                "repair_feedback": feedback}
 
     @guarded("prepare_attempt")
     def prepare_attempt(state):
@@ -301,6 +316,13 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "previous_candidate_diff": state["diff"], "diff": "", "diff_digest": digest(""),
                 "approval_status": "pending", "approved_candidate_id": None,
                 "execution_status": "running"}
+
+    @guarded("regression")
+    def regression(state):
+        validate_isolated(state)
+        return {"regression_results": [{**regression_witness(state, runner),
+                 "attempt": state["attempts"], "diff_digest": state["diff_digest"],
+                 **candidate_tags(state)}]}
 
     @guarded("reviewer")
     def reviewer(state):
@@ -322,9 +344,11 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "issue_description": state["issue_description"],
                 "plan": state["plan"],
                 "diff": state["diff"][:60000],
-                "test_result": state["test_results"][-1],
+                "test_result": compact_test_evidence(state["test_results"][-1]),
                 "context": context,
                 "contract_tests": state["patches"][-1].get("contract_tests", []),
+                "regression_evidence": [compact_regression_evidence(r) for r in
+                                        state.get("regression_results", [])[-1:]],
             },
             state,
         )
@@ -371,6 +395,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         ("locator", locator),
         ("coder", coder),
         ("test", test),
+        ("regression", regression),
         ("reviewer", reviewer),
         ("human", human),
     ]:
@@ -380,6 +405,6 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
     graph.add_conditional_edges(
         "supervisor",
         lambda s: s["next_node"],
-        {n: n for n in ["planner", "locator", "coder", "test", "reviewer", "human", "prepare_attempt", END]},
+        {n: n for n in ["planner", "locator", "coder", "test", "reviewer", "human", "prepare_attempt", "regression", END]},
     )
     return graph.compile(checkpointer=checkpointer)

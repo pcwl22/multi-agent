@@ -45,6 +45,16 @@ class Review(StrictModel):
     contract_checks: list[ContractCheck] = Field(default_factory=list, max_length=32)
 
 
+class TestCaseEvidence(StrictModel):
+    file: str = Field(default="", max_length=500)
+    name: str = Field(default="", max_length=1000)
+    classname: str = Field(default="", max_length=1000)
+    line: int | None = None
+    status: Literal["passed", "failed", "error", "skipped"]
+    message: str = Field(default="", max_length=2000)
+    details: str = Field(default="", max_length=6000)
+
+
 class TestResult(StrictModel):
     __test__: ClassVar[bool] = False
     status: Literal["passed", "failed", "unavailable", "timeout"]
@@ -59,6 +69,8 @@ class TestResult(StrictModel):
     skipped: int = 0
     duration_seconds: float = 0
     evidence: Literal["docker", "test_double"] = "docker"
+    cases: list[TestCaseEvidence] = Field(default_factory=list, max_length=512)
+    cases_truncated: bool = False
 
 
 class TaskRequest(StrictModel):
@@ -89,6 +101,9 @@ class AgentState(TypedDict):
     task_path: str
     retry_workspace_policy: Literal["preserve", "isolated"]
     baseline_manifest: dict[str, str]
+    creation_manifest: dict[str, str]
+    creation_attempts: int
+    creation_failures: list[dict]
     candidate_id: str | None
     candidate_number: int
     approved_candidate_id: str | None
@@ -102,6 +117,8 @@ class AgentState(TypedDict):
     patches: Annotated[list[dict], operator.add]
     patch_feedback: Annotated[list[dict], operator.add]
     test_results: Annotated[list[dict], operator.add]
+    repair_feedback: Annotated[list[dict], operator.add]
+    regression_results: Annotated[list[dict], operator.add]
     review_results: Annotated[list[dict], operator.add]
     retry_count: int
     attempts: int

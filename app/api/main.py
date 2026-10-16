@@ -50,7 +50,8 @@ def create_app(settings: Settings | None = None, service: TaskService | None = N
             task = tasks(request).create(body)
         except (ValueError, OSError, httpx.HTTPError) as exc:
             raise HTTPException(400, str(exc)) from exc
-        background.add_task(tasks(request).run, task["task_id"])
+        if task["execution_status"] == "queued":
+            background.add_task(tasks(request).run, task["task_id"])
         return task
 
     @api.get("/api/tasks/{task_id}")
