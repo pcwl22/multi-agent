@@ -34,3 +34,18 @@ jobs:
       - run: python -m pytest tests/e2e -q
         env:
           REPOPILOT_RUN_DOCKER_TESTS: '1'
+
+  live-repair-contract:
+    if: startsWith(github.base_ref, 'validation/expired-token-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t repopilot-sandbox:local -f sandbox/Dockerfile .
+      - run: >-
+          docker run --rm --network=none --user=65534:65534 --read-only
+          --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=64
+          --cpus=1 --memory=512m --log-driver=none
+          --tmpfs /tmp:rw,noexec,nosuid,size=64m
+          -v "${{ github.workspace }}/validation_repository:/workspace:ro"
+          -w /workspace -e PYTHONPATH=/workspace repopilot-sandbox:local
+          python -m pytest tests -q -p no:cacheprovider
