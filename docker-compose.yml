@@ -1,0 +1,22 @@
+# The orchestrator runs on the host: never mount the Docker socket into a container.
+# This service builds the offline test image and can run the known demo's existing tests.
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: sandbox/Dockerfile
+    image: repopilot-sandbox:local
+    network_mode: none
+    user: "65534:65534"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 512m
+    cpus: 1
+    tmpfs: [/tmp:rw,noexec,nosuid,size=64m]
+    volumes:
+      - ./demo_repository:/workspace:ro
+    environment:
+      PYTHONPATH: /workspace
+    command: [python, -m, pytest, tests, -q, -p, "no:cacheprovider"]

@@ -1,0 +1,36 @@
+name: Verify RepoPilot
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  unit-and-integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '${{ matrix.python }}'
+          cache: pip
+      - run: python -m pip install -r requirements.lock
+      - run: python -m pip install --no-deps -e .
+      - run: python -m ruff check .
+      - run: python -m pytest -q
+  docker-end-to-end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: python -m pip install -r requirements.lock
+      - run: python -m pip install --no-deps -e .
+      - run: docker build -t repopilot-sandbox:local -f sandbox/Dockerfile .
+      - run: python -m pytest tests/e2e -q
+        env:
+          REPOPILOT_RUN_DOCKER_TESTS: '1'

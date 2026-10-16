@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=72"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repopilot"
+version = "0.1.0"
+description = "LangGraph + MCP code repair with bounded feedback and human approval"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+dependencies = [
+  "langgraph>=1.2.9,<2", "langgraph-checkpoint-sqlite>=3,<4",
+  "langchain-core>=1.6.11,<2", "langchain-openai>=1.7.2,<2",
+  "fastapi>=0.136,<1", "uvicorn>=0.48,<1", "pydantic>=2.13,<3",
+  "pydantic-settings>=2.14,<3", "mcp>=1.29,<2", "httpx>=0.28,<1",
+  "streamlit>=1.45,<2", "pytest>=8.3,<9", "filelock>=3.17,<4", "typing-extensions>=4.15,<5"
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.15,<1", "build>=1.5,<2"]
+
+[project.urls]
+Repository = "https://github.com/pcwl22/multi-agent"
+
+[project.scripts]
+repopilot = "app.cli:main"
+repopilot-mcp = "app.mcp_server.server:main"
+repopilot-eval = "app.evaluation.runner:main"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+"app.evaluation" = ["dataset.json", "acceptance/*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["docker: requires running Docker and sandbox image"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".repopilot"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

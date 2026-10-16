@@ -1,0 +1,45 @@
+{
+  "model_mode": "mock",
+  "model_name": "gpt-4.1-mini",
+  "dataset_cases": 1,
+  "repeats": 3,
+  "note": "null means no execution evidence. Mock results do not measure LLM capability.",
+  "modes": {
+    "single": {
+      "runs": 3,
+      "acceptance_evaluated": 3,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 3.391646233333328,
+      "average_model_calls": 0,
+      "average_tokens": 0,
+      "average_retries": 0,
+      "blocked_runs": 0
+    },
+    "multi_no_review": {
+      "runs": 3,
+      "acceptance_evaluated": 3,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 3.414889633334193,
+      "average_model_calls": 0,
+      "average_tokens": 0,
+      "average_retries": 0,
+      "blocked_runs": 0
+    },
+    "multi_full": {
+      "runs": 3,
+      "acceptance_evaluated": 3,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 3.3111298000003444,
+      "average_model_calls": 0,
+      "average_tokens": 0,
+      "average_retries": 0,
+      "blocked_runs": 0
+    }
+  }
+}

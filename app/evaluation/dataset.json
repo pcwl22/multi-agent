@@ -1,0 +1,7 @@
+[
+  {
+    "id": "auth-expired-401",
+    "issue": "The /profile endpoint returns 500 for Authorization: Bearer expired. Return HTTP 401 and preserve valid and missing token behavior. Add a regression test.",
+    "acceptance": "test_auth_acceptance.py"
+  }
+]
