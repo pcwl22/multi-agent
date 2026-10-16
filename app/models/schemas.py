@@ -17,6 +17,7 @@ class Plan(StrictModel):
     search_strategy: list[str]
     repair_steps: list[str]
     validation_strategy: list[str]
+    acceptance_contracts: list[str] = Field(default_factory=list, max_length=32)
 
 
 class Edit(StrictModel):
@@ -28,12 +29,20 @@ class Edit(StrictModel):
 class Patch(StrictModel):
     rationale: str
     edits: list[Edit] = Field(min_length=1, max_length=8)
+    contract_tests: list[str] = Field(default_factory=list, max_length=32)
+
+
+class ContractCheck(StrictModel):
+    requirement: str = Field(max_length=2000)
+    satisfied: bool
+    evidence: str = Field(max_length=4000)
 
 
 class Review(StrictModel):
     approved: bool
     summary: str
     concerns: list[str]
+    contract_checks: list[ContractCheck] = Field(default_factory=list, max_length=32)
 
 
 class TestResult(StrictModel):

@@ -239,6 +239,17 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
 
     @guarded("reviewer")
     def reviewer(state):
+        repo = Repository(state["workspace_path"])
+        context = ""
+        paths = list(dict.fromkeys([
+            *state["located_files"],
+            *(p for patch in state["patches"] for p in patch.get("changed_files", [])),
+        ]))
+        for path in paths:
+            budget = settings.context_chars - len(context) - len(path) - 30
+            if budget <= 0:
+                break
+            context += f"\n--- FILE {path} ---\n{repo.read_file(path, min(12000, budget))}\n"
         review, usage = generate(
             Review,
             {
@@ -246,9 +257,14 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "plan": state["plan"],
                 "diff": state["diff"][:60000],
                 "test_result": state["test_results"][-1],
+                "context": context,
+                "contract_tests": state["patches"][-1].get("contract_tests", []),
             },
             state,
         )
+        # Explicitly failed contracts override an inconsistent approval flag.
+        if any(not check.satisfied for check in review.contract_checks):
+            review.approved = False
         return {"review_results": [{**review.model_dump(), "attempt": state["attempts"]}], **usage}
 
     # interrupt raises a BaseException; do not catch or hide it in the guard.
