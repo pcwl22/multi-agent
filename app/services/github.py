@@ -7,7 +7,8 @@ from urllib.parse import quote
 
 import httpx
 
-from app.tools.repository import Repository
+from app.services.attempts import validate_isolated
+from app.tools.repository import Repository, diff_repositories, digest
 
 
 def read_issue(url: str, repository: str | None, token: str = "", *, client=None) -> str:
@@ -101,6 +102,18 @@ class GitHubPublisher:
             raise ValueError("Human approval required")
         if not re.fullmatch(r"[a-f0-9-]{36}", state["task_id"]):
             raise ValueError("Invalid task identity")
+        if state.get("retry_workspace_policy") == "isolated":
+            validate_isolated(state)
+            if state.get("approved_candidate_id") != state["candidate_id"] or (
+                state["test_results"][-1].get("candidate_id") != state["candidate_id"]
+            ) or (
+                state["test_results"][-1]["status"] != "passed"
+                or state["test_results"][-1]["evidence"] != "docker"
+            ):
+                raise ValueError("Publication does not match approved candidate")
+            if digest(diff_repositories(Path(state["workspace_path"]).parent / "baseline",
+                                        Path(state["workspace_path"]))) != state["diff_digest"]:
+                raise ValueError("Approved diff changed")
         workspace = Repository(state["workspace_path"])
         baseline = Repository(Path(state["workspace_path"]).parent / "baseline")
         metadata = self.request("GET", "")

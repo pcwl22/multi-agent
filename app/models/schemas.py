@@ -66,6 +66,7 @@ class TaskRequest(StrictModel):
     github_issue_url: str | None = Field(default=None, max_length=300)
     repository_path: str
     mode: Mode = "multi_full"
+    retry_workspace_policy: Literal["preserve", "isolated"] | None = None
 
     @model_validator(mode="after")
     def require_one_source(self):
@@ -76,6 +77,7 @@ class TaskRequest(StrictModel):
 
 class Approval(StrictModel):
     diff_digest: str = Field(min_length=64, max_length=64)
+    candidate_id: str | None = Field(default=None, pattern=r"^[a-f0-9-]{36}$")
 
 
 class AgentState(TypedDict):
@@ -84,6 +86,14 @@ class AgentState(TypedDict):
     issue_description: str
     repository_path: str
     workspace_path: str
+    task_path: str
+    retry_workspace_policy: Literal["preserve", "isolated"]
+    baseline_manifest: dict[str, str]
+    candidate_id: str | None
+    candidate_number: int
+    approved_candidate_id: str | None
+    previous_candidate_diff: str
+    attempt_history: Annotated[list[dict], operator.add]
     mode: Mode
     execution_status: str
     plan: dict[str, Any] | None

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
     github_token: SecretStr | None = Field(default=None, validation_alias="GITHUB_TOKEN")
     max_retries: int = Field(default=2, ge=0, le=5)
+    retry_workspace_policy: Literal["preserve", "isolated"] = "preserve"
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)
     model_min_interval: float = Field(default=0, ge=0, le=60)

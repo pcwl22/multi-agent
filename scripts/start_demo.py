@@ -21,6 +21,8 @@ def main() -> None:
     parser.add_argument("--api-port", type=int, default=8000)
     parser.add_argument("--ui-port", type=int, default=8501)
     parser.add_argument("--interval", type=float, default=7.5)
+    parser.add_argument("--retry-workspace-policy", choices=["preserve", "isolated"],
+                        default="preserve")
     args = parser.parse_args()
     if args.api_port == args.ui_port:
         parser.error("API and UI ports must differ")
@@ -49,6 +51,7 @@ def main() -> None:
             "REPOPILOT_MODEL_BASE_URL": args.base_url,
             "REPOPILOT_MODEL_MIN_INTERVAL": str(args.interval),
             "REPOPILOT_MODEL_TIMEOUT": "120",
+            "REPOPILOT_RETRY_WORKSPACE_POLICY": args.retry_workspace_policy,
         }
     )
     if args.live and not env.get("OPENAI_API_KEY"):

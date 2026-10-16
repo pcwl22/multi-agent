@@ -70,7 +70,8 @@ def create_app(settings: Settings | None = None, service: TaskService | None = N
     def decide(task_id, request, approved, body):
         get(request, task_id)
         try:
-            return tasks(request).decide(task_id, approved, body.diff_digest)
+            return tasks(request).decide(task_id, approved, body.diff_digest,
+                                         candidate_id=body.candidate_id)
         except (ValueError, Timeout) as exc:
             raise HTTPException(409, str(exc)) from exc
 
@@ -86,7 +87,7 @@ def create_app(settings: Settings | None = None, service: TaskService | None = N
     def publish_pr(task_id: str, body: Approval, request: Request):
         get(request, task_id)
         try:
-            return tasks(request).publish(task_id, body.diff_digest)
+            return tasks(request).publish(task_id, body.diff_digest, candidate_id=body.candidate_id)
         except (ValueError, Timeout) as exc:
             raise HTTPException(409, str(exc)) from exc
 

@@ -196,7 +196,12 @@ def run_evaluation(
                 )
                 state = service.run(task["task_id"])
                 acceptance = None
-                if state["test_results"] and state["test_results"][-1]["status"] == "passed":
+                current_test = state["test_results"][-1] if state["test_results"] else None
+                if state.get("retry_workspace_policy") == "isolated" and current_test and (
+                    current_test.get("candidate_id") != state["candidate_id"]
+                ):
+                    current_test = None
+                if current_test and current_test["status"] == "passed":
                     holdout = output / "holdouts" / task["task_id"]
                     holdout_workspace(Path(state["workspace_path"]), holdout, acceptance_file)
                     acceptance = runner.run(holdout).model_dump()
@@ -217,6 +222,10 @@ def run_evaluation(
                     else None,
                     "retry_count": state["retry_count"],
                     "attempts": state["attempts"],
+                    "retry_workspace_policy": state.get("retry_workspace_policy", "preserve"),
+                    "candidate_id": state.get("candidate_id"),
+                    "candidate_number": state.get("candidate_number", 0),
+                    "attempt_history": state.get("attempt_history", []),
                     "attempt_evidence": [
                         {
                             k: test[k]
@@ -236,7 +245,7 @@ def run_evaluation(
                         {"attempt": review["attempt"], "approved": review["approved"]}
                         for review in state["review_results"]
                     ],
-                    "test_result": state["test_results"][-1] if state["test_results"] else None,
+                    "test_result": current_test,
                     "acceptance": acceptance,
                     "diff_digest": state["diff_digest"],
                     "context_chars": len(state["context"]),
@@ -262,6 +271,15 @@ def run_evaluation(
                     json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
                 )
                 (artifacts / "repair.patch").write_text(state["diff"], encoding="utf-8")
+                if state.get("retry_workspace_policy") == "isolated":
+                    for number in range(1, state["candidate_number"] + 1):
+                        source = Path(state["task_path"]) / "attempts" / f"{number:04}"
+                        destination = artifacts / "attempts" / f"{number:04}"
+                        destination.mkdir(parents=True)
+                        for filename in ["candidate.json", "evidence.json"]:
+                            shutil.copyfile(source / filename, destination / filename)
+                        evidence = json.loads((source / "evidence.json").read_text(encoding="utf8"))
+                        (destination / "repair.patch").write_text(evidence["diff"], encoding="utf8")
                 record_result(record)
 
     try:
@@ -303,6 +321,7 @@ def run_evaluation(
             "workers": workers,
             "context_chars": settings.context_chars,
             "max_retries": settings.max_retries,
+            "retry_workspace_policy": settings.retry_workspace_policy,
             "temperature": 0,
             "sandbox_image": settings.sandbox_image,
             "model_timeout": settings.model_timeout,

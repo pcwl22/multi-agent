@@ -17,6 +17,7 @@ def main():
         "--mode", choices=["single", "multi_no_review", "multi_full"], default="multi_full"
     )
     parser.add_argument("--resume", help="Resume a queued/running/blocked/retryable task ID")
+    parser.add_argument("--retry-workspace-policy", choices=["preserve", "isolated"])
     args = parser.parse_args()
     service = TaskService(Settings())
     try:
@@ -28,6 +29,7 @@ def main():
                     issue_description=None if args.issue_url else args.issue,
                     github_issue_url=args.issue_url,
                     mode=args.mode,
+                    retry_workspace_policy=args.retry_workspace_policy,
                 )
             )["task_id"]
         result = service.run(task_id)

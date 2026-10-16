@@ -12,6 +12,12 @@ from app.agents.contracts import literal_input_examples, validate_literal_inputs
 from app.agents.model import Model, ModelFailure
 from app.config.settings import Settings
 from app.models.schemas import AgentState, Patch, Plan, Review
+from app.services.attempts import (
+    candidate_tags,
+    prepare_candidate,
+    save_candidate,
+    validate_isolated,
+)
 from app.tools.repository import Repository, diff_repositories, digest, is_test_file, keywords
 
 logger = logging.getLogger("repopilot.graph")
@@ -88,6 +94,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         }
 
     def supervisor(state: AgentState):
+        retry_node = "prepare_attempt" if state.get("retry_workspace_policy") == "isolated" else "coder"
         if state["execution_status"] in {"failed", "retryable", "blocked", "approved", "rejected"}:
             return {"next_node": END}
         if not state["plan"] and state["mode"] != "single":
@@ -99,7 +106,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         feedback = state.get("patch_feedback", [])
         if feedback and feedback[-1]["attempt"] == state["attempts"]:
             if state["retry_count"] < settings.max_retries:
-                return {"next_node": "coder", "retry_count": state["retry_count"] + 1}
+                return {"next_node": retry_node, "retry_count": state["retry_count"] + 1}
             return {
                 "next_node": END,
                 "execution_status": "failed",
@@ -115,7 +122,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             return {"next_node": END, "execution_status": "blocked", "error": test["stderr"]}
         if test["status"] != "passed":
             if state["retry_count"] < settings.max_retries:
-                return {"next_node": "coder", "retry_count": state["retry_count"] + 1}
+                return {"next_node": retry_node, "retry_count": state["retry_count"] + 1}
             return {
                 "next_node": END,
                 "execution_status": "failed",
@@ -127,7 +134,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 return {"next_node": "reviewer"}
             if not reviews[-1]["approved"]:
                 if state["retry_count"] < settings.max_retries:
-                    return {"next_node": "coder", "retry_count": state["retry_count"] + 1}
+                    return {"next_node": retry_node, "retry_count": state["retry_count"] + 1}
                 return {
                     "next_node": END,
                     "execution_status": "failed",
@@ -197,10 +204,11 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         # Refresh selected files after each edit so retry preconditions use current content.
         repo = Repository(state["workspace_path"])
         context = ""
-        paths = list(dict.fromkeys([
+        available = set(repo.list_files())
+        paths = [p for p in dict.fromkeys([
             *state["located_files"],
             *(p for patch in state["patches"] for p in patch.get("changed_files", [])),
-        ]))
+        ]) if p in available]
         existing_tests = [p for p in repo.list_files() if p.endswith(".py") and is_test_file(p)]
         for path in paths:
             budget = settings.context_chars - len(context) - len(path) - 30
@@ -219,6 +227,16 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "patch_feedback": state.get("patch_feedback", [])[-1:],
                 "literal_input_examples": literal_input_examples(state["issue_description"]),
                 "existing_test_paths": existing_tests,
+                "retry_workspace_policy": state.get("retry_workspace_policy", "preserve"),
+                "previous_candidate_diff": state.get("previous_candidate_diff", "")[:60000],
+                "candidate_instructions": (
+                    "This workspace is a fresh ORIGINAL baseline copy. Return the COMPLETE "
+                    "fix plus correct NEW tests against the displayed original context. "
+                    "Previous candidate diff and test failures are archived evidence, not "
+                    "files in this workspace. Original tests remain immutable. You may reuse "
+                    "a test filename absent from existing_test_paths; older directories stay unchanged."
+                    if state.get("retry_workspace_policy") == "isolated" else "Continue in current workspace."
+                ),
             },
             state,
         )
@@ -234,8 +252,10 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             attempt = state["attempts"] + 1
             diff = diff_repositories(Path(state["workspace_path"]).parent / "baseline", repo.root)
             return {
-                "patches": [{**patch.model_dump(), "changed_files": [], "applied": False}],
-                "patch_feedback": [{"attempt": attempt, "error": str(exc)[:2000]}],
+                "patches": [{**patch.model_dump(), "changed_files": [], "applied": False,
+                             **candidate_tags(state)}],
+                "patch_feedback": [{"attempt": attempt, "error": str(exc)[:2000],
+                                    **candidate_tags(state)}],
                 "attempts": attempt,
                 "diff": diff,
                 "diff_digest": digest(diff),
@@ -251,7 +271,8 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             raise ModelFailure(f"Patch rejected: {exc}", stats) from exc
         diff = diff_repositories(Path(state["workspace_path"]).parent / "baseline", repo.root)
         return {
-            "patches": [{**patch.model_dump(), "changed_files": changed, "applied": True}],
+            "patches": [{**patch.model_dump(), "changed_files": changed, "applied": True,
+                         **candidate_tags(state)}],
             "attempts": state["attempts"] + 1,
             "diff": diff,
             "diff_digest": digest(diff),
@@ -261,17 +282,35 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
 
     @guarded("test")
     def test(state):
+        validate_isolated(state)
         result = runner.run(Path(state["workspace_path"]))
-        return {"test_results": [{**result.model_dump(), "attempt": state["attempts"]}]}
+        return {"test_results": [{**result.model_dump(), "attempt": state["attempts"],
+                                  **candidate_tags(state)}]}
+
+    @guarded("prepare_attempt")
+    def prepare_attempt(state):
+        validate_isolated(state)
+        old_workspace = Path(state["workspace_path"])
+        actual = diff_repositories(old_workspace.parent / "baseline", old_workspace)
+        if digest(actual) != (state["diff_digest"] or digest("")):
+            raise ValueError("Workspace changed outside the recorded repair")
+        archived = save_candidate(state)
+        candidate = prepare_candidate(Path(state["task_path"]), state["attempts"] + 1,
+                                      state["baseline_manifest"])
+        return {**candidate, "attempt_history": [archived],
+                "previous_candidate_diff": state["diff"], "diff": "", "diff_digest": digest(""),
+                "approval_status": "pending", "approved_candidate_id": None,
+                "execution_status": "running"}
 
     @guarded("reviewer")
     def reviewer(state):
         repo = Repository(state["workspace_path"])
         context = ""
-        paths = list(dict.fromkeys([
+        available = set(repo.list_files())
+        paths = [p for p in dict.fromkeys([
             *state["located_files"],
             *(p for patch in state["patches"] for p in patch.get("changed_files", [])),
-        ]))
+        ]) if p in available]
         for path in paths:
             budget = settings.context_chars - len(context) - len(path) - 30
             if budget <= 0:
@@ -292,7 +331,8 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         # Explicitly failed contracts override an inconsistent approval flag.
         if any(not check.satisfied for check in review.contract_checks):
             review.approved = False
-        return {"review_results": [{**review.model_dump(), "attempt": state["attempts"]}], **usage}
+        return {"review_results": [{**review.model_dump(), "attempt": state["attempts"],
+                                    **candidate_tags(state)}], **usage}
 
     # interrupt raises a BaseException; do not catch or hide it in the guard.
     def human(state):
@@ -301,19 +341,31 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "task_id": state["task_id"],
                 "diff_digest": state["diff_digest"],
                 "message": "Approve or reject this exact diff",
+                **candidate_tags(state),
             }
         )
         if not isinstance(decision, dict) or decision.get("diff_digest") != state["diff_digest"]:
             raise ValueError("Approval does not match current diff")
+        if state.get("retry_workspace_policy") == "isolated" and (
+            decision.get("candidate_id") != state["candidate_id"]
+        ):
+            raise ValueError("Approval does not match current candidate")
         approved = decision.get("approved") is True
         return {
             "approval_status": "approved" if approved else "rejected",
             "execution_status": "approved" if approved else "rejected",
             "execution_history": [event("human", approved=approved)],
+            "approved_candidate_id": state.get("candidate_id") if approved else None,
         }
 
     graph = StateGraph(AgentState)
     graph.add_node("supervisor", supervisor)
+    graph.add_node("prepare_attempt", prepare_attempt)
+    graph.add_conditional_edges(
+        "prepare_attempt",
+        lambda state: "coder" if state["execution_status"] == "running" else "supervisor",
+        {"coder": "coder", "supervisor": "supervisor"},
+    )
     for name, fn in [
         ("planner", planner),
         ("locator", locator),
@@ -328,6 +380,6 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
     graph.add_conditional_edges(
         "supervisor",
         lambda s: s["next_node"],
-        {n: n for n in ["planner", "locator", "coder", "test", "reviewer", "human", END]},
+        {n: n for n in ["planner", "locator", "coder", "test", "reviewer", "human", "prepare_attempt", END]},
     )
     return graph.compile(checkpointer=checkpointer)

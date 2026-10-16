@@ -14,6 +14,12 @@ from app.config.settings import Settings
 from app.graph.workflow import build_graph
 from app.models.schemas import TaskRequest
 from app.sandbox.runner import DockerRunner
+from app.services.attempts import (
+    file_manifest,
+    prepare_candidate,
+    save_candidate,
+    validate_isolated,
+)
 from app.services.github import GitHubPublisher, read_issue
 from app.tools.repository import Repository, diff_repositories, digest, snapshot
 
@@ -81,13 +87,22 @@ class TaskService:
         task_id, thread_id = str(uuid.uuid4()), str(uuid.uuid4())
         task_dir = self.data / "tasks" / task_id
         snapshot(repo, task_dir / "baseline")
-        snapshot(Repository(task_dir / "baseline"), task_dir / "workspace")
+        policy = request.retry_workspace_policy or self.settings.retry_workspace_policy
+        manifest = file_manifest(task_dir / "baseline") if policy == "isolated" else {}
+        if policy == "isolated":
+            candidate = prepare_candidate(task_dir, 1, manifest)
+        else:
+            snapshot(Repository(task_dir / "baseline"), task_dir / "workspace")
+            candidate = {"workspace_path": str(task_dir / "workspace"), "candidate_id": None,
+                         "candidate_number": 0}
         state = dict(
             task_id=task_id,
             thread_id=thread_id,
             issue_description=description,
             repository_path=str(source),
-            workspace_path=str(task_dir / "workspace"),
+            **candidate,
+            task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest=manifest,
+            attempt_history=[], previous_candidate_diff="", approved_candidate_id=None,
             mode=request.mode,
             execution_status="queued",
             plan=None,
@@ -132,6 +147,7 @@ class TaskService:
     def run(self, task_id: str) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
             config = self._config(state["thread_id"])
             if state["execution_status"] in {"approved", "rejected", "failed", "awaiting_approval"}:
                 raise ValueError("Task cannot be resumed from this status")
@@ -160,10 +176,14 @@ class TaskService:
                     as_node="supervisor",
                 )
             self.graph.invoke(state if not checkpoint.values else None, config, durability="sync")
-            return self.get(task_id)
+            result = self.get(task_id)
+            if result.get("retry_workspace_policy") == "isolated":
+                save_candidate(result)
+            return result
 
     def check_resume(self, task_id: str) -> None:
         state = self.get(task_id)
+        validate_isolated(state, self.data / "tasks" / task_id)
         if state["execution_status"] not in {"queued", "running", "blocked", "retryable"}:
             raise ValueError("Task is not resumable; use approve/reject at human interrupt")
         if state["execution_status"] == "retryable":
@@ -180,11 +200,18 @@ class TaskService:
         if actual["diff_digest"] != expected:
             raise ValueError("Workspace changed outside the recorded repair; create a new task")
 
-    def decide(self, task_id: str, approved: bool, expected_digest: str) -> dict:
+    def decide(self, task_id: str, approved: bool, expected_digest: str,
+               *, candidate_id: str | None = None) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
             if state["execution_status"] != "awaiting_approval":
                 raise ValueError("Task is not awaiting approval")
+            validate_isolated(state, self.data / "tasks" / task_id)
+            if state.get("retry_workspace_policy") == "isolated":
+                if candidate_id != state["candidate_id"]:
+                    raise ValueError("Approval does not match current candidate")
+                if state["test_results"][-1].get("candidate_id") != candidate_id:
+                    raise ValueError("Test evidence does not match current candidate")
             actual = diff_repositories(
                 Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])
             )
@@ -193,11 +220,15 @@ class TaskService:
             if approved and state["test_results"][-1]["evidence"] != "docker":
                 raise ValueError("Approval requires real Docker test evidence")
             self.graph.invoke(
-                Command(resume={"approved": approved, "diff_digest": expected_digest}),
+                Command(resume={"approved": approved, "diff_digest": expected_digest,
+                                "candidate_id": candidate_id}),
                 self._config(state["thread_id"]),
                 durability="sync",
             )
-            return self.get(task_id)
+            result = self.get(task_id)
+            if result.get("retry_workspace_policy") == "isolated":
+                save_candidate(result)
+            return result
 
     def diff(self, task_id: str) -> dict:
         state = self.get(task_id)
@@ -208,13 +239,20 @@ class TaskService:
             "diff": actual,
             "diff_digest": digest(actual),
             "matches_recorded": digest(actual) == state["diff_digest"],
+            "candidate_id": state.get("candidate_id"),
         }
 
-    def publish(self, task_id: str, expected_digest: str, *, publisher=None) -> dict:
+    def publish(self, task_id: str, expected_digest: str, *, publisher=None,
+                candidate_id: str | None = None) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
             if state["execution_status"] != "approved" or state["approval_status"] != "approved":
                 raise ValueError("Explicit human approval is required before publication")
+            validate_isolated(state, self.data / "tasks" / task_id)
+            if state.get("retry_workspace_policy") == "isolated" and (
+                candidate_id != state["candidate_id"] or state.get("approved_candidate_id") != candidate_id
+            ):
+                raise ValueError("Publication does not match approved candidate")
             actual = self.diff(task_id)
             if (
                 expected_digest != state["diff_digest"]

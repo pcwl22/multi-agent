@@ -28,6 +28,7 @@ with st.form("new_task"):
     issue_url = st.text_input("可选 GitHub Issue URL（填写后从配置的远端仓库读取需求）")
     repository = st.text_input("本地仓库路径（必须位于后端配置的受控根目录内）", "demo_repository")
     mode = st.selectbox("运行模式", ["multi_full", "multi_no_review", "single"])
+    retry_policy = st.selectbox("重试策略", ["后端默认", "继续当前副本", "每次尝试独立副本"])
     submitted = st.form_submit_button("执行任务", type="primary")
 
 try:
@@ -40,6 +41,8 @@ try:
                 "github_issue_url": issue_url or None,
                 "repository_path": repository,
                 "mode": mode,
+                "retry_workspace_policy": {"后端默认": None, "继续当前副本": "preserve",
+                                           "每次尝试独立副本": "isolated"}[retry_policy],
             },
         )
         st.session_state["task_id"] = result["task_id"]
@@ -64,6 +67,10 @@ try:
         if state["error"]:
             st.error(state["error"])
         diff = api("GET", f"/api/tasks/{task_id}/diff")
+        if state.get("retry_workspace_policy") == "isolated":
+            st.caption(f"独立候选第 {state['candidate_number']} 轮 · {state['candidate_id']}")
+            with st.expander("此前尝试（现场保留）"):
+                st.json(state.get("attempt_history", []))
         st.subheader("代码 Diff")
         st.code(diff["diff"] or "暂无修改", language="diff")
         st.download_button("下载补丁", diff["diff"], f"{task_id}.patch")
@@ -87,14 +94,16 @@ try:
                     api(
                         "POST",
                         f"/api/tasks/{task_id}/{action}",
-                        json={"diff_digest": diff["diff_digest"]},
+                        json={"diff_digest": diff["diff_digest"],
+                              "candidate_id": diff.get("candidate_id")},
                     )
                     st.rerun()
         elif state["execution_status"] == "approved":
             st.caption("可选：后端需配置固定 GitHub 仓库与 GITHUB_TOKEN；此操作会创建草稿 PR。")
             if st.button("明确确认：将已批准 Diff 创建为 GitHub 草稿 PR"):
                 published = api(
-                    "POST", f"/api/tasks/{task_id}/pr", json={"diff_digest": diff["diff_digest"]}
+                    "POST", f"/api/tasks/{task_id}/pr", json={"diff_digest": diff["diff_digest"],
+                                                             "candidate_id": diff.get("candidate_id")}
                 )
                 st.link_button("查看草稿 PR", published["url"])
         elif state["execution_status"] == "blocked":
