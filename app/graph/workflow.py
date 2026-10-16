@@ -12,7 +12,7 @@ from app.agents.contracts import literal_input_examples, validate_literal_inputs
 from app.agents.model import Model, ModelFailure
 from app.config.settings import Settings
 from app.models.schemas import AgentState, Patch, Plan, Review
-from app.tools.repository import Repository, diff_repositories, digest, keywords
+from app.tools.repository import Repository, diff_repositories, digest, is_test_file, keywords
 
 logger = logging.getLogger("repopilot.graph")
 
@@ -201,9 +201,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             *state["located_files"],
             *(p for patch in state["patches"] for p in patch.get("changed_files", [])),
         ]))
-        existing_tests = [p for p in repo.list_files() if p.endswith(".py") and (
-            "tests" in Path(p).parts or Path(p).name.startswith("test_")
-        )]
+        existing_tests = [p for p in repo.list_files() if p.endswith(".py") and is_test_file(p)]
         for path in paths:
             budget = settings.context_chars - len(context) - len(path) - 30
             if budget <= 0:

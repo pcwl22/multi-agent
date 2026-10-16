@@ -16,7 +16,7 @@ from app.config.settings import Settings
 from app.models.schemas import TaskRequest
 from app.sandbox.runner import DockerRunner
 from app.services.tasks import TaskService
-from app.tools.repository import Repository
+from app.tools.repository import Repository, is_test_file
 
 MODES = ["single", "multi_no_review", "multi_full"]
 
@@ -92,9 +92,8 @@ def holdout_workspace(workspace: Path, destination: Path, acceptance: Path) -> N
     destination.mkdir(parents=True)
     repo = Repository(workspace)
     for relative in repo.list_files():
-        parts = Path(relative).parts
         # Holdout runs only source files and evaluator-owned tests, not model-generated tests.
-        if "tests" in parts or Path(relative).name.startswith(("test_", "conftest")):
+        if is_test_file(relative):
             continue
         dst = destination / relative
         dst.parent.mkdir(parents=True, exist_ok=True)

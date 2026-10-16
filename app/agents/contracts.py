@@ -11,6 +11,7 @@ import builtins
 import re
 
 from app.models.schemas import Patch
+from app.tools.repository import is_test_file
 
 CONSTRUCTORS = {"range", "list", "tuple", "dict", "set", "frozenset", "bytes", "bytearray"}
 
@@ -47,10 +48,7 @@ def validate_literal_inputs(
     observed = set()
     sources = list((existing_tests or {}).values())
     for edit in patch.edits:
-        if edit.old or not (
-            "tests" in edit.path.replace("\\", "/").split("/")
-            or edit.path.rsplit("/", 1)[-1].startswith("test_")
-        ):
+        if edit.old or not is_test_file(edit.path):
             continue
         sources.append(edit.new)
     for source in sources:

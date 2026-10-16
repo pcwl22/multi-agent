@@ -26,6 +26,15 @@ IGNORED = {
 SUFFIXES = {".py", ".toml", ".txt", ".md", ".json", ".yaml", ".yml", ".js", ".ts"}
 
 
+def is_test_file(relative: str | Path) -> bool:
+    parts = str(relative).replace("\\", "/").casefold().split("/")
+    name = parts[-1]
+    return (
+        "tests" in parts or name in {"test.py", "tests.py", "conftest.py"}
+        or name.startswith("test_") or name.endswith("_test.py")
+    )
+
+
 class Repository:
     """Bounded text operations; never import or execute target repository code."""
 
@@ -156,12 +165,7 @@ class Repository:
                 raise ValueError("One edit per file is required")
             if p.suffix != ".py":
                 raise ValueError("MVP permits Python source and new Python tests only")
-            parts = [part.casefold() for part in p.relative_to(self.root).parts]
-            is_test = (
-                "tests" in parts
-                or p.name.casefold().startswith("test_")
-                or p.name.casefold().endswith("_test.py")
-            )
+            is_test = is_test_file(p.relative_to(self.root))
             if p.name.casefold() == "conftest.py":
                 raise ValueError("Pytest configuration is immutable")
             if is_test and p.exists():
