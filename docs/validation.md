@@ -14,6 +14,7 @@
 - SQLite 重启恢复、Docker 阻塞后恢复、恢复后再次失败的重试、审核反馈、重试上限、审批摘要篡改与无 Docker 不回退宿主机：通过。
 - LangChain ChatOpenAI 使用真实适配器与假的 HTTP 传输进行结构化输出合约测试：通过。不是模型联网验收。
 - GitHub Issue 限定仓库读取、草稿 PR REST 合约、未批准拒绝及远端基线不一致时零写入：通过假的 HTTP 传输测试。未实际建 PR。
+- [GitHub Actions 运行 38843184866](https://github.com/pcwl22/multi-agent/actions/runs/38843184866)：提交 `5e62365` 的三个作业全部成功，包括 Ubuntu / Python 3.11、3.13 的干净依赖安装和测试，以及标准 Dockerfile 在线构建与真实端到端测试。无需依赖本机已有 Python 包或缓存基础镜像。
 
 ## 实际评测
 
@@ -29,5 +30,5 @@ Docker 启动前还运行过三模式评测，三次均如实记录为 blocked�
 
 - 未配置 OPENAI_API_KEY：真实 LLM 联网修复与 LangSmith 上传未验证。
 - GitHub PR 模块通过 HTTP 合约测试，但没有向真实远端创建测试 PR；真实写入仍需维护者明确授权测试任务。
-- 本地为 Windows / Python 3.13.5，虚拟环境最初复用了已安装系统依赖；后续在虚拟环境内安装缺失及兼容依赖，未修改全局 Python 包。实际项目依赖闭包（98 项）锁定在 `requirements.lock`，不包含无关全局包。Linux Python 3.11 / 3.13 与标准 Docker 构建由 GitHub Actions 验证。
+- 本地为 Windows / Python 3.13.5，虚拟环境最初复用了已安装系统依赖；后续在虚拟环境内安装缺失及兼容依赖，未修改全局 Python 包。实际项目依赖闭包（98 项）锁定在 `requirements.lock`，不包含无关全局包。Linux Python 3.11 / 3.13 的干净安装和标准 Docker 构建已通过上述 GitHub Actions 实测。
 - 此项目提供单 Bug 的可复现工程样例，后续应增加真实 Bug 数据集及 Live 模型评测，再报告成功率、成本或反馈闭环收益。
