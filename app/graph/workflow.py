@@ -81,6 +81,15 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             return {"next_node": "locator", "execution_status": "running"}
         if not state["attempts"]:
             return {"next_node": "coder"}
+        feedback = state.get("patch_feedback", [])
+        if feedback and feedback[-1]["attempt"] == state["attempts"]:
+            if state["retry_count"] < settings.max_retries:
+                return {"next_node": "coder", "retry_count": state["retry_count"] + 1}
+            return {
+                "next_node": END,
+                "execution_status": "failed",
+                "error": "Patch retry budget exhausted: " + feedback[-1]["error"],
+            }
         if (
             not state["test_results"]
             or state["test_results"][-1].get("attempt") != state["attempts"]
@@ -119,12 +128,25 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
     @guarded("locator")
     def locator(state):
         repo = Repository(state["workspace_path"])
-        terms = (
+        strategies = (
             state["plan"]["search_strategy"]
             if state["plan"]
             else keywords(state["issue_description"])
         )[:12]
+        # Live planners often emit sentences; convert them to bounded literal searches.
+        terms = list(
+            dict.fromkeys(
+                term
+                for strategy in strategies
+                for term in ([strategy] if strategy.isidentifier() else keywords(strategy))
+            )
+        )[:12]
         scores: dict[str, int] = {}
+        available = set(repo.list_files())
+        for hint in (state["plan"]["suspected_modules"] if state["plan"] else [])[:12]:
+            path = hint.replace("\\", "/")
+            if path in available:
+                scores[path] = 50
         history = []
         for term in terms:
             hits = repo.search_code(term)
@@ -151,6 +173,8 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             history.append({"tool": "read_file", "path": path, "chars": len(text)})
         dependencies = repo.inspect_dependencies()
         history.append({"tool": "inspect_dependencies", "files": list(dependencies)})
+        if not context.strip():
+            raise ValueError("Repository contains no readable supported source files")
         return {"context": context, "located_files": located, "retrieval_history": history}
 
     @guarded("coder")
@@ -172,11 +196,25 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "context": context,
                 "tests": state["test_results"][-1:],
                 "reviews": state["review_results"][-1:],
+                "patch_feedback": state.get("patch_feedback", [])[-1:],
             },
             state,
         )
         try:
             changed = repo.apply(patch)
+        except (ValueError, SyntaxError) as exc:
+            # Validation is completed before any file is written; rejected edits are safe to retry.
+            attempt = state["attempts"] + 1
+            diff = diff_repositories(Path(state["workspace_path"]).parent / "baseline", repo.root)
+            return {
+                "patches": [{**patch.model_dump(), "changed_files": [], "applied": False}],
+                "patch_feedback": [{"attempt": attempt, "error": str(exc)[:2000]}],
+                "attempts": attempt,
+                "diff": diff,
+                "diff_digest": digest(diff),
+                "context": context,
+                **usage,
+            }
         except Exception as exc:
             stats = {
                 key: value
@@ -186,7 +224,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             raise ModelFailure(f"Patch rejected: {exc}", stats) from exc
         diff = diff_repositories(Path(state["workspace_path"]).parent / "baseline", repo.root)
         return {
-            "patches": [{**patch.model_dump(), "changed_files": changed}],
+            "patches": [{**patch.model_dump(), "changed_files": changed, "applied": True}],
             "attempts": state["attempts"] + 1,
             "diff": diff,
             "diff_digest": digest(diff),

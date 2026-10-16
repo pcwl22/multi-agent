@@ -1,10 +1,14 @@
 import argparse
+import hashlib
 import json
+import platform
 import shutil
 import statistics
 import time
 import uuid
+from importlib.metadata import version
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from app.config.settings import Settings
 from app.models.schemas import TaskRequest
@@ -25,6 +29,19 @@ def aggregate(records: list[dict]) -> dict:
         for r in records
         if r.get("acceptance") and r["acceptance"]["status"] in {"passed", "failed"}
     ]
+    evaluated = [
+        r
+        for r in records
+        if r["execution_status"] not in {"blocked", "invalid_case"}
+        and (
+            r.get("baseline_verified")
+            or r in acceptance
+            or (
+                r.get("test_result")
+                and r["test_result"]["status"] in {"passed", "failed", "timeout"}
+            )
+        )
+    ]
     total_tests = sum(
         r["test_result"][k]
         for r in records
@@ -35,10 +52,11 @@ def aggregate(records: list[dict]) -> dict:
     return {
         "runs": len(records),
         "acceptance_evaluated": len(acceptance),
+        "repair_evaluated": len(evaluated),
         "bug_fix_success_rate": (
-            sum(r["acceptance"]["status"] == "passed" for r in acceptance) / len(acceptance)
+            sum(r["acceptance"]["status"] == "passed" for r in acceptance) / len(evaluated)
         )
-        if acceptance
+        if evaluated
         else None,
         "test_pass_rate": passed / total_tests if total_tests else None,
         "task_completion_rate": (
@@ -52,6 +70,8 @@ def aggregate(records: list[dict]) -> dict:
         "average_tokens": mean("tokens"),
         "average_retries": mean("retry_count"),
         "blocked_runs": sum(r["execution_status"] == "blocked" for r in records),
+        "invalid_case_runs": sum(r["execution_status"] == "invalid_case" for r in records),
+        "token_observed_runs": sum(r["tokens"] is not None for r in records),
     }
 
 
@@ -73,6 +93,13 @@ def holdout_workspace(workspace: Path, destination: Path, acceptance: Path) -> N
 def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: int = 1) -> dict:
     dataset_root = Path(__file__).parent
     dataset = json.loads((dataset_root / "dataset.json").read_text(encoding="utf-8"))
+    if not 1 <= repeats <= 100:
+        raise ValueError("repeats must be between 1 and 100")
+    if output.exists() and any(output.iterdir()):
+        raise ValueError("Use a fresh output directory to avoid mixing evaluation records")
+    case_ids = [case["id"] for case in dataset]
+    if len(set(case_ids)) != len(case_ids):
+        raise ValueError("Dataset case IDs must be unique")
     service = TaskService(settings)
     runner = DockerRunner(settings)
     records = []
@@ -80,10 +107,42 @@ def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: 
     try:
         for case in dataset:
             acceptance_file = dataset_root / "acceptance" / case["acceptance"]
+            baseline_path = output / "baselines" / case["id"]
+            holdout_workspace(repository.resolve(), baseline_path, acceptance_file)
+            baseline = runner.run(baseline_path).model_dump()
+            baseline_verified = (
+                baseline["status"] == "failed"
+                and baseline["failed"] > 0
+                and baseline["errors"] == 0
+            )
             for repeat in range(repeats):
                 # Rotate order to reduce systematic warm-cache bias.
                 for mode in MODES[repeat % 3 :] + MODES[: repeat % 3]:
                     started = time.monotonic()
+                    if not baseline_verified:
+                        record = {
+                            "case_id": case["id"],
+                            "repeat": repeat,
+                            "mode": mode,
+                            "task_id": None,
+                            "thread_id": None,
+                            "baseline": baseline,
+                            "baseline_verified": False,
+                            "execution_status": "blocked"
+                            if baseline["status"] in {"unavailable", "timeout"}
+                            else "invalid_case",
+                            "error": "Baseline did not establish a failing bug; repair was not run",
+                            "duration_seconds": 0,
+                            "model_calls": 0,
+                            "tokens": 0,
+                            "retry_count": 0,
+                            "test_result": None,
+                            "acceptance": None,
+                        }
+                        records.append(record)
+                        with (output / "runs.jsonl").open("a", encoding="utf-8") as stream:
+                            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+                        continue
                     task = service.create(
                         TaskRequest(
                             repository_path=str(repository),
@@ -103,6 +162,8 @@ def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: 
                         "mode": mode,
                         "task_id": task["task_id"],
                         "thread_id": task["thread_id"],
+                        "baseline": baseline,
+                        "baseline_verified": baseline_verified,
                         "execution_status": state["execution_status"],
                         "error": state["error"],
                         "duration_seconds": time.monotonic() - started,
@@ -113,7 +174,29 @@ def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: 
                         "retry_count": state["retry_count"],
                         "test_result": state["test_results"][-1] if state["test_results"] else None,
                         "acceptance": acceptance,
+                        "diff_digest": state["diff_digest"],
+                        "context_chars": len(state["context"]),
+                        "retrieved_files": len(state["located_files"]),
+                        "model_observations": [
+                            {
+                                key: event.get(key)
+                                for key in [
+                                    "model_requested",
+                                    "model_reported",
+                                    "provider_response_id",
+                                    "calls",
+                                ]
+                            }
+                            for event in state["execution_history"]
+                            if event["node"] == "model"
+                        ],
                     }
+                    artifacts = output / "tasks" / task["task_id"]
+                    artifacts.mkdir(parents=True)
+                    (artifacts / "state.json").write_text(
+                        json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
+                    )
+                    (artifacts / "repair.patch").write_text(state["diff"], encoding="utf-8")
                     records.append(record)
                     with (output / "runs.jsonl").open("a", encoding="utf-8") as stream:
                         stream.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -121,9 +204,26 @@ def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: 
         service.close()
     report = {
         "model_mode": settings.model_mode,
-        "model_name": settings.model_name,
+        "model_name": settings.model_name if settings.model_mode == "live" else None,
+        "model_endpoint_host": urlsplit(settings.model_base_url).hostname
+        if settings.model_base_url
+        else None,
         "dataset_cases": len(dataset),
         "repeats": repeats,
+        "dataset_sha256": hashlib.sha256((dataset_root / "dataset.json").read_bytes()).hexdigest(),
+        "python_version": platform.python_version(),
+        "dependencies": {
+            name: version(name)
+            for name in ["langgraph", "langchain-openai", "mcp", "pydantic", "fastapi"]
+        },
+        "configuration": {
+            "context_chars": settings.context_chars,
+            "max_retries": settings.max_retries,
+            "temperature": 0,
+            "sandbox_image": settings.sandbox_image,
+            "model_timeout": settings.model_timeout,
+            "test_timeout": settings.test_timeout,
+        },
         "note": "null means no execution evidence. Mock results do not measure LLM capability.",
         "modes": {mode: aggregate([r for r in records if r["mode"] == mode]) for mode in MODES},
     }
@@ -135,7 +235,8 @@ def run_evaluation(settings: Settings, repository: Path, output: Path, repeats: 
         "",
         f"模型模式：{settings.model_mode}；样本数：{len(dataset)}。",
         "",
-        "null 表示缺少实际测试证据，不代表测试通过。Mock 仅衡量流程。",
+        "每个案例先确认独立验收在修复前失败。null 表示缺少执行证据。Mock 仅衡量流程。",
+        "修复成功率的分母包含已验证基线下的失败修复，不只计算成功进入独立验收的任务。",
         "",
         "| 模式 | 次数 | 修复成功率 | 测试通过率 | 完成率 | 平均秒数 | 平均调用 | 平均 Token | 平均重试 |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|",

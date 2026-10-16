@@ -42,6 +42,8 @@ class TestResult(StrictModel):
     exit_code: int | None = None
     stdout: str = ""
     stderr: str = ""
+    output_truncated: bool = False
+    image_id: str | None = None
     passed: int = 0
     failed: int = 0
     errors: int = 0
@@ -79,6 +81,7 @@ class AgentState(TypedDict):
     located_files: list[str]
     context: str
     patches: Annotated[list[dict], operator.add]
+    patch_feedback: Annotated[list[dict], operator.add]
     test_results: Annotated[list[dict], operator.add]
     review_results: Annotated[list[dict], operator.add]
     retry_count: int

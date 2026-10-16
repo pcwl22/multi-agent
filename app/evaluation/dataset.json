@@ -3,5 +3,15 @@
     "id": "auth-expired-401",
     "issue": "The /profile endpoint returns 500 for Authorization: Bearer expired. Return HTTP 401 and preserve valid and missing token behavior. Add a regression test.",
     "acceptance": "test_auth_acceptance.py"
+  },
+  {
+    "id": "pagination-one-based",
+    "issue": "The /items endpoint has a pagination off-by-one bug in pagination.py. Page numbers are one-based: page=2 and page_size=2 must return [3,4], not [5,6]. Preserve empty and invalid page behavior. Add a regression test.",
+    "acceptance": "test_pagination_acceptance.py"
+  },
+  {
+    "id": "discount-percent-scale",
+    "issue": "The /price endpoint miscalculates discount_percent in pricing.py. For amount=100 and discount_percent=20 return total=80, rather than a negative price. Preserve zero and full discounts. Add a regression test.",
+    "acceptance": "test_discount_acceptance.py"
   }
 ]

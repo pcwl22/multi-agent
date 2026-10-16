@@ -4,6 +4,7 @@ from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
+from app.agents.demo_fixtures import select_fixture
 from app.config.settings import Settings
 from app.models.schemas import Edit, Patch, Plan, Review
 
@@ -24,41 +25,38 @@ class MockModel:
     """Fixture-specific deterministic adapter. Unsupported bugs fail explicitly."""
 
     def generate(self, schema: type[T], payload: dict) -> tuple[T, dict]:
-        issue = payload.get("issue_description", "expired").casefold()
-        if schema in {Plan, Patch} and not any(word in issue for word in ["expired", "过期"]):
-            raise ValueError("Mock only accepts the bundled expired-token issue")
+        fixture = (
+            select_fixture(payload.get("issue_description", "expired"))
+            if schema in {Plan, Patch}
+            else None
+        )
         if schema is Plan:
             value = Plan(
                 issue_summary=payload["issue_description"],
-                suspected_modules=["auth.py"],
-                search_strategy=["expired", "authenticate", "HTTPException"],
-                repair_steps=["Map expired token to HTTP 401", "Add regression test"],
+                suspected_modules=[fixture.module],
+                search_strategy=list(fixture.search_terms),
+                repair_steps=[
+                    f"Apply explicit demo repair in {fixture.module}",
+                    "Add regression test",
+                ],
                 validation_strategy=["pytest tests", "independent acceptance test"],
             )
         elif schema is Patch:
             context = payload.get("context", "")
-            if 'status_code=500, detail="Token expired"' not in context:
-                raise ValueError("Mock supports only the bundled expired-token fixture")
+            if fixture.old not in context:
+                raise ValueError("Mock fixture precondition not found in retrieved context")
             value = Patch(
-                rationale="Explicit demo fixture: map token expiry to 401",
+                rationale=f"Explicit demo fixture: repair {fixture.module}",
                 edits=[
                     Edit(
-                        path="auth.py",
-                        old='status_code=500, detail="Token expired"',
-                        new='status_code=401, detail="Token expired"',
+                        path=fixture.module,
+                        old=fixture.old,
+                        new=fixture.new,
                     ),
                     Edit(
-                        path="tests/test_expired_regression.py",
+                        path=fixture.regression_path,
                         old="",
-                        new=(
-                            "from fastapi.testclient import TestClient\n"
-                            "from auth import app\n\n"
-                            "def test_expired_token_returns_401():\n"
-                            "    response = TestClient(app).get('/profile', "
-                            "headers={'Authorization': 'Bearer expired'})\n"
-                            "    assert response.status_code == 401\n"
-                            "    assert response.json()['detail'] == 'Token expired'\n"
-                        ),
+                        new=fixture.regression_code,
                     ),
                 ],
             )
@@ -88,6 +86,7 @@ class LiveModel:
     def __init__(self, settings: Settings):
         from langchain_openai import ChatOpenAI
 
+        self.model_name = settings.model_name
         self.client = ChatOpenAI(
             model=settings.model_name,
             temperature=0,
@@ -105,6 +104,7 @@ class LiveModel:
             "output_tokens": 0,
             "adapter": "live",
             "usage_complete": True,
+            "model_requested": self.model_name,
         }
         messages = [
             (
@@ -114,6 +114,8 @@ class LiveModel:
                 "Return the requested schema. Patches use exact unique old substrings, one edit "
                 "per file. Only Python edits allowed; existing tests cannot be changed. "
                 "Add new regression tests. Review against the ORIGINAL issue and test evidence. "
+                "If patch_feedback rejects an edit, correct it using the refreshed context. "
+                "An immutable-test rejection must be corrected by adding a NEW test filename. "
                 "Paths are relative to repository. Single mode must reason and locate in one call.",
             ),
             ("human", json.dumps(payload, ensure_ascii=False)),
@@ -129,6 +131,9 @@ class LiveModel:
                 stats["duration_seconds"] = time.monotonic() - started
                 raise ModelFailure(f"Model request failed: {type(exc).__name__}", stats) from exc
             usage = response["raw"].usage_metadata or {}
+            metadata = getattr(response["raw"], "response_metadata", {}) or {}
+            stats["model_reported"] = metadata.get("model_name") or metadata.get("model")
+            stats["provider_response_id"] = metadata.get("id")
             stats["usage_complete"] &= bool(usage)
             stats["input_tokens"] += usage.get("input_tokens", 0)
             stats["output_tokens"] += usage.get("output_tokens", 0)

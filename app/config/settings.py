@@ -6,7 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="REPOPILOT_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="REPOPILOT_", env_file=".env", extra="ignore", populate_by_name=True
+    )
     repository_root: Path = Path("demo_repository")
     data_dir: Path = Path(".repopilot")
     model_mode: Literal["mock", "live"] = "mock"
@@ -19,4 +21,6 @@ class Settings(BaseSettings):
     model_timeout: float = Field(default=45, ge=1, le=180)
     sandbox_image: str = "repopilot-sandbox:local"
     github_repository: str | None = None
+    github_repository_subdirectory: str = ""
+    github_base_branch: str | None = None
     test_timeout: int = Field(default=60, ge=1, le=300)

@@ -1,0 +1,72 @@
+{
+  "model_mode": "live",
+  "model_name": "deepseek-v4.1-flash",
+  "model_endpoint_host": "muyuan.do",
+  "dataset_cases": 3,
+  "repeats": 1,
+  "dataset_sha256": "8470dd1023e1bb2e4f4de13ee57d2576a2a564a86d8f3dadf5d5c847b90b051e",
+  "python_version": "3.13.5",
+  "dependencies": {
+    "langgraph": "1.2.9",
+    "langchain-openai": "1.7.2",
+    "mcp": "1.29.0",
+    "pydantic": "2.13.4",
+    "fastapi": "0.136.3"
+  },
+  "configuration": {
+    "context_chars": 24000,
+    "max_retries": 2,
+    "temperature": 0,
+    "sandbox_image": "repopilot-sandbox:local",
+    "model_timeout": 120.0,
+    "test_timeout": 60
+  },
+  "note": "null means no execution evidence. Mock results do not measure LLM capability.",
+  "modes": {
+    "single": {
+      "runs": 3,
+      "acceptance_evaluated": 3,
+      "repair_evaluated": 3,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 11.21101173333409,
+      "average_model_calls": 1,
+      "average_tokens": 1545,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 3
+    },
+    "multi_no_review": {
+      "runs": 3,
+      "acceptance_evaluated": 3,
+      "repair_evaluated": 3,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 15.148451333333773,
+      "average_model_calls": 2,
+      "average_tokens": 2552.3333333333335,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 3
+    },
+    "multi_full": {
+      "runs": 3,
+      "acceptance_evaluated": 3,
+      "repair_evaluated": 3,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 18.54380993333325,
+      "average_model_calls": 3,
+      "average_tokens": 4240.333333333333,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 3
+    }
+  }
+}

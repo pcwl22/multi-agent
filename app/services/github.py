@@ -2,7 +2,7 @@
 
 import base64
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from urllib.parse import quote
 
 import httpx
@@ -40,18 +40,50 @@ def read_issue(url: str, repository: str | None, token: str = "", *, client=None
 
 
 class GitHubPublisher:
-    def __init__(self, repository: str, token: str, *, client: httpx.Client | None = None):
+    def __init__(
+        self,
+        repository: str,
+        token: str,
+        *,
+        subdirectory: str = "",
+        base_branch: str | None = None,
+        client: httpx.Client | None = None,
+    ):
         if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
             raise ValueError("Configure a fixed owner/repository target")
         if not token:
             raise ValueError("GITHUB_TOKEN is required for PR publication")
+        prefix = PurePosixPath(subdirectory)
+        if subdirectory and (
+            prefix.is_absolute()
+            or "\\" in subdirectory
+            or ":" in subdirectory
+            or str(prefix) != subdirectory
+            or any(p in {".", "..", ".git"} for p in prefix.parts)
+        ):
+            raise ValueError("GitHub subdirectory must be a normalized repository-relative path")
+        self.subdirectory = subdirectory
+        if base_branch and (
+            not re.fullmatch(r"[A-Za-z0-9._/-]+", base_branch)
+            or ".." in base_branch
+            or "//" in base_branch
+            or base_branch.startswith("/")
+            or base_branch.endswith(("/", ".", ".lock"))
+        ):
+            raise ValueError("Invalid GitHub base branch")
+        self.base_branch = base_branch
         self.client = client or httpx.Client(timeout=20)
+        self._owns_client = client is None
         self.prefix = f"https://api.github.com/repos/{repository}"
         self.headers = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
         }
+
+    def close(self) -> None:
+        if self._owns_client:
+            self.client.close()
 
     def request(self, method: str, endpoint: str, *, missing_ok=False, **kwargs):
         response = self.client.request(
@@ -72,7 +104,7 @@ class GitHubPublisher:
         workspace = Repository(state["workspace_path"])
         baseline = Repository(Path(state["workspace_path"]).parent / "baseline")
         metadata = self.request("GET", "")
-        base = metadata["default_branch"]
+        base = self.base_branch or metadata["default_branch"]
         ref_endpoint = "/git/ref/heads/" + quote(base, safe="")
         head = self.request("GET", ref_endpoint)["object"]["sha"]
         base_tree = self.request("GET", f"/git/commits/{head}")["tree"]["sha"]
@@ -84,8 +116,12 @@ class GitHubPublisher:
                 continue
             if after is None:
                 raise ValueError("File deletion is not supported")
+            remote_path = f"{self.subdirectory}/{path}" if self.subdirectory else path
             remote = self.request(
-                "GET", "/contents/" + quote(path, safe="/"), params={"ref": head}, missing_ok=True
+                "GET",
+                "/contents/" + quote(remote_path, safe="/"),
+                params={"ref": head},
+                missing_ok=True,
             )
             if remote is not None and (
                 remote.get("type") != "file" or remote.get("encoding") != "base64"
@@ -95,7 +131,12 @@ class GitHubPublisher:
             if content != before:
                 raise ValueError(f"Remote baseline differs for {path}; no branch or PR created")
             entries.append(
-                {"path": path, "mode": "100644", "type": "blob", "content": after.decode("utf-8")}
+                {
+                    "path": remote_path,
+                    "mode": "100644",
+                    "type": "blob",
+                    "content": after.decode("utf-8"),
+                }
             )
         if not entries:
             raise ValueError("No approved changes to publish")
