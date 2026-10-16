@@ -84,7 +84,7 @@ class DockerRunner:
                     "--workdir=/workspace",
                     "--env=PYTHONDONTWRITEBYTECODE=1",
                     "--env=PYTEST_DISABLE_PLUGIN_AUTOLOAD=1",
-                    "--env=PYTHONPATH=/workspace",
+                    "--env=PYTHONPATH=/workspace:/workspace/src",
                     "--env=HOME=/tmp",
                     self.settings.sandbox_image,
                     *command,

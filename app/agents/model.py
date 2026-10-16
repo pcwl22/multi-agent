@@ -5,6 +5,7 @@ from typing import Protocol, TypeVar
 from pydantic import BaseModel
 
 from app.agents.demo_fixtures import select_fixture
+from app.agents.failures import provider_failure
 from app.agents.instructions import system_instructions
 from app.agents.pacing import endpoint_pacer
 from app.config.settings import Settings
@@ -128,6 +129,7 @@ class LiveModel:
             except Exception as exc:
                 stats["usage_complete"] = False
                 stats["duration_seconds"] = time.monotonic() - started
+                stats["failure"] = provider_failure(exc)
                 raise ModelFailure(f"Model request failed: {type(exc).__name__}", stats) from exc
             usage = response["raw"].usage_metadata or {}
             metadata = getattr(response["raw"], "response_metadata", {}) or {}

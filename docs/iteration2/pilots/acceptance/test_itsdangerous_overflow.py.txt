@@ -1,0 +1,27 @@
+from datetime import datetime
+import pytest
+from itsdangerous import BadSignature, BadTimeSignature, TimestampSigner, URLSafeTimedSerializer
+from itsdangerous.encoding import base64_encode, int_to_bytes
+
+@pytest.mark.parametrize("timestamp", [10**12, 10**13])
+def test_overflow_invalid_signature_retains_payload(timestamp):
+    raw = b"payload." + base64_encode(int_to_bytes(timestamp)) + b".invalid"
+    with pytest.raises(BadTimeSignature) as caught:
+        TimestampSigner("secret").unsign(raw)
+    assert caught.value.payload == b"payload"
+    assert caught.value.date_signed is None
+
+def test_serializer_error_contract_across_modules():
+    serializer = URLSafeTimedSerializer("secret")
+    raw = b"e30." + base64_encode(int_to_bytes(10**12)) + b".invalid"
+    with pytest.raises(BadSignature):
+        serializer.loads(raw)
+
+def test_valid_roundtrip_and_bad_signature_metadata():
+    signer = TimestampSigner("secret")
+    signed = signer.sign(b"payload")
+    assert signer.unsign(signed) == b"payload"
+    altered = signed.replace(b"payload", b"changed", 1)
+    with pytest.raises(BadTimeSignature) as caught:
+        signer.unsign(altered)
+    assert isinstance(caught.value.date_signed, datetime)

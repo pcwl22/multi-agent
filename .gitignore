@@ -9,5 +9,6 @@ __pycache__/
 build/
 dist/
 sandbox/wheels/
+sandbox/pilot-wheels/
 .playwright-cli/
 output/playwright/

@@ -2,6 +2,7 @@ include README.md CHANGELOG.md AGENTS.md .env.example requirements.lock Dockerfi
 recursive-include frontend *.py
 recursive-include demo_repository *.py *.txt
 recursive-include sandbox Dockerfile Dockerfile.offline
+include sandbox/Dockerfile.pilots
 recursive-include docs *.md *.json *.jsonl *.txt *.patch *.png *.webm
 recursive-include scripts *.py *.ps1
 recursive-include tests *.py

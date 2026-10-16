@@ -8,6 +8,7 @@ from typing import Any
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
+from app.agents.contracts import literal_input_examples, validate_literal_inputs
 from app.agents.model import Model, ModelFailure
 from app.config.settings import Settings
 from app.models.schemas import AgentState, Patch, Plan, Review
@@ -50,6 +51,20 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                     if isinstance(exc, ModelFailure):
                         failed.update(counters(state, exc.stats))
                         failed["execution_history"].append(event("model", **exc.stats))
+                        failure = exc.stats.get("failure")
+                        if failure:
+                            retryable = failure["retryable"] and (
+                                state.get("provider_retry_count", 0) < settings.max_retries
+                            )
+                            failed["failure"] = {
+                                **failure,
+                                "node": name,
+                                "retryable": retryable,
+                                "retry_at": time.time() + failure["retry_after_seconds"],
+                                "budget_exhausted": failure["retryable"] and not retryable,
+                            }
+                            if retryable:
+                                failed["execution_status"] = "retryable"
                     return failed
 
             return call
@@ -73,7 +88,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         }
 
     def supervisor(state: AgentState):
-        if state["execution_status"] in {"failed", "blocked", "approved", "rejected"}:
+        if state["execution_status"] in {"failed", "retryable", "blocked", "approved", "rejected"}:
             return {"next_node": END}
         if not state["plan"] and state["mode"] != "single":
             return {"next_node": "planner", "execution_status": "running"}
@@ -197,10 +212,12 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "tests": state["test_results"][-1:],
                 "reviews": state["review_results"][-1:],
                 "patch_feedback": state.get("patch_feedback", [])[-1:],
+                "literal_input_examples": literal_input_examples(state["issue_description"]),
             },
             state,
         )
         try:
+            validate_literal_inputs(state["issue_description"], patch)
             changed = repo.apply(patch)
         except (ValueError, SyntaxError) as exc:
             # Validation is completed before any file is written; rejected edits are safe to retry.

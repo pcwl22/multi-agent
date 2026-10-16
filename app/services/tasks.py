@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import threading
+import time
 import uuid
 from pathlib import Path
 
@@ -106,6 +107,8 @@ class TaskService:
             output_tokens=0,
             token_usage_complete=True,
             error=None,
+            failure=None,
+            provider_retry_count=0,
             next_node="",
             diff="",
             diff_digest="",
@@ -135,17 +138,47 @@ class TaskService:
             current_diff = diff_repositories(
                 Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])
             )
-            if state["attempts"] and digest(current_diff) != state["diff_digest"]:
+            if digest(current_diff) != (state["diff_digest"] or digest("")):
                 raise ValueError("Workspace changed outside the recorded repair")
             checkpoint = self.graph.get_state(config)
+            if state["execution_status"] == "retryable":
+                self.check_resume(task_id)
+                failure = state["failure"]
+                self.graph.update_state(
+                    config,
+                    {
+                        "execution_status": "running", "error": None, "failure": None,
+                        "provider_retry_count": state.get("provider_retry_count", 0) + 1,
+                        "next_node": failure["node"],
+                    },
+                    as_node="supervisor",
+                )
             if state["execution_status"] == "blocked":
                 self.graph.update_state(
                     config,
                     {"execution_status": "running", "error": None, "next_node": "test"},
                     as_node="supervisor",
                 )
-            self.graph.invoke(state if not checkpoint.values else None, config)
+            self.graph.invoke(state if not checkpoint.values else None, config, durability="sync")
             return self.get(task_id)
+
+    def check_resume(self, task_id: str) -> None:
+        state = self.get(task_id)
+        if state["execution_status"] not in {"queued", "running", "blocked", "retryable"}:
+            raise ValueError("Task is not resumable; use approve/reject at human interrupt")
+        if state["execution_status"] == "retryable":
+            failure = state.get("failure") or {}
+            if not failure.get("retryable") or (
+                state.get("provider_retry_count", 0) >= self.settings.max_retries
+            ):
+                raise ValueError("Provider retry budget exhausted; create a new task")
+            remaining = failure.get("retry_at", 0) - time.time()
+            if remaining > 0:
+                raise ValueError(f"Provider cooldown active; retry after {int(remaining) + 1}s")
+        actual = self.diff(task_id)
+        expected = state["diff_digest"] or digest("")
+        if actual["diff_digest"] != expected:
+            raise ValueError("Workspace changed outside the recorded repair; create a new task")
 
     def decide(self, task_id: str, approved: bool, expected_digest: str) -> dict:
         with self._task_lock(task_id):
@@ -162,6 +195,7 @@ class TaskService:
             self.graph.invoke(
                 Command(resume={"approved": approved, "diff_digest": expected_digest}),
                 self._config(state["thread_id"]),
+                durability="sync",
             )
             return self.get(task_id)
 

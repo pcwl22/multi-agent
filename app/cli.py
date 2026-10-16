@@ -16,7 +16,7 @@ def main():
     parser.add_argument(
         "--mode", choices=["single", "multi_no_review", "multi_full"], default="multi_full"
     )
-    parser.add_argument("--resume", help="Resume a queued/running/blocked task ID")
+    parser.add_argument("--resume", help="Resume a queued/running/blocked/retryable task ID")
     args = parser.parse_args()
     service = TaskService(Settings())
     try:
@@ -34,6 +34,8 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
         if result["execution_status"] == "blocked":
             parser.exit(2, "Docker testing unavailable; task saved for resume.\n")
+        if result["execution_status"] == "retryable":
+            parser.exit(2, "Provider temporarily unavailable; inspect failure.retry_at, then resume.\n")
         if result["execution_status"] == "failed":
             parser.exit(1, "Repair failed; inspect task error.\n")
     finally:

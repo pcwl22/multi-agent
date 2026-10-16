@@ -103,6 +103,8 @@ class AgentState(TypedDict):
     output_tokens: int
     token_usage_complete: bool
     error: str | None
+    failure: dict[str, Any] | None
+    provider_retry_count: int
     next_node: str
     diff: str
     diff_digest: str

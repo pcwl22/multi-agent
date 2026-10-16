@@ -1,4 +1,5 @@
 import os
+import time
 
 import httpx
 import streamlit as st
@@ -100,5 +101,23 @@ try:
             if st.button("Docker 就绪后继续测试"):
                 api("POST", f"/api/tasks/{task_id}/resume")
                 st.rerun()
+        elif state["execution_status"] == "retryable":
+            failure = state.get("failure") or {}
+            remaining = max(0, int(failure.get("retry_at", 0) - time.time()) + 1)
+            st.warning(
+                f"模型暂时不可用（{failure.get('kind', 'unknown')}）。"
+                f"冷却剩余 {remaining} 秒；已手动重试 {state.get('provider_retry_count', 0)} 次。"
+                "点击刷新更新冷却时间，随后可从失败节点继续；此前补丁和测试记录会保留。"
+            )
+            if st.button("冷却后重试模型请求", disabled=remaining > 0):
+                api("POST", f"/api/tasks/{task_id}/resume")
+                st.rerun()
+        elif state["execution_status"] in {"queued", "running"}:
+            st.info("若服务曾中断，可刷新确认状态后从已保存节点继续。执行中的任务受锁保护。")
+            if st.button("从已保存节点继续"):
+                api("POST", f"/api/tasks/{task_id}/resume")
+                st.rerun()
+        elif state["execution_status"] == "failed":
+            st.info("任务已终止。检查错误、日志与补丁后创建新任务；此任务不会自动重试或发布。")
 except (httpx.HTTPError, ValueError) as exc:
     st.error(f"API 请求失败：{exc}")

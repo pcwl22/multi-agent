@@ -92,9 +92,11 @@ def create_app(settings: Settings | None = None, service: TaskService | None = N
 
     @api.post("/api/tasks/{task_id}/resume", status_code=202)
     def resume(task_id: str, background: BackgroundTasks, request: Request):
-        state = get(request, task_id)
-        if state["execution_status"] not in {"queued", "running", "blocked"}:
-            raise HTTPException(409, "Task is not resumable; use approve/reject at human interrupt")
+        get(request, task_id)
+        try:
+            tasks(request).check_resume(task_id)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
         background.add_task(tasks(request).run, task_id)
         return {"task_id": task_id, "status": "resume_requested"}
 
