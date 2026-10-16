@@ -1,0 +1,23 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,18 @@
++import copy
++
++
++def _is_mapping(value):
++    return isinstance(value, dict)
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {}
++    for key, value in defaults.items():
++        if key in overrides and _is_mapping(value) and _is_mapping(overrides[key]):
++            result[key] = merge_config(value, overrides[key])
++        else:
++            result[key] = copy.deepcopy(value)
++    for key, value in overrides.items():
++        if key not in defaults:
++            result[key] = copy.deepcopy(value)
+     return result

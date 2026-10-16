@@ -1,0 +1,132 @@
+{
+  "candidate_id": "1aa509f7-86d8-4b29-84e9-f6c29ecbbb55",
+  "candidate_number": 1,
+  "diff": "--- a/jsonpointer.py\n+++ b/jsonpointer.py\n@@ -239,7 +239,10 @@\n             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                 raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n-            return int(part)\n+            try:\n+                return int(part)\n+            except (ValueError, TypeError):\n+                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n         elif hasattr(doc, '__getitem__'):\n             # Allow indexing via ducktyping\n",
+  "diff_digest": "00b2126fc2b5a9f4d76cb8dff3f5b46e17786c5c82cfbf312dfecbecac5368fb",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 3,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "1aa509f7-86d8-4b29-84e9-f6c29ecbbb55",
+      "candidate_number": 1,
+      "changed_files": [
+        "jsonpointer.py"
+      ],
+      "contract_tests": [
+        "tests/test_long_index_regression.py::LongIndexResolveTests::test_resolve_long_numeric_index_raises_jsonpointerexception - resolve with a numeric array index token that is a valid integer string but exceeds Python's int digit conversion limit raises JsonPointerException, not ValueError (assertRaises(JsonPointerException) and assertNotIsInstance of ValueError).",
+        "tests/test_long_index_regression.py::LongIndexResolveTests::test_resolve_long_numeric_index_default_identity - resolve with a default argument and an invalid long sequence index returns that exact default object (assertIs identity preserved).",
+        "tests/test_long_index_regression.py::LongIndexToLastTests::test_to_last_long_numeric_index_raises_jsonpointerexception - to_last with such an out-of-limit numeric array index raises JsonPointerException, not ValueError.",
+        "tests/test_long_index_regression.py::LongIndexSetTests::test_set_long_numeric_index_raises_jsonpointerexception - set with such an out-of-limit numeric array index raises JsonPointerException, not ValueError.",
+        "tests/test_long_index_regression.py::LongNumericObjectKeyTests::test_long_numeric_object_key_is_string - Numeric object member keys remain strings and are looked up as strings, however long the numeric string is (resolve returns the mapped value; key type is str).",
+        "tests/test_long_index_regression.py::OrdinaryBehaviorTests::test_ordinary_array_index_resolve_set_to_last - Ordinary valid array indices continue to resolve, set, and to_last correctly.",
+        "tests/test_long_index_regression.py::OrdinaryBehaviorTests::test_end_of_list_preserved - End-of-list handling (e.g. '-' token) is preserved (resolve returns EndOfList; set appends).",
+        "tests/test_long_index_regression.py::OrdinaryBehaviorTests::test_set_mutation_preserved - Input mutation behavior of set is preserved (inplace=True mutates doc; inplace=False leaves doc unchanged).",
+        "tests/test_long_index_regression.py::InvalidSequenceIndexTests::test_invalid_sequence_index_raises_jsonpointerexception - All public operations raise JsonPointerException for invalid sequence indices generally, not only for the digit-limit case (e.g. 'a', '01', '1.0')."
+      ],
+      "edits": [
+        {
+          "new": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            try:\n                return int(part)\n            except (ValueError, TypeError):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)",
+          "old": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            return int(part)",
+          "path": "jsonpointer.py"
+        }
+      ],
+      "rationale": "The bug: in `JsonPointer.get_part`, when `doc` is a Sequence and `part` is a numeric string, `int(part)` is called directly. For a valid integer string exceeding Python's int digit-conversion limit (e.g. `sys.set_int_max_str_digits`), `int()` raises a raw `ValueError`, which leaks out of `resolve`, `to_last`, and `set` instead of `JsonPointerException`. Fix: wrap the conversion in try/except and re-raise `JsonPointerException`. This single guarded conversion is used by `walk` (resolve), `to_last`, and `set` (via `to_last`), so all three public operations are covered. `resolve` already catches `JsonPointerException` and returns the default, so the default-identity contract is satisfied once the exception type is correct. Numeric object member keys are handled by the `Mapping` branch which returns `part` unchanged (a string), so they remain strings regardless of length. Ordinary indices, end-of-list (`-`), and mutation semantics are untouched."
+    }
+  ],
+  "recorded_digest": "00b2126fc2b5a9f4d76cb8dff3f5b46e17786c5c82cfbf312dfecbecac5368fb",
+  "retry_count": 0,
+  "reviews": [
+    {
+      "approved": true,
+      "attempt": 1,
+      "candidate_id": "1aa509f7-86d8-4b29-84e9-f6c29ecbbb55",
+      "candidate_number": 1,
+      "concerns": [
+        "The regex _RE_ARRAY_INDEX.fullmatch(str(part)) already rejects non-numeric tokens, so the added except is only reachable for the digit-limit case; this is correct but the TypeError branch is effectively unreachable since part is always a str here.",
+        "No test explicitly asserts the exact default object identity for a long index in the provided test_result output, but the contract test list includes it and resolve's code path guarantees it."
+      ],
+      "contract_checks": [
+        {
+          "evidence": "get_part now wraps int(part) in try/except (ValueError, TypeError) and raises JsonPointerException. resolve calls self.walk -> get_part, so a long numeric index raises JsonPointerException. Contract test test_resolve_long_numeric_index_raises_jsonpointerexception asserts this.",
+          "requirement": "resolve with a numeric array index token that is a valid integer string but exceeds Python's int digit conversion limit raises JsonPointerException, not ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) for the last part and self.walk for earlier parts; both route through the guarded get_part. Contract test test_to_last_long_numeric_index_raises_jsonpointerexception covers it.",
+          "requirement": "to_last with such an out-of-limit numeric array index raises JsonPointerException, not ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "set calls self.to_last(doc), which uses the guarded get_part. Contract test test_set_long_numeric_index_raises_jsonpointerexception covers it.",
+          "requirement": "set with such an out-of-limit numeric array index raises JsonPointerException, not ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "resolve catches JsonPointerException and returns default when default is not _nothing. Since get_part now raises JsonPointerException for the long index, resolve returns the exact default object. Contract test test_resolve_long_numeric_index_default_identity asserts identity.",
+          "requirement": "resolve with a default argument and an invalid sequence index returns that exact default object (identity preserved).",
+          "satisfied": true
+        },
+        {
+          "evidence": "get_part's Mapping branch returns part unchanged before any int conversion, so numeric keys are never converted. Contract test test_long_numeric_object_key_is_string verifies resolve returns the mapped value.",
+          "requirement": "Numeric object member keys remain strings and are looked up as strings, however long the numeric string is.",
+          "satisfied": true
+        },
+        {
+          "evidence": "int(part) still succeeds for ordinary indices; no behavior change. Contract test test_ordinary_array_index_resolve_set_to_last covers it, and existing tests (test_example, test_path, test_set) pass.",
+          "requirement": "Ordinary valid array indices continue to resolve, set, and to_last correctly.",
+          "satisfied": true
+        },
+        {
+          "evidence": "get_part returns '-' before the regex/int path; walk returns EndOfList and set appends. Contract test test_end_of_list_preserved and existing test_eol/test_set pass.",
+          "requirement": "End-of-list handling (e.g. '-' token) is preserved.",
+          "satisfied": true
+        },
+        {
+          "evidence": "No change to set's inplace/deepcopy logic. Contract test test_set_mutation_preserved and existing SetTests pass.",
+          "requirement": "Input mutation behavior of set is preserved.",
+          "satisfied": true
+        },
+        {
+          "evidence": "The regex check already raised JsonPointerException for non-numeric tokens; the new except extends this to conversion failures. Contract test test_invalid_sequence_index_raises_jsonpointerexception covers 'a', '01', '1.0'.",
+          "requirement": "All public operations raise JsonPointerException for invalid sequence indices generally, not only for the digit-limit case.",
+          "satisfied": true
+        }
+      ],
+      "summary": "The diff wraps int(part) in get_part with try/except (ValueError, TypeError) re-raising JsonPointerException. Since get_part is the single conversion point used by walk (resolve), to_last, and set, all three public operations now raise JsonPointerException for out-of-limit numeric indices. resolve's existing except JsonPointerException returns the default, preserving identity. Mapping branch returns part unchanged, so numeric object keys stay strings. Ordinary indices, '-' end-of-list, and mutation semantics are untouched. New regression tests cover all contracts."
+    }
+  ],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "1aa509f7-86d8-4b29-84e9-f6c29ecbbb55",
+      "candidate_number": 1,
+      "duration_seconds": 0.9834098999999696,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "output_truncated": false,
+      "passed": 26,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "..........................                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n26 passed in 0.13s\n"
+    }
+  ],
+  "workspace_manifest": {
+    ".github/workflows/test.yaml": "c9707120d99cb87316dfe450b6dacd9c58db362a0e5e902c7fb6a77f056c1020",
+    ".readthedocs.yaml": "5b5c9335d6fa7ff57c3c847a057db901372e2083f259a801046acf5018f544a4",
+    "LICENSE.txt": "d8b24f15d472885f788a2d6e985850f264627b86012a17bb242c83f310d907e5",
+    "README.md": "5cbc1356d894dad09d85160bdeb9743aad94fc5ef66d8b4165b057e4794904fc",
+    "doc/conf.py": "29948433491bf1f630becf275c954520f9af944dcc5199946efac7cd698d928a",
+    "jsonpointer.py": "dea6b0170a6e94c023f21cf4616a7a9632373a601d2b526bbd58819a036d01c8",
+    "requirements-dev.txt": "7272ab2b29dd3ce79746f9128e68956407cfe60543ed4b6d6ed4cb2847fa0723",
+    "setup.py": "718a22267b266bea2ac81135c5f6c888eb581858e3e5b2d2e2012a606d28a6a9",
+    "tests.py": "99300a74a31a1321515782334cd68e21b2558f3d1e934b558c3675673375c06f",
+    "tests/test_upstream_suite.py": "ed9d1f6ccefaac11626f4744d3764f893bf62d61492fbba670710152948f21c6"
+  }
+}

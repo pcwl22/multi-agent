@@ -1,0 +1,178 @@
+[
+  {
+    "task_id": "d53ed93b-d185-4c94-8f7c-d303bd444635",
+    "case_id": "jsonpointer-large-index",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 2,
+    "candidates": [
+      {
+        "candidate_id": "bfcfa50a-fdfb-4e3a-a8da-a2974a3c1468",
+        "candidate_number": 1,
+        "diff_digest": "24a8982c124e5ddec9edc5db0503ccae4ee643d7435c0dd9c94bb817f1aa2f41",
+        "evidence_sha256": "26dcec252b24b24c251f3bf97fcc9b8d2c12d5608bf99955e94e9f7ddbd07f89",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "8a245eaf-b623-4922-b2a0-533be7afa434",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 2,
+    "candidates": [
+      {
+        "candidate_id": "94b02c26-f1fc-47c2-ad75-01ab59567796",
+        "candidate_number": 1,
+        "diff_digest": "e9ca937a47d26e36cf21546d2ffba063b587a5739c81714a2895fa8a08d020a8",
+        "evidence_sha256": "3f096207a79b04742653840abba2443192214b5cfa0f6a44a35c614afc075e9a",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_long_index_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "d4d06fd8-ded1-413a-9630-067f656cafbf",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 6,
+    "candidates": [
+      {
+        "candidate_id": "6889ca08-8e94-415d-994e-f76766b1ecb9",
+        "candidate_number": 1,
+        "diff_digest": "13d99c3636e64ced95d1485d9c53f08e7df0dd6475400b8a044e09fe8a8aa223",
+        "evidence_sha256": "622c4cf33e641d7005d81699d7a221201ac8a4b6916e00b0e8f6d82eb71d1a11",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "de5b2a68-2ff0-478a-844a-b92cc29a2071",
+        "candidate_number": 2,
+        "diff_digest": "13d99c3636e64ced95d1485d9c53f08e7df0dd6475400b8a044e09fe8a8aa223",
+        "evidence_sha256": "caa9c778665f5b0c960fe2c9db791c776e88914503218d91c693b3cbafe65e25",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "ef192f54-40d5-4395-9c19-fc4367d9c1be",
+        "candidate_number": 3,
+        "diff_digest": "961ee4958177dc1c828c81f961f02e87662d2a0653efde029daf3ba306042d9e",
+        "evidence_sha256": "75f3639f16dbe203a15cca002cb9491a55193cd7262b44c555c38744aac654b4",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "d7c666d9-fe59-40e1-9d15-b0d00a3872c1",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 2,
+    "candidates": [
+      {
+        "candidate_id": "1aa509f7-86d8-4b29-84e9-f6c29ecbbb55",
+        "candidate_number": 1,
+        "diff_digest": "00b2126fc2b5a9f4d76cb8dff3f5b46e17786c5c82cfbf312dfecbecac5368fb",
+        "evidence_sha256": "5adfbf7e292573718a7f16300f0f160b79b3b1928304aa6207e0e69859924d1c",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "e4f09682-896b-4ff4-a7aa-3c161757d812",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 6,
+    "candidates": [
+      {
+        "candidate_id": "f3af01f9-cec9-4342-a10d-7cf2a2256b60",
+        "candidate_number": 1,
+        "diff_digest": "f2eb5d029744bb58fe799ccee791c32d33c0a5156dd48093d8bc4bcf0ed0feff",
+        "evidence_sha256": "7f3d0eecbf5d17052333b77a1b6dd6dc6961b8f16846cc21d7702b3b94ee6e29",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "31a4cb7f-23ca-47a0-a106-91ca6d128973",
+        "candidate_number": 2,
+        "diff_digest": "c7bb7b3f627689dabbf59ce285a3296f5f8fdcf15dfc0b572604eb3ec2e80448",
+        "evidence_sha256": "32f11cdef3ec688e8c37c06f46b537c792f05f998e8075be7337333b9b957711",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": true
+  },
+  {
+    "task_id": "c600f622-423b-4fb6-a506-3a2d4c833761",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 6,
+    "candidates": [
+      {
+        "candidate_id": "f90c3fa4-1ff9-4fcb-b583-d47d05f0af28",
+        "candidate_number": 1,
+        "diff_digest": "33f75f3e21efd7a0b63150aef12db20dab3bf854ec6f06aca00d4dfe2aef0252",
+        "evidence_sha256": "323502e0edbb509bc6c3264aef5fea6bd876e36b66ec5af91b840eb7ca8e47df",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "3781e5e2-e510-4411-a90a-c83757816916",
+        "candidate_number": 2,
+        "diff_digest": "53f2aead1f83ae676e9e5d92056df28a8605634122ac6881c73cc089b67cb052",
+        "evidence_sha256": "609dd9203e8fc0f89ed7728854ca69d79605312c5f4c5d9666659e38ba5d6d24",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_itsdangerous/test_timed_malformed_regression.py"
+        ]
+      },
+      {
+        "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+        "candidate_number": 3,
+        "diff_digest": "3ab16a46d7d37a4ca8b4452e0028257d8717a8dc38b1dbd8a53c14fce46ab9b8",
+        "evidence_sha256": "7687f1b92db3af98c984368a1393a114810cf4bfe0105cb1a58c4b50282527b0",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_itsdangerous/test_timed_malformed_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": true
+  }
+]

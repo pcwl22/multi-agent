@@ -1,0 +1,161 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -124,7 +124,15 @@
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OverflowError, OSError):
++                    # The decoded timestamp is outside the range supported
++                    # by datetime, so it is malformed. Report it as such
++                    # rather than leaking the datetime error.
++                    raise BadTimeSignature(
++                        "Malformed timestamp", payload=value, date_signed=None
++                    )
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+--- a/tests/test_itsdangerous/test_timed_malformed_regression.py
++++ b/tests/test_itsdangerous/test_timed_malformed_regression.py
+@@ -0,0 +1,139 @@
++import pytest
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++
++
++# A signed value whose decoded timestamp is far outside datetime's
++# supported year range. The signature is invalid, so unsign takes the
++# invalid-signature path and must not leak a datetime ValueError.
++MALFORMED_SIGNED = b"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY"
++
++
++@pytest.fixture
++def signer():
++    return TimestampSigner("secret-key")
++
++
++@pytest.fixture
++def serializer():
++    return TimedSerializer("secret-key")
++
++
++# Contract 1: invalid signature + out-of-range decoded timestamp raises
++# BadTimeSignature instead of leaking a datetime ValueError.
++def test_malformed_timestamp_raises_bad_time_signature(signer):
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(MALFORMED_SIGNED)
++
++    assert "Malformed" in str(exc_info.value)
++
++
++def test_malformed_timestamp_does_not_leak_value_error(signer):
++    try:
++        signer.unsign(MALFORMED_SIGNED)
++    except BadTimeSignature:
++        pass
++    except ValueError as e:  # pragma: no cover - regression guard
++        pytest.fail(f"leaked datetime ValueError: {e!r}")
++    else:  # pragma: no cover - regression guard
++        pytest.fail("expected BadTimeSignature")
++
++
++# Contract 2: payload equals the original payload passed to unsign.
++def test_malformed_timestamp_payload_is_original(signer):
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(MALFORMED_SIGNED)
++
++    assert exc_info.value.payload == b"value"
++    assert isinstance(exc_info.value.payload, bytes)
++
++
++# Contract 3: date_signed is None for malformed timestamps.
++def test_malformed_timestamp_date_signed_is_none(signer):
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(MALFORMED_SIGNED)
++
++    assert exc_info.value.date_signed is None
++
++
++# Contract 4: valid roundtrips still return the original payload and a
++# correct date_signed.
++def test_valid_roundtrip_returns_payload_and_timestamp(signer):
++    signed = signer.sign(b"value")
++    value, ts = signer.unsign(signed, return_timestamp=True)
++
++    assert value == b"value"
++    assert isinstance(value, bytes)
++    assert ts is not None
++    assert ts.tzinfo is not None
++
++
++def test_valid_roundtrip_without_timestamp(signer):
++    signed = signer.sign(b"value")
++    assert signer.unsign(signed) == b"value"
++
++
++# Contract 5: ordinary invalid signatures with decodable timestamps still
++# raise BadTimeSignature with the expected date_signed metadata.
++def test_ordinary_invalid_signature_keeps_date_signed(signer):
++    signed = signer.sign(b"value")
++    value_part, ts_part, sig_part = signed.rsplit(b".", 2)
++    bad = b".".join([value_part, ts_part, b"x" * len(sig_part)])
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(bad)
++
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is not None
++
++
++# Contract 6: expiry behavior (max_age) is preserved.
++def test_expired_signature_raises_signature_expired(signer):
++    signed = signer.sign(b"value")
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=-1)
++
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is not None
++
++
++def test_future_signature_raises_signature_expired(signer):
++    # Sign using a timestamp in the future so that the computed age is
++    # negative, which must raise SignatureExpired.
++    signer.get_timestamp = lambda: 2**31
++    signed = signer.sign(b"value")
++    signer.get_timestamp = lambda: 0
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=10)
++
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is not None
++
++
++# Contract 7: TimedSerializer.loads retains its BadSignature-family error
++# contract, raising BadTimeSignature for malformed timestamps.
++def test_timed_serializer_malformed_timestamp_raises_bad_time_signature(serializer):
++    with pytest.raises(BadTimeSignature) as exc_info:
++        serializer.loads(MALFORMED_SIGNED)
++
++    assert isinstance(exc_info.value, BadSignature)
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is None
++
++
++def test_timed_serializer_valid_roundtrip(serializer):
++    signed = serializer.dumps({"a": 1})
++    assert serializer.loads(signed) == {"a": 1}
++
++
++def test_timed_serializer_expired_raises_signature_expired(serializer):
++    signed = serializer.dumps({"a": 1})
++
++    with pytest.raises(SignatureExpired):
++        serializer.loads(signed, max_age=-1)

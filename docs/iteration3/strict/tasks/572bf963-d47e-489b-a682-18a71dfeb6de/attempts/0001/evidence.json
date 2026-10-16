@@ -1,0 +1,73 @@
+{
+  "candidate_id": "1a20f45d-da86-4309-8541-4bb2c5adff79",
+  "candidate_number": 1,
+  "diff": "--- a/inventory.py\n+++ b/inventory.py\n@@ -1,3 +1,6 @@\n def available_units(stock, reservations):\n-    reserved = dict(reservations)\n-    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}\n+    available = dict(stock)\n+    for sku, qty in reservations:\n+        if sku in available:\n+            available[sku] = max(0, available[sku] - qty)\n+    return available\n--- a/tests/test_available_units_regression.py\n+++ b/tests/test_available_units_regression.py\n@@ -0,0 +1,44 @@\n+from inventory import available_units\n+\n+\n+def test_repeated_sku_reservations_are_all_subtracted():\n+    assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 5}\n+\n+\n+def test_repeated_sku_does_not_collapse_to_last_value():\n+    assert available_units({\"A\": 10}, [(\"A\", 3), (\"A\", 2)]) == {\"A\": 5}\n+\n+\n+def test_over_reservation_clamps_at_zero():\n+    assert available_units({\"A\": 10}, [(\"A\", 6), (\"A\", 7)]) == {\"A\": 0}\n+\n+\n+def test_unknown_sku_reservations_are_ignored():\n+    assert available_units({\"A\": 10}, [(\"B\", 5)]) == {\"A\": 10}\n+    assert available_units({\"A\": 10}, [(\"A\", 2), (\"B\", 5)]) == {\"A\": 8}\n+\n+\n+def test_input_stock_mapping_is_not_mutated():\n+    stock = {\"A\": 10}\n+    available_units(stock, [(\"A\", 2), (\"A\", 3)])\n+    assert stock == {\"A\": 10}\n+\n+\n+def test_input_reservations_sequence_is_not_mutated():\n+    reservations = [(\"A\", 2), (\"A\", 3)]\n+    available_units({\"A\": 10}, reservations)\n+    assert reservations == [(\"A\", 2), (\"A\", 3)]\n+\n+\n+def test_return_type_and_keys_match_stock():\n+    stock = {\"A\": 10, \"B\": 4}\n+    result = available_units(stock, [(\"A\", 2)])\n+    assert isinstance(result, dict)\n+    assert set(result.keys()) == set(stock.keys())\n+    assert result == {\"A\": 8, \"B\": 4}\n+\n+\n+def test_existing_single_and_distinct_sku_behavior_preserved():\n+    assert available_units({\"A\": 10}, [(\"A\", 2)]) == {\"A\": 8}\n+    assert available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"B\", 3)]) == {\"A\": 8, \"B\": 2}\n+    assert available_units({}, []) == {}\n",
+  "diff_digest": "152ebb855c0515a1869c095baa1e66a7f1a4e930e643637c641b5e4e9a193a53",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "1a20f45d-da86-4309-8541-4bb2c5adff79",
+      "candidate_number": 1,
+      "changed_files": [
+        "inventory.py",
+        "tests/test_available_units_regression.py"
+      ],
+      "contract_tests": [
+        "available_units({'A': 10}, [('A', 2), ('A', 3)]) returns {'A': 5} -> test_repeated_sku_reservations_are_all_subtracted asserts equality with {'A': 5}.",
+        "All reservation quantities for a SKU are subtracted, including repeated SKU entries (no collapsing to last value) -> test_repeated_sku_does_not_collapse_to_last_value asserts {'A': 10} with [('A', 3), ('A', 2)] == {'A': 5}.",
+        "Resulting available quantity is clamped at zero (never negative) -> test_over_reservation_clamps_at_zero asserts {'A': 10} with [('A', 6), ('A', 7)] == {'A': 0}.",
+        "Reservations for SKUs not present in stock are ignored (no new keys, no error) -> test_unknown_sku_reservations_are_ignored asserts {'A': 10} with [('B', 5)] == {'A': 10} and with [('A', 2), ('B', 5)] == {'A': 8}.",
+        "The input stock mapping is not mutated -> test_input_stock_mapping_is_not_mutated asserts stock == {'A': 10} after the call.",
+        "The input reservations sequence is not mutated -> test_input_reservations_sequence_is_not_mutated asserts reservations == [('A', 2), ('A', 3)] after the call.",
+        "Return type is a mapping with the same keys as the input stock -> test_return_type_and_keys_match_stock asserts isinstance(result, dict) and set(result.keys()) == set(stock.keys()).",
+        "Existing behavior for single reservations and multiple distinct SKUs is preserved -> test_existing_single_and_distinct_sku_behavior_preserved asserts {'A': 10} with [('A', 2)] == {'A': 8}, {'A': 10, 'B': 5} with [('A', 2), ('B', 3)] == {'A': 8, 'B': 2}, and ({}, []) == {}."
+      ],
+      "edits": [
+        {
+          "new": "def available_units(stock, reservations):\n    available = dict(stock)\n    for sku, qty in reservations:\n        if sku in available:\n            available[sku] = max(0, available[sku] - qty)\n    return available",
+          "old": "def available_units(stock, reservations):\n    reserved = dict(reservations)\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}",
+          "path": "inventory.py"
+        },
+        {
+          "new": "from inventory import available_units\n\n\ndef test_repeated_sku_reservations_are_all_subtracted():\n    assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 5}\n\n\ndef test_repeated_sku_does_not_collapse_to_last_value():\n    assert available_units({\"A\": 10}, [(\"A\", 3), (\"A\", 2)]) == {\"A\": 5}\n\n\ndef test_over_reservation_clamps_at_zero():\n    assert available_units({\"A\": 10}, [(\"A\", 6), (\"A\", 7)]) == {\"A\": 0}\n\n\ndef test_unknown_sku_reservations_are_ignored():\n    assert available_units({\"A\": 10}, [(\"B\", 5)]) == {\"A\": 10}\n    assert available_units({\"A\": 10}, [(\"A\", 2), (\"B\", 5)]) == {\"A\": 8}\n\n\ndef test_input_stock_mapping_is_not_mutated():\n    stock = {\"A\": 10}\n    available_units(stock, [(\"A\", 2), (\"A\", 3)])\n    assert stock == {\"A\": 10}\n\n\ndef test_input_reservations_sequence_is_not_mutated():\n    reservations = [(\"A\", 2), (\"A\", 3)]\n    available_units({\"A\": 10}, reservations)\n    assert reservations == [(\"A\", 2), (\"A\", 3)]\n\n\ndef test_return_type_and_keys_match_stock():\n    stock = {\"A\": 10, \"B\": 4}\n    result = available_units(stock, [(\"A\", 2)])\n    assert isinstance(result, dict)\n    assert set(result.keys()) == set(stock.keys())\n    assert result == {\"A\": 8, \"B\": 4}\n\n\ndef test_existing_single_and_distinct_sku_behavior_preserved():\n    assert available_units({\"A\": 10}, [(\"A\", 2)]) == {\"A\": 8}\n    assert available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"B\", 3)]) == {\"A\": 8, \"B\": 2}\n    assert available_units({}, []) == {}\n",
+          "old": "",
+          "path": "tests/test_available_units_regression.py"
+        }
+      ],
+      "rationale": "The bug is `dict(reservations)`, which collapses repeated SKU entries to the last quantity. Fix by iterating over every reservation tuple and accumulating subtractions per SKU, clamping at zero, ignoring unknown SKUs, and building a fresh dict so inputs are not mutated. Add a new regression test file (tests/test_available_units_regression.py) covering the literal example, repeated SKUs, clamping, unknown SKUs, input preservation, return type/keys, and preserved existing behavior."
+    }
+  ],
+  "recorded_digest": "152ebb855c0515a1869c095baa1e66a7f1a4e930e643637c641b5e4e9a193a53",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "1a20f45d-da86-4309-8541-4bb2c5adff79",
+      "candidate_number": 1,
+      "duration_seconds": 1.0340001000004122,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 9,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".........                                                                [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n9 passed in 0.11s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "inventory.py": "69bfa3e487a67f6f25d199cea72d190089fa2ed35af3eb1468e243f292eb6868",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_available_units_regression.py": "e75ea492077c036fb1acdb946a7fe755b02ebc3cf654df290dabded6ed0c4679",
+    "tests/test_contract.py": "2812be59506e03ae09050eb3bcc486c4fa43a7650fbd86c6f203bdde61a6cd41"
+  }
+}

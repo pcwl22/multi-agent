@@ -1,0 +1,135 @@
+{
+  "candidate_id": "2e2d7ab3-ae51-43eb-b04a-761d694d0e24",
+  "candidate_number": 1,
+  "diff": "--- a/checkout.py\n+++ b/checkout.py\n@@ -3,4 +3,4 @@\n \n def invoice_total(amount, discount_percent, tax_rate):\n     subtotal = discounted(amount, discount_percent)\n-    return round(subtotal + amount * tax_rate, 2)\n+    return round(subtotal + subtotal * tax_rate, 2)\n--- a/money.py\n+++ b/money.py\n@@ -1,2 +1,2 @@\n def discounted(amount, percent):\n-    return amount * (1 - percent)\n+    return amount * (1 - percent / 100)\n--- a/tests/test_regression_checkout.py\n+++ b/tests/test_regression_checkout.py\n@@ -0,0 +1,42 @@\n+from checkout import invoice_total\n+from money import discounted\n+\n+\n+def test_discounted_interprets_percent_as_percent():\n+    # 20 means 20%, so 100 -> 80\n+    assert discounted(100, 20) == 80\n+\n+\n+def test_discounted_zero_percent_unchanged():\n+    assert discounted(100, 0) == 100\n+\n+\n+def test_invoice_total_canonical_example():\n+    # 100, discount 20%, tax 10% => 80 + 8 = 88\n+    assert invoice_total(100, 20, 0.1) == 88\n+\n+\n+def test_invoice_total_taxes_discounted_subtotal_not_original():\n+    # Taxing the original 100 would give 90; correct is 88.\n+    assert invoice_total(100, 20, 0.1) != 90\n+\n+\n+def test_invoice_total_discount_only():\n+    assert invoice_total(100, 20, 0) == 80\n+\n+\n+def test_invoice_total_tax_only():\n+    assert invoice_total(100, 0, 0.1) == 110\n+\n+\n+def test_invoice_total_zero_rates():\n+    assert invoice_total(100, 0, 0) == 100\n+\n+\n+def test_invoice_total_zero_amount():\n+    assert invoice_total(0, 20, 0.1) == 0\n+\n+\n+def test_return_types_preserved():\n+    assert isinstance(discounted(100, 20), float)\n+    assert isinstance(invoice_total(100, 20, 0.1), float)\n",
+  "diff_digest": "a59510d87513282b5e9ff2f5e741539da0e86e0bc7d16722a75d39560f7acf5a",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 3,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "2e2d7ab3-ae51-43eb-b04a-761d694d0e24",
+      "candidate_number": 1,
+      "changed_files": [
+        "money.py",
+        "checkout.py",
+        "tests/test_regression_checkout.py"
+      ],
+      "contract_tests": [
+        "money.discounted(100, 20) == 80 (20 interpreted as 20%) -> test_discounted_interprets_percent_as_percent",
+        "money.discounted(100, 0) == 100 (no-discount preserved) -> test_discounted_zero_percent_unchanged",
+        "checkout.invoice_total(100, 20, 0.1) == 88 (canonical example) -> test_invoice_total_canonical_example",
+        "checkout.invoice_total(100, 20, 0.1) != 90 (tax on discounted subtotal, not original) -> test_invoice_total_taxes_discounted_subtotal_not_original",
+        "checkout.invoice_total(100, 20, 0) == 80 (discount-only) -> test_invoice_total_discount_only",
+        "checkout.invoice_total(100, 0, 0.1) == 110 (tax-only, no-discount preserved) -> test_invoice_total_tax_only",
+        "checkout.invoice_total(100, 0, 0) == 100 (zero rates preserved) -> test_invoice_total_zero_rates",
+        "checkout.invoice_total(0, 20, 0.1) == 0 (existing contract preserved) -> test_invoice_total_zero_amount",
+        "Return types remain float for both public functions -> test_return_types_preserved"
+      ],
+      "edits": [
+        {
+          "new": "def discounted(amount, percent):\n    return amount * (1 - percent / 100)",
+          "old": "def discounted(amount, percent):\n    return amount * (1 - percent)",
+          "path": "money.py"
+        },
+        {
+          "new": "def invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + subtotal * tax_rate, 2)",
+          "old": "def invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + amount * tax_rate, 2)",
+          "path": "checkout.py"
+        },
+        {
+          "new": "from checkout import invoice_total\nfrom money import discounted\n\n\ndef test_discounted_interprets_percent_as_percent():\n    # 20 means 20%, so 100 -> 80\n    assert discounted(100, 20) == 80\n\n\ndef test_discounted_zero_percent_unchanged():\n    assert discounted(100, 0) == 100\n\n\ndef test_invoice_total_canonical_example():\n    # 100, discount 20%, tax 10% => 80 + 8 = 88\n    assert invoice_total(100, 20, 0.1) == 88\n\n\ndef test_invoice_total_taxes_discounted_subtotal_not_original():\n    # Taxing the original 100 would give 90; correct is 88.\n    assert invoice_total(100, 20, 0.1) != 90\n\n\ndef test_invoice_total_discount_only():\n    assert invoice_total(100, 20, 0) == 80\n\n\ndef test_invoice_total_tax_only():\n    assert invoice_total(100, 0, 0.1) == 110\n\n\ndef test_invoice_total_zero_rates():\n    assert invoice_total(100, 0, 0) == 100\n\n\ndef test_invoice_total_zero_amount():\n    assert invoice_total(0, 20, 0.1) == 0\n\n\ndef test_return_types_preserved():\n    assert isinstance(discounted(100, 20), float)\n    assert isinstance(invoice_total(100, 20, 0.1), float)\n",
+          "old": "",
+          "path": "tests/test_regression_checkout.py"
+        }
+      ],
+      "rationale": "money.discounted currently computes amount * (1 - percent), treating percent as a fraction (20 -> -1900). The issue requires numeric discounts like 20 to mean 20%, so the discounted amount is amount * (1 - percent/100). checkout.invoice_total currently taxes the original amount; it must tax the discounted subtotal. Existing contract test uses discounted(100, 0) == 100 and invoice_total(100, 0, 0.1) == 110, both preserved: with percent=0, discounted=100; invoice_total(100,0,0.1) = 100 + 100*0.1 = 110. Canonical example: discounted(100,20)=80; invoice_total(100,20,0.1)=80+80*0.1=88. New regression tests added in a fresh file tests/test_regression_checkout.py."
+    }
+  ],
+  "recorded_digest": "a59510d87513282b5e9ff2f5e741539da0e86e0bc7d16722a75d39560f7acf5a",
+  "retry_count": 0,
+  "reviews": [
+    {
+      "approved": true,
+      "attempt": 1,
+      "candidate_id": "2e2d7ab3-ae51-43eb-b04a-761d694d0e24",
+      "candidate_number": 1,
+      "concerns": [
+        "The issue text says 'tax 10%' and the canonical example uses 10%; the implementation and tests use tax_rate=0.1 as a fraction. This is consistent with the pre-existing signature/semantics (tax_rate was already a fraction, e.g. existing test invoice_total(100,0,0.1)==110), so no change was required. Worth noting only as an interpretation detail, not a defect.",
+        "No test exercises a non-zero discount with a non-zero tax other than the canonical case, but the canonical case plus discount-only/tax-only/zero cases adequately cover the stated contracts."
+      ],
+      "contract_checks": [
+        {
+          "evidence": "money.py: return amount * (1 - percent / 100) => 100 * (1 - 0.2) = 80.0. Test test_discounted_interprets_percent_as_percent asserts discounted(100, 20) == 80 and passed.",
+          "requirement": "money.discounted(100, 20) interprets 20 as 20% and yields 80",
+          "satisfied": true
+        },
+        {
+          "evidence": "checkout.py: subtotal = discounted(100,20) = 80.0; return round(80.0 + 80.0*0.1, 2) = round(88.0,2) = 88.0. Test test_invoice_total_canonical_example asserts == 88 and passed.",
+          "requirement": "checkout.invoice_total(100, 20, 0.1) returns 88 (canonical example)",
+          "satisfied": true
+        },
+        {
+          "evidence": "checkout.py uses subtotal * tax_rate (80*0.1=8) rather than amount * tax_rate (100*0.1=10). Result 88 != 90. Test test_invoice_total_taxes_discounted_subtotal_not_original passed.",
+          "requirement": "Tax applied to discounted subtotal, not original: invoice_total(100,20,0.1) != 90",
+          "satisfied": true
+        },
+        {
+          "evidence": "discounted(100,0) = 100*(1-0) = 100.0. Tests test_discounted_zero_percent_unchanged and existing tests/test_contract.py test_existing_contract both assert this and passed.",
+          "requirement": "No-discount behavior preserved: discount 0 leaves amount unchanged",
+          "satisfied": true
+        },
+        {
+          "evidence": "invoice_total(100,20,0) = round(80 + 80*0, 2) = 80.0. Test test_invoice_total_discount_only passed; invoice_total(100,0,0)==100 in test_invoice_total_zero_rates passed.",
+          "requirement": "No-tax behavior preserved: tax 0 leaves discounted subtotal unchanged",
+          "satisfied": true
+        },
+        {
+          "evidence": "Signatures unchanged: discounted(amount, percent), invoice_total(amount, discount_percent, tax_rate). test_return_types_preserved asserts isinstance(..., float) for both and passed.",
+          "requirement": "Both functions remain public with same argument order and return types (float)",
+          "satisfied": true
+        },
+        {
+          "evidence": "tests/test_contract.py (discounted(100,0)==100, invoice_total(100,0,0.1)==110, invoice_total(0,20,0.1)==0) is unchanged and the full suite reports 10 passed, 0 failed.",
+          "requirement": "Existing documented examples/tests continue to pass",
+          "satisfied": true
+        },
+        {
+          "evidence": "tests/test_regression_checkout.py test_invoice_total_canonical_example asserts invoice_total(100, 20, 0.1) == 88, matching the issue's 100/20/10% example.",
+          "requirement": "New regression tests encode canonical example input (100, discount 20, tax 10%) and expected 88",
+          "satisfied": true
+        }
+      ],
+      "summary": "Both bugs are fixed correctly. money.discounted now divides percent by 100, so discounted(100, 20) == 80. checkout.invoice_total now applies tax to the discounted subtotal (subtotal * tax_rate) instead of the original amount, so invoice_total(100, 20, 0.1) == 88. No-discount and no-tax behavior is preserved, return types remain float, and regression tests cover the canonical example plus boundary cases. The existing contract test (discounted(100,0)==100, invoice_total(100,0,0.1)==110, invoice_total(0,20,0.1)==0) still passes."
+    }
+  ],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "2e2d7ab3-ae51-43eb-b04a-761d694d0e24",
+      "candidate_number": 1,
+      "duration_seconds": 1.020413099999132,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 10,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "..........                                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n10 passed in 0.12s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "checkout.py": "6437d37835893751e037b5b935f4f44b38408d28511848c4fc11a1ec92c10262",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "money.py": "22a4538a146e905c2cc467185be7ad37d74844914251cc05e564493e1b4928c5",
+    "tests/test_contract.py": "41495a7950bfe22b7ddc6d297338d90e63b85128b56fb6bed697e4f1c35335a3",
+    "tests/test_regression_checkout.py": "72881428772206b1f7fdb9be3998e9ab64dc7d1baeecc4a04a9fa01458d00aac"
+  }
+}

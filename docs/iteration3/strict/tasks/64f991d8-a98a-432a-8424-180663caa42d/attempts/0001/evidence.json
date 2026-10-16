@@ -1,0 +1,73 @@
+{
+  "candidate_id": "50223e19-2ec0-460a-82cd-6ae8ee5d123c",
+  "candidate_number": 1,
+  "diff": "--- a/checkout.py\n+++ b/checkout.py\n@@ -3,4 +3,4 @@\n \n def invoice_total(amount, discount_percent, tax_rate):\n     subtotal = discounted(amount, discount_percent)\n-    return round(subtotal + amount * tax_rate, 2)\n+    return round(subtotal + subtotal * tax_rate, 2)\n--- a/money.py\n+++ b/money.py\n@@ -1,2 +1,2 @@\n def discounted(amount, percent):\n-    return amount * (1 - percent)\n+    return amount * (1 - percent / 100)\n",
+  "diff_digest": "9f5316bb75f09f1303c989e81049a4b96ff3f82ac8ee9ca74be5c969651095b6",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 1,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "50223e19-2ec0-460a-82cd-6ae8ee5d123c",
+      "candidate_number": 1,
+      "changed_files": [
+        "money.py",
+        "checkout.py"
+      ],
+      "contract_tests": [
+        "tests/test_regression_discount_tax.py::test_discounted_percent_is_percentage: discounted(100, 20) == 80 (20 means 20%, not 2000%)",
+        "tests/test_regression_discount_tax.py::test_discounted_no_discount_preserved: discounted(100, 0) == 100",
+        "tests/test_regression_discount_tax.py::test_invoice_total_issue_example: invoice_total(100, 20, 0.1) == 88",
+        "tests/test_regression_discount_tax.py::test_invoice_total_tax_on_discounted_subtotal: invoice_total(200, 25, 0.1) == 165.0 (tax applied to 150, not 200)",
+        "tests/test_regression_discount_tax.py::test_invoice_total_no_discount_preserved: invoice_total(100, 0, 0.1) == 110",
+        "tests/test_regression_discount_tax.py::test_invoice_total_no_tax_preserved: invoice_total(100, 20, 0) == 80",
+        "tests/test_regression_discount_tax.py::test_invoice_total_zero_amount_preserved: invoice_total(0, 20, 0.1) == 0",
+        "tests/test_regression_discount_tax.py::test_result_types: discounted returns int for int inputs; invoice_total returns float for tax_rate 0.1"
+      ],
+      "edits": [
+        {
+          "new": "def discounted(amount, percent):\n    return amount * (1 - percent / 100)",
+          "old": "def discounted(amount, percent):\n    return amount * (1 - percent)",
+          "path": "money.py"
+        },
+        {
+          "new": "def invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + subtotal * tax_rate, 2)",
+          "old": "def invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + amount * tax_rate, 2)",
+          "path": "checkout.py"
+        }
+      ],
+      "rationale": "money.discounted currently treats percent as a fraction (amount * (1 - percent)), so 20 means 2000% off. Fix: interpret percent as a percentage, dividing by 100. checkout.invoice_total applies tax to the original amount; fix: apply tax to the discounted subtotal. Preserve no-discount/no-tax behavior: discounted(100,0)=100, invoice_total(100,0,0.1)=110, invoice_total(0,20,0.1)=0. New regression tests cover the stated example (100, 20, 0.1 -> 88) and boundary/preservation cases."
+    }
+  ],
+  "recorded_digest": "9f5316bb75f09f1303c989e81049a4b96ff3f82ac8ee9ca74be5c969651095b6",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "50223e19-2ec0-460a-82cd-6ae8ee5d123c",
+      "candidate_number": 1,
+      "duration_seconds": 0.9510465000021213,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 1,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".                                                                        [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n1 passed in 0.07s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "checkout.py": "6437d37835893751e037b5b935f4f44b38408d28511848c4fc11a1ec92c10262",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "money.py": "22a4538a146e905c2cc467185be7ad37d74844914251cc05e564493e1b4928c5",
+    "tests/test_contract.py": "41495a7950bfe22b7ddc6d297338d90e63b85128b56fb6bed697e4f1c35335a3"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "candidate_id": "d8227665-9beb-4290-a955-aa755e643525",
+  "candidate_number": 1,
+  "diff": "--- a/slugs.py\n+++ b/slugs.py\n@@ -1,5 +1,10 @@\n import re\n+import unicodedata\n \n \n def slugify(value):\n-    return re.sub(r\"[^a-z0-9]+\", \"-\", value.lower()).strip(\"-\")\n+    normalized = unicodedata.normalize(\"NFKD\", value)\n+    without_marks = \"\".join(\n+        ch for ch in normalized if not unicodedata.combining(ch)\n+    )\n+    return re.sub(r\"[^a-z0-9]+\", \"-\", without_marks.lower()).strip(\"-\")\n--- a/tests/test_slugify_unicode.py\n+++ b/tests/test_slugify_unicode.py\n@@ -0,0 +1,35 @@\n+from slugs import slugify\n+\n+\n+def test_precomposed_accented_phrase():\n+    assert slugify(\"Caf\\u00e9 d\\u00e9j\\u00e0 vu\") == \"cafe-deja-vu\"\n+\n+\n+def test_decomposed_combining_acute_matches_precomposed():\n+    decomposed = \"cafe\" + \"\\u0301\"\n+    assert slugify(decomposed) == slugify(\"caf\\u00e9\")\n+    assert slugify(decomposed) == \"cafe\"\n+\n+\n+def test_output_is_lowercase_ascii_only():\n+    result = slugify(\"Caf\\u00e9 d\\u00e9j\\u00e0 vu\")\n+    assert result == result.lower()\n+    assert result.isascii()\n+\n+\n+def test_ascii_word_separation_preserved():\n+    assert slugify(\"Hello, World!\") == \"hello-world\"\n+    assert slugify(\"foo   bar\") == \"foo-bar\"\n+    assert slugify(\"a---b\") == \"a-b\"\n+\n+\n+def test_leading_and_trailing_dashes_trimmed():\n+    assert slugify(\"  Hello, World!  \") == \"hello-world\"\n+    assert slugify(\"---abc---\") == \"abc\"\n+    assert slugify(\"!!!\") == \"\"\n+\n+\n+def test_plain_ascii_behavior_unchanged():\n+    assert slugify(\"Hello, World!\") == \"hello-world\"\n+    assert slugify(\"\") == \"\"\n+    assert slugify(\"already-slug\") == \"already-slug\"\n",
+  "diff_digest": "2fb89d5a47ff0ab6abb8d68f34be538755309a56312125c0496d1134068e69c6",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "d8227665-9beb-4290-a955-aa755e643525",
+      "candidate_number": 1,
+      "changed_files": [
+        "slugs.py",
+        "tests/test_slugify_unicode.py"
+      ],
+      "contract_tests": [],
+      "edits": [
+        {
+          "new": "import re\nimport unicodedata\n\n\ndef slugify(value):\n    normalized = unicodedata.normalize(\"NFKD\", value)\n    without_marks = \"\".join(\n        ch for ch in normalized if not unicodedata.combining(ch)\n    )\n    return re.sub(r\"[^a-z0-9]+\", \"-\", without_marks.lower()).strip(\"-\")",
+          "old": "import re\n\n\ndef slugify(value):\n    return re.sub(r\"[^a-z0-9]+\", \"-\", value.lower()).strip(\"-\")",
+          "path": "slugs.py"
+        },
+        {
+          "new": "from slugs import slugify\n\n\ndef test_precomposed_accented_phrase():\n    assert slugify(\"Caf\\u00e9 d\\u00e9j\\u00e0 vu\") == \"cafe-deja-vu\"\n\n\ndef test_decomposed_combining_acute_matches_precomposed():\n    decomposed = \"cafe\" + \"\\u0301\"\n    assert slugify(decomposed) == slugify(\"caf\\u00e9\")\n    assert slugify(decomposed) == \"cafe\"\n\n\ndef test_output_is_lowercase_ascii_only():\n    result = slugify(\"Caf\\u00e9 d\\u00e9j\\u00e0 vu\")\n    assert result == result.lower()\n    assert result.isascii()\n\n\ndef test_ascii_word_separation_preserved():\n    assert slugify(\"Hello, World!\") == \"hello-world\"\n    assert slugify(\"foo   bar\") == \"foo-bar\"\n    assert slugify(\"a---b\") == \"a-b\"\n\n\ndef test_leading_and_trailing_dashes_trimmed():\n    assert slugify(\"  Hello, World!  \") == \"hello-world\"\n    assert slugify(\"---abc---\") == \"abc\"\n    assert slugify(\"!!!\") == \"\"\n\n\ndef test_plain_ascii_behavior_unchanged():\n    assert slugify(\"Hello, World!\") == \"hello-world\"\n    assert slugify(\"\") == \"\"\n    assert slugify(\"already-slug\") == \"already-slug\"\n",
+          "old": "",
+          "path": "tests/test_slugify_unicode.py"
+        }
+      ],
+      "rationale": "The current slugify lowercases then strips all non-[a-z0-9] characters, so accented letters like 'é' are dropped entirely (e.g. 'Café déjà vu' -> 'caf-d-j-vu'). The fix normalizes to NFKD so precomposed accents decompose into base letter + combining mark, then drops combining marks, yielding ASCII base letters. Lowercasing is applied after normalization so uppercase accented letters also decompose correctly. Existing ASCII word-separation (runs of non-alphanumerics -> single '-') and dash trimming are preserved. New regression tests are added in a new file; existing tests are untouched."
+    }
+  ],
+  "recorded_digest": "2fb89d5a47ff0ab6abb8d68f34be538755309a56312125c0496d1134068e69c6",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "d8227665-9beb-4290-a955-aa755e643525",
+      "candidate_number": 1,
+      "duration_seconds": 1.2366532999985793,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 7,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".......                                                                  [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n7 passed in 0.11s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "slugs.py": "b12a371aee640ac38d5697da0be48a916adb55deae521b91d3af1d0e86349521",
+    "tests/test_contract.py": "ffaecbe031e2ca0c41ec925639733aa5a21ebcfebc96c1444472bd490d8325b6",
+    "tests/test_slugify_unicode.py": "355c170d50be359ac152184361b090658c6eca4e49a590144f4139c0201c3923"
+  }
+}

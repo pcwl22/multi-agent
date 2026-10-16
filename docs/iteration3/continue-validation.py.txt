@@ -1,0 +1,68 @@
+"""Operational continuation of an interrupted frozen evaluator; no repair-code changes."""
+import getpass
+import hashlib
+import inspect
+import json
+import logging
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+sys.path.insert(0,str(Path.cwd()))
+from pydantic import SecretStr
+from app.config.settings import Settings
+from app.evaluation import runner
+
+logging.getLogger('repopilot.graph').setLevel(logging.CRITICAL)
+plan=json.loads(Path('docs/iteration3/preregistered-validation.json').read_text(encoding='utf8'))
+subprocess.run(['git','diff','--exit-code',plan['runtime_code_commit'],'--','app','frontend','scripts','tests'],check=True)
+assert hashlib.sha256(Path(runner.__file__).read_bytes()).hexdigest()=='8068ccda4607085726e30305472842369dad346549c6e5c5ae197e1b004d8d60'
+for job in plan['jobs']:
+    assert hashlib.sha256(Path(job['dataset']).read_bytes()).hexdigest()==job['dataset_sha256']
+original=inspect.getsource(runner.run_evaluation)
+# The three harness-only changes reuse durable results/baselines and skip completed cells.
+changes=[
+('if output.exists() and any(output.iterdir()):','if output.exists() and any(output.iterdir()) and not (output / "runs.jsonl").is_file():'),
+('    records = []','    records = [json.loads(line) for line in (output / "runs.jsonl").read_text(encoding="utf8").splitlines()] if (output / "runs.jsonl").exists() else []\n    completed_cells = {(r["case_id"], r["repeat"], r["mode"]) for r in records}'),
+('        holdout_workspace(case_repository, baseline_path, acceptance_file)','        if not baseline_path.exists():\n            holdout_workspace(case_repository, baseline_path, acceptance_file)'),
+('                started = time.monotonic()','                if (case["id"], repeat, mode) in completed_cells:\n                    continue\n                started = time.monotonic()'),
+]
+source=original
+for before,after in changes:
+    assert source.count(before)==1,before
+    source=source.replace(before,after)
+namespace=dict(vars(runner))
+exec(compile(source,'<frozen-evaluator-continuation>','exec'),namespace)
+continuation=namespace['run_evaluation']
+incident={
+    'recorded_at':datetime.now(timezone.utc).isoformat(),
+    'runtime_code_commit':plan['runtime_code_commit'],
+    'incident':'WinError 5 during initial candidate staging directory rename; evaluator aborted before task registration or any model call for that cell',
+    'original_run_completed_cells':25,'completed_cells_reexecuted_with_model':0,
+    'retained_unregistered_task_directory':'.repopilot/isolated-strict-data/tasks/f89f2044-34bd-4983-a457-8dd831061320',
+    'frozen_evaluator_sha256':'8068ccda4607085726e30305472842369dad346549c6e5c5ae197e1b004d8d60',
+    'continuation_harness_changes':[{'before':a,'after':b} for a,b in changes],
+    'scope':'Only the five uncompleted strict cells and untouched pagination/historical jobs continue. Original 25 records are preserved byte-for-byte. No prompts, models, budgets, corpus or holdouts changed.',
+    'accounting':'One additional infrastructure task-creation failure with zero LLM calls; separate from the fixed 45 successfully registered benchmark tasks. Report both.'}
+Path('docs/iteration3/infrastructure-interruption.json').write_text(json.dumps(incident,indent=2),encoding='utf8')
+secret=getpass.getpass('Provider key (hidden): ')
+if not secret:raise SystemExit('No credential supplied')
+try:
+    print('CREDENTIAL_READY; type RUN to continue frozen cells',flush=True)
+    if input()!='RUN':raise SystemExit('Not started')
+    for job in plan['jobs']:
+        settings=Settings(model_mode='live',model_name=plan['model'],model_base_url=plan['endpoint'],
+            openai_api_key=SecretStr(secret),github_token=None,
+            repository_root=Path(job['root']).resolve(),data_dir=Path(job['data']).resolve(),
+            max_retries=plan['max_retries'],retry_workspace_policy='isolated',
+            model_min_interval=plan['model_min_interval'],model_timeout=plan['model_timeout'],
+            test_timeout=plan['test_timeout'],sandbox_image=job.get('image','repopilot-sandbox:local'))
+        print(json.dumps({'continuing':job['name']}),flush=True)
+        evaluate=continuation if job['name']=='strict' else runner.run_evaluation
+        result=evaluate(settings,settings.repository_root,Path(job['output']),job['repeats'],dataset_file=Path(job['dataset']),workers=job['workers'])
+        print(json.dumps({'completed':job['name'],'modes':result['modes']}),flush=True)
+except Exception as exc:
+    print(json.dumps({'error_type':type(exc).__name__,'message':str(exc).replace(secret,'[REDACTED]')[:1000]}),flush=True)
+finally:
+    secret=None
+    print('CREDENTIAL_SESSION_CLOSED',flush=True)

@@ -1,0 +1,71 @@
+{
+  "candidate_id": "0739c137-1317-4801-b5d9-5336809cc2ea",
+  "candidate_number": 1,
+  "diff": "--- a/pricing.py\n+++ b/pricing.py\n@@ -1,2 +1,2 @@\n def discounted_total(amount, discount_percent):\n-    return round(amount * (1 - discount_percent), 2)\n+    return round(amount * (1 - discount_percent / 100), 2)\n--- a/tests/test_pricing_regression.py\n+++ b/tests/test_pricing_regression.py\n@@ -0,0 +1,29 @@\n+from pricing import discounted_total\n+\n+\n+def test_literal_example_100_with_20_percent_discount():\n+    result = discounted_total(100, 20)\n+    assert result == 80\n+    assert isinstance(result, int)\n+\n+\n+def test_zero_amount_is_preserved():\n+    assert discounted_total(0, 20) == 0\n+    assert discounted_total(0, 0) == 0\n+    assert discounted_total(0, 100) == 0\n+\n+\n+def test_no_discount_is_preserved():\n+    assert discounted_total(100, 0) == 100\n+    assert discounted_total(12.5, 0) == 12.5\n+    assert discounted_total(0, 0) == 0\n+\n+\n+def test_percentage_boundaries():\n+    assert discounted_total(100, 0) == 100\n+    assert discounted_total(100, 100) == 0\n+\n+\n+def test_percentage_semantics():\n+    assert discounted_total(200, 25) == 150\n+    assert discounted_total(50, 10) == 45\n",
+  "diff_digest": "c903d66f288b25a19ba5e4ccf7f80596a82e3b758fb79a040be330939aa7702a",
+  "execution_status": "running",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "0739c137-1317-4801-b5d9-5336809cc2ea",
+      "candidate_number": 1,
+      "changed_files": [
+        "pricing.py",
+        "tests/test_pricing_regression.py"
+      ],
+      "contract_tests": [
+        "discounted_total accepts percentage discount values from 0 to 100: test_percentage_boundaries asserts discounted_total(100, 0) == 100 and discounted_total(100, 100) == 0.",
+        "discounted_total(100, 20) must equal 80: test_literal_example_100_with_20_percent_discount asserts discounted_total(100, 20) == 80 and isinstance(result, int).",
+        "Zero amount is preserved: test_zero_amount_is_preserved asserts discounted_total(0, 20) == 0, discounted_total(0, 0) == 0, discounted_total(0, 100) == 0.",
+        "No discount is preserved: test_no_discount_is_preserved asserts discounted_total(100, 0) == 100, discounted_total(12.5, 0) == 12.5, discounted_total(0, 0) == 0.",
+        "Existing semantics for valid inputs preserved: test_percentage_semantics asserts discounted_total(200, 25) == 150 and discounted_total(50, 10) == 45, consistent with percentage interpretation.",
+        "New regression tests cover literal example, zero amount, and no discount: tests/test_pricing_regression.py contains test_literal_example_100_with_20_percent_discount, test_zero_amount_is_preserved, and test_no_discount_is_preserved."
+      ],
+      "edits": [
+        {
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "path": "pricing.py"
+        },
+        {
+          "new": "from pricing import discounted_total\n\n\ndef test_literal_example_100_with_20_percent_discount():\n    result = discounted_total(100, 20)\n    assert result == 80\n    assert isinstance(result, int)\n\n\ndef test_zero_amount_is_preserved():\n    assert discounted_total(0, 20) == 0\n    assert discounted_total(0, 0) == 0\n    assert discounted_total(0, 100) == 0\n\n\ndef test_no_discount_is_preserved():\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(12.5, 0) == 12.5\n    assert discounted_total(0, 0) == 0\n\n\ndef test_percentage_boundaries():\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(100, 100) == 0\n\n\ndef test_percentage_semantics():\n    assert discounted_total(200, 25) == 150\n    assert discounted_total(50, 10) == 45\n",
+          "old": "",
+          "path": "tests/test_pricing_regression.py"
+        }
+      ],
+      "rationale": "The bug is that discounted_total treats discount_percent as a fraction (multiplying by 1 - discount_percent) instead of a percentage. The issue states discount_percent is a percentage from 0 to 100, and 100 with discount 20 must equal 80. Fix: divide by 100. Preserve zero amount (0 * anything = 0) and no discount (discount 0 returns amount). No new type or rounding requirements added; existing round(..., 2) is preserved. New regression tests added in a fresh file tests/test_pricing_regression.py covering the literal example, zero amount, and no discount, with exact input and result types."
+    }
+  ],
+  "recorded_digest": "c903d66f288b25a19ba5e4ccf7f80596a82e3b758fb79a040be330939aa7702a",
+  "retry_count": 1,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "0739c137-1317-4801-b5d9-5336809cc2ea",
+      "candidate_number": 1,
+      "duration_seconds": 1.0566531999975268,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 1,
+      "failed": 1,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 5,
+      "skipped": 0,
+      "status": "failed",
+      "stderr": "",
+      "stdout": ".F....                                                                   [100%]\n=================================== FAILURES ===================================\n______________ test_literal_example_100_with_20_percent_discount _______________\n\n    def test_literal_example_100_with_20_percent_discount():\n        result = discounted_total(100, 20)\n        assert result == 80\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(80.0, int)\n\ntests/test_pricing_regression.py:7: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pricing_regression.py::test_literal_example_100_with_20_percent_discount\n1 failed, 5 passed in 0.16s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pricing.py": "a75ffa764bc0e13bf700a6019d07cb69e77dea2b91ed49c2adba5da231e76d08",
+    "tests/test_contract.py": "f33ad1562355afcb3a406dda0dbaa8c4ff17f180df46420db307558d6c22ffa8",
+    "tests/test_pricing_regression.py": "c237655788aa38fb85d045c1a9bf36a20c7923fa876f77bc14728a1a71d160f2"
+  }
+}

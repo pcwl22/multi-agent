@@ -2,6 +2,13 @@
 
 ## 0.1.0 — release candidate, unpublished
 
+- Optional per-task isolated attempts: complete candidates start from the original
+  baseline; every prior workspace, wrong generated test, diff and evidence remains.
+- Candidate identity joins the diff digest for isolated-mode approval/publication;
+  old tasks retain their original workspace policy when server defaults change.
+- Candidate preparation crash recovery, stale approval rejection, legacy task
+  compatibility and three controlled wrong-test replays; full suite 143 passed,
+  1 skipped. Replays are separate from actual live model benchmarks.
 - Original-issue acceptance contracts and reviewer source context; a conservative
   AST coverage gate rejects constructor-input substitutions in new tests.
 - Provider cooldown/manual retry with a finite budget, safe error categories and
@@ -9,7 +16,7 @@
 - Fixed historical jsonpointer/itsdangerous pilots with frozen external holdouts,
   dependency wheel hashes and original upstream tests preserved.
 - Actual process-loss recovery tests, real SDK controlled-transport failures and
-  Streamlit recovery controls; full local suite now 129 passed, 1 skipped.
+  Streamlit recovery controls; prior local suite recorded 129 passed, 1 skipped.
 - LangGraph planning, retrieval, coding, Docker testing, review and digest-bound
   human approval, with SQLite recovery and a finite shared retry budget.
 - Read-only MCP tools, FastAPI, Streamlit, and explicit draft PR publication with

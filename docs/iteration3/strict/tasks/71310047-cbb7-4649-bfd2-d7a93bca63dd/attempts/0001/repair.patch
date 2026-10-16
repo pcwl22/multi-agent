@@ -1,0 +1,51 @@
+--- a/auth.py
++++ b/auth.py
+@@ -1,6 +1,6 @@
+ def authenticate(token):
+     if token == "expired":
+-        return 500, "expired"
++        return 401, "expired"
+     if token == "valid":
+         return 200, "alice"
+     return 401, "missing"
+--- a/tests/test_auth_expired_token.py
++++ b/tests/test_auth_expired_token.py
+@@ -0,0 +1,38 @@
++from auth import authenticate
++
++
++def test_expired_token_returns_401_expired():
++    result = authenticate("expired")
++    assert result == (401, "expired")
++    assert type(result) is tuple
++    assert type(result[0]) is int
++    assert result[0] == 401
++    assert type(result[1]) is str
++    assert result[1] == "expired"
++
++
++def test_expired_token_does_not_return_500():
++    status, message = authenticate("expired")
++    assert status != 500
++    assert status == 401
++    assert message == "expired"
++
++
++def test_valid_token_behavior_preserved():
++    result = authenticate("valid")
++    assert result == (200, "alice")
++    assert type(result) is tuple
++    assert type(result[0]) is int
++    assert result[0] == 200
++    assert type(result[1]) is str
++    assert result[1] == "alice"
++
++
++def test_absent_token_behavior_preserved():
++    result = authenticate(None)
++    assert result == (401, "missing")
++    assert type(result) is tuple
++    assert type(result[0]) is int
++    assert result[0] == 401
++    assert type(result[1]) is str
++    assert result[1] == "missing"

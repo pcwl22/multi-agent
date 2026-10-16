@@ -1,0 +1,148 @@
+{
+  "runs": 6,
+  "independent_accepted": 5,
+  "ready_and_accepted": 4,
+  "posthoc_model_reruns": 0,
+  "failed_to_reach_ready_and_accepted": [
+    {
+      "task_id": "d4d06fd8-ded1-413a-9630-067f656cafbf",
+      "case_id": "itsdangerous-date-overflow",
+      "mode": "single",
+      "execution_status": "failed",
+      "error": "Test retry budget exhausted",
+      "acceptance_status": null,
+      "approval_status": "pending",
+      "test_results": [
+        {
+          "candidate_id": "6889ca08-8e94-415d-994e-f76766b1ecb9",
+          "candidate_number": 1,
+          "status": "failed",
+          "passed": 296,
+          "failed": 1,
+          "errors": 0,
+          "evidence": "docker"
+        },
+        {
+          "candidate_id": "de5b2a68-2ff0-478a-844a-b92cc29a2071",
+          "candidate_number": 2,
+          "status": "failed",
+          "passed": 296,
+          "failed": 1,
+          "errors": 0,
+          "evidence": "docker"
+        },
+        {
+          "candidate_id": "ef192f54-40d5-4395-9c19-fc4367d9c1be",
+          "candidate_number": 3,
+          "status": "failed",
+          "passed": 296,
+          "failed": 1,
+          "errors": 0,
+          "evidence": "docker"
+        }
+      ],
+      "review_results": [],
+      "published": false
+    },
+    {
+      "task_id": "c600f622-423b-4fb6-a506-3a2d4c833761",
+      "case_id": "itsdangerous-date-overflow",
+      "mode": "multi_full",
+      "execution_status": "failed",
+      "error": "Review retry budget exhausted",
+      "acceptance_status": "passed",
+      "approval_status": "pending",
+      "test_results": [
+        {
+          "candidate_id": "f90c3fa4-1ff9-4fcb-b583-d47d05f0af28",
+          "candidate_number": 1,
+          "status": "failed",
+          "passed": 296,
+          "failed": 1,
+          "errors": 0,
+          "evidence": "docker"
+        },
+        {
+          "candidate_id": "3781e5e2-e510-4411-a90a-c83757816916",
+          "candidate_number": 2,
+          "status": "failed",
+          "passed": 308,
+          "failed": 1,
+          "errors": 0,
+          "evidence": "docker"
+        },
+        {
+          "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+          "candidate_number": 3,
+          "status": "passed",
+          "passed": 309,
+          "failed": 0,
+          "errors": 0,
+          "evidence": "docker"
+        }
+      ],
+      "review_results": [
+        {
+          "approved": false,
+          "summary": "The fix in src/itsdangerous/timed.py catches datetime range errors on the invalid-signature path and raises BadTimeSignature with payload=value and date_signed=None, matching the issue. New regression tests were added in a new file. However, the tests rely on a hardcoded MALFORMED_SIGNED constant whose decoded timestamp must actually be out of datetime's range; I cannot verify that constant's decoded value from the provided context, and the test file path differs from the plan's stated tests/test_timed.py (though the issue only requires new tests, not a specific path). More importantly, the malformed-timestamp branch is only reachable when ts_int is not None AND the signature is invalid; the tests do not independently prove the ValueError would otherwise leak (they only assert BadTimeSignature is raised). The core code change appears correct and preserves other paths.",
+          "concerns": [
+            "Cannot verify MALFORMED_SIGNED decodes to a timestamp outside datetime's supported range from the provided context; if it does not, the regression tests would pass trivially without exercising the new except branch.",
+            "The new test file is placed at tests/test_itsdangerous/test_timed_malformed_regression.py rather than tests/test_timed.py as stated in the plan; acceptable per issue but worth noting.",
+            "Tests assert BadTimeSignature is raised but do not demonstrate that the pre-fix code would have leaked a ValueError, so they are weak regression guards for the specific bug.",
+            "The except clause catches OSError/OverflowError in addition to ValueError; this is broader than the issue's stated ValueError but reasonable and does not change valid-path semantics."
+          ],
+          "contract_checks": [
+            {
+              "requirement": "TimestampSigner.unsign with an invalid signature whose decoded timestamp is outside datetime's supported year range raises BadTimeSignature instead of leaking a datetime ValueError.",
+              "satisfied": true,
+              "evidence": "timed.py now wraps self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature('Malformed timestamp', payload=value, date_signed=None) on the sig_error path. test_malformed_timestamp_raises_bad_time_signature and test_malformed_timestamp_does_not_leak_value_error cover this."
+            },
+            {
+              "requirement": "The raised BadTimeSignature for a malformed timestamp has payload equal to the original payload passed to unsign.",
+              "satisfied": true,
+              "evidence": "Code passes payload=value where value is result.rsplit(sep,1)[0]; test_malformed_timestamp_payload_is_original asserts payload == b'value' and bytes type."
+            },
+            {
+              "requirement": "The raised BadTimeSignature for a malformed timestamp has date_signed equal to None.",
+              "satisfied": true,
+              "evidence": "Code passes date_signed=None; test_malformed_timestamp_date_signed_is_none asserts date_signed is None."
+            },
+            {
+              "requirement": "Valid TimestampSigner roundtrips continue to return the original payload and correct date_signed.",
+              "satisfied": true,
+              "evidence": "Valid path unchanged; test_valid_roundtrip_returns_payload_and_timestamp and test_valid_roundtrip_without_timestamp assert payload and tz-aware timestamp."
+            },
+            {
+              "requirement": "Ordinary invalid signatures with decodable timestamps still raise BadTimeSignature with the expected date_signed metadata.",
+              "satisfied": true,
+              "evidence": "Non-exception path still raises BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt); test_ordinary_invalid_signature_keeps_date_signed asserts date_signed is not None."
+            },
+            {
+              "requirement": "Expiry behavior (max_age) is preserved: expired signatures raise BadTimeSignature with the appropriate date_signed.",
+              "satisfied": true,
+              "evidence": "Expiry code unchanged; test_expired_signature_raises_signature_expired and test_future_signature_raises_signature_expired assert SignatureExpired with payload and date_signed."
+            },
+            {
+              "requirement": "TimedSerializer.loads retains its BadSignature-family error contract, raising BadTimeSignature for malformed timestamps.",
+              "satisfied": true,
+              "evidence": "TimedSerializer.loads catches BadSignature and re-raises last_exception; test_timed_serializer_malformed_timestamp_raises_bad_time_signature asserts BadTimeSignature isinstance BadSignature with payload b'value' and date_signed None."
+            },
+            {
+              "requirement": "New regression tests are added and existing tests are not modified.",
+              "satisfied": true,
+              "evidence": "Diff adds only tests/test_itsdangerous/test_timed_malformed_regression.py; no existing test files are edited."
+            }
+          ],
+          "attempt": 3,
+          "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+          "candidate_number": 3
+        }
+      ],
+      "published": false
+    }
+  ],
+  "diagnosis": {
+    "single": "All three candidates fail the original upstream TestTimestampSigner.test_malformed_future_timestamp assertion: BadTimeSignature message lacks Malformed. Original test bytes are unchanged; this is a source-contract failure.",
+    "multi_full": "Final candidate passes workspace Docker tests and independent holdout, but Reviewer remains unapproved because it questions whether the hardcoded malformed fixture proves the intended overflow branch. Shared review retry budget is exhausted; task stays failed and unapproved."
+  }
+}

@@ -6,7 +6,9 @@
 
 ## 快速开始
 
-最新版本增加原始示例输入的静态覆盖检查、逐项契约审核、模型失败冷却重试及同步检查点恢复。真实模型复测、两个固定历史版本仓库试点和发布候选证据见 [本轮阶段验收](docs/iteration2/validation.md)；复现试点见 [历史真实仓库说明](docs/iteration2/pilots/README.md)。本地完整回归 **129 passed、1 skipped**，原有测试不改动。
+最新版本增加可选的独立尝试副本：每轮从原始基线生成完整候选，旧错误测试和补丁保留在原目录；审批同时绑定候选身份与 Diff 摘要。默认沿用原策略，旧任务保持兼容。本地完整回归 **143 passed、1 skipped**，原有测试不改动。见 [本轮阶段验收](docs/iteration3/validation.md) 和 [独立尝试使用说明](docs/iteration3/isolated-attempts.md)。
+
+此前的字面输入契约检查、真实历史仓库试点与 129 项回归记录保留在 [第二轮验收](docs/iteration2/validation.md)；历史仓库复现见 [说明](docs/iteration2/pilots/README.md)。
 
 此前十个隔离合成案例 × 三模式 × 三次重复，初始冻结验收 90/90；补充 `range` 输入契约后，同一批修复 **84/90** 通过。该历史批次有 183 次逻辑请求、250708 Token；失败与补丁均保留，不将合成案例解释为真实项目泛化能力。真实反馈、浏览器视频及历史 99 项回归见 [前轮验收](docs/next-stage/validation.md)。按用户决定，PR #2 保持草稿，本轮未推送、合并或新建远端 PR。
 

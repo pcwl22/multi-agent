@@ -1,0 +1,307 @@
+{
+  "generated_at": "2026-10-16T08:17:51.122946+00:00",
+  "runtime_code_commit": "3b4247f60dd36b031dbaa2c31f70940bc31fba9b",
+  "preregistration_commit": "9ba73fa21bfe46c99b3e0d6ab7a3c95424ea0db5",
+  "policy": "isolated",
+  "no_remote_writes": true,
+  "results": {
+    "strict": {
+      "runs": 30,
+      "accepted": 29,
+      "workflow_completed": 29,
+      "ready_and_accepted": 29,
+      "reference_accepted": 28,
+      "forked_tasks": 6,
+      "preserved_candidates": 38,
+      "recovered_after_failed_docker": 4,
+      "logical_model_calls": 68,
+      "tokens_reported": 174683,
+      "unknown_usage_runs": 0,
+      "reported_model_ids": [
+        "deepseek-v4.1-flash"
+      ],
+      "failures": [
+        {
+          "case_id": "recursive-config",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "228ccf19-e883-46cb-a00b-580242aa740b",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted",
+          "test_status": "failed",
+          "acceptance_status": null
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 10,
+          "acceptance_evaluated": 10,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 25.366269680000187,
+          "average_model_calls": 1.2,
+          "average_tokens": 2628.7,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        },
+        "multi_no_review": {
+          "runs": 10,
+          "acceptance_evaluated": 10,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 46.732022229999345,
+          "average_model_calls": 2.2,
+          "average_tokens": 4797.1,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 2,
+          "retry_exhausted_runs": 0
+        },
+        "multi_full": {
+          "runs": 10,
+          "acceptance_evaluated": 9,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 0.9,
+          "test_pass_rate": 0.8656716417910447,
+          "task_completion_rate": 0.9,
+          "average_execution_seconds": 70.61831256000005,
+          "average_model_calls": 3.4,
+          "average_tokens": 10042.5,
+          "average_retries": 0.4,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 2,
+          "retry_exhausted_runs": 1
+        }
+      },
+      "dataset_sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+      "corpus_sha256": "b8df0406f1f49e1b9b5436098ddab2289241184b5352435a5430ad2bf90dc7cd"
+    },
+    "pagination": {
+      "runs": 9,
+      "accepted": 5,
+      "workflow_completed": 6,
+      "ready_and_accepted": 5,
+      "reference_accepted": 9,
+      "forked_tasks": 9,
+      "preserved_candidates": 23,
+      "recovered_after_failed_docker": 6,
+      "logical_model_calls": 31,
+      "tokens_reported": 93403,
+      "unknown_usage_runs": 0,
+      "reported_model_ids": [
+        "deepseek-v4.1-flash"
+      ],
+      "failures": [
+        {
+          "case_id": "one-based-page",
+          "mode": "multi_no_review",
+          "repeat": 0,
+          "task_id": "94e80636-8ad9-42fd-91d3-82b5fe7fe1c0",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted",
+          "test_status": "failed",
+          "acceptance_status": null
+        },
+        {
+          "case_id": "one-based-page",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "e7d74d3f-797e-446b-b9c9-82be4fdc5cec",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted",
+          "test_status": "failed",
+          "acceptance_status": null
+        },
+        {
+          "case_id": "one-based-page",
+          "mode": "multi_no_review",
+          "repeat": 1,
+          "task_id": "838c3b39-eb6e-4150-aca7-272d32e68120",
+          "execution_status": "awaiting_approval",
+          "error": null,
+          "test_status": "passed",
+          "acceptance_status": "failed"
+        },
+        {
+          "case_id": "one-based-page",
+          "mode": "single",
+          "repeat": 1,
+          "task_id": "2b975054-a6dc-4301-a1e3-c42020aab68f",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted",
+          "test_status": "failed",
+          "acceptance_status": null
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 3,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 3,
+          "bug_fix_success_rate": 0.6666666666666666,
+          "test_pass_rate": 0.8214285714285714,
+          "task_completion_rate": 0.6666666666666666,
+          "average_execution_seconds": 33.03367733333289,
+          "average_model_calls": 2.6666666666666665,
+          "average_tokens": 8175.333333333333,
+          "average_retries": 1.6666666666666667,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 3,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 2,
+          "retry_exhausted_runs": 1
+        },
+        "multi_no_review": {
+          "runs": 3,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 3,
+          "bug_fix_success_rate": 0.3333333333333333,
+          "test_pass_rate": 0.8518518518518519,
+          "task_completion_rate": 0.6666666666666666,
+          "average_execution_seconds": 42.916277199999364,
+          "average_model_calls": 3.6666666666666665,
+          "average_tokens": 10742,
+          "average_retries": 1.6666666666666667,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 3,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 1
+        },
+        "multi_full": {
+          "runs": 3,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 3,
+          "bug_fix_success_rate": 0.6666666666666666,
+          "test_pass_rate": 0.8846153846153846,
+          "task_completion_rate": 0.6666666666666666,
+          "average_execution_seconds": 43.137352700000825,
+          "average_model_calls": 4,
+          "average_tokens": 12217,
+          "average_retries": 1.3333333333333333,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 3,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 2,
+          "retry_exhausted_runs": 1
+        }
+      },
+      "dataset_sha256": "7d00f1241601c25d5dce824fa74fac51631237482933d7d2e9545cdd6acc1c2d",
+      "corpus_sha256": "5a690067245fa3331e899a3eb022d7bc039758cff3804bca18008044648e2bb7"
+    },
+    "historical": {
+      "runs": 6,
+      "accepted": 5,
+      "workflow_completed": 4,
+      "ready_and_accepted": 4,
+      "reference_accepted": 5,
+      "forked_tasks": 3,
+      "preserved_candidates": 11,
+      "recovered_after_failed_docker": 2,
+      "logical_model_calls": 17,
+      "tokens_reported": 138296,
+      "unknown_usage_runs": 0,
+      "reported_model_ids": [
+        "deepseek-v4.1-flash"
+      ],
+      "failures": [
+        {
+          "case_id": "itsdangerous-date-overflow",
+          "mode": "single",
+          "repeat": 0,
+          "task_id": "d4d06fd8-ded1-413a-9630-067f656cafbf",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted",
+          "test_status": "failed",
+          "acceptance_status": null
+        },
+        {
+          "case_id": "itsdangerous-date-overflow",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "c600f622-423b-4fb6-a506-3a2d4c833761",
+          "execution_status": "failed",
+          "error": "Review retry budget exhausted",
+          "test_status": "passed",
+          "acceptance_status": "passed"
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 2,
+          "acceptance_evaluated": 1,
+          "repair_evaluated": 2,
+          "bug_fix_success_rate": 0.5,
+          "test_pass_rate": 0.9969040247678018,
+          "task_completion_rate": 0.5,
+          "average_execution_seconds": 32.93785154999932,
+          "average_model_calls": 2,
+          "average_tokens": 17865,
+          "average_retries": 1,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 2,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 0,
+          "retry_exhausted_runs": 1
+        },
+        "multi_no_review": {
+          "runs": 2,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 2,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 45.38478710000163,
+          "average_model_calls": 2.5,
+          "average_tokens": 16521,
+          "average_retries": 0.5,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 2,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        },
+        "multi_full": {
+          "runs": 2,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 2,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 0.5,
+          "average_execution_seconds": 62.04449745000056,
+          "average_model_calls": 4,
+          "average_tokens": 34762,
+          "average_retries": 1,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 2,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 1
+        }
+      },
+      "dataset_sha256": "b7e04741ba6d84c5e99f2da9ffc3a844e00fb3178051ca110083899462901466",
+      "corpus_sha256": "ecbb424702454c678136bef94ffc922290c009c3ea4abc161da2b4c90584031f"
+    }
+  }
+}

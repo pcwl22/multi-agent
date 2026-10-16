@@ -1,0 +1,170 @@
+{
+  "registered_tasks": 9,
+  "accepted": 5,
+  "retry_exhausted": 3,
+  "workspace_pass_holdout_failed": 1,
+  "diagnosis": "Repeated fresh candidates can still omit list conversion for range input; generated tests can still contain an incorrect partial-tail expectation. One passing candidate encoded range output in its own tests and failed four independent list-output assertions.",
+  "posthoc_model_reruns": 0,
+  "failures": [
+    {
+      "task_id": "94e80636-8ad9-42fd-91d3-82b5fe7fe1c0",
+      "mode": "multi_no_review",
+      "repeat": 0,
+      "execution_status": "failed",
+      "error": "Test retry budget exhausted",
+      "workspace_test": "failed",
+      "holdout": null,
+      "candidates": [
+        {
+          "number": 1,
+          "id": "46de5292-bec5-49fc-8948-c935b992b2c3",
+          "diff_digest": "67381710ccf4593e5fa05a69c8d2e14a8de0bc03bbe311d56825bcd6eaa85d89",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 2,
+          "id": "677d892d-2b53-4894-b666-0b000ea2ac33",
+          "diff_digest": "4fcd4676db91110e2e80b7590d7a2874282ee084995d62966ca050e4c2479a36",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 3,
+          "id": "28869f95-54c8-42db-8c0b-6c42a4849813",
+          "diff_digest": "280a5ff4937f24bd2efa6d7af3189e93e2f35da8b1db9badc79ed67f30470642",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        }
+      ],
+      "approval_status": "pending",
+      "published": false
+    },
+    {
+      "task_id": "e7d74d3f-797e-446b-b9c9-82be4fdc5cec",
+      "mode": "multi_full",
+      "repeat": 0,
+      "execution_status": "failed",
+      "error": "Test retry budget exhausted",
+      "workspace_test": "failed",
+      "holdout": null,
+      "candidates": [
+        {
+          "number": 1,
+          "id": "94cbf31c-6865-4047-a87e-903af8bafee9",
+          "diff_digest": "0d31169bead94e299dfb85c0b687834514e26e66d3174c52c7203711da434fbb",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 2,
+          "id": "24e00cf3-b5cd-468f-9125-9f400b9ee1e9",
+          "diff_digest": "0d31169bead94e299dfb85c0b687834514e26e66d3174c52c7203711da434fbb",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 3,
+          "id": "871944ce-307b-48bc-8ca7-dd535a9b0a18",
+          "diff_digest": "0d31169bead94e299dfb85c0b687834514e26e66d3174c52c7203711da434fbb",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        }
+      ],
+      "approval_status": "pending",
+      "published": false
+    },
+    {
+      "task_id": "838c3b39-eb6e-4150-aca7-272d32e68120",
+      "mode": "multi_no_review",
+      "repeat": 1,
+      "execution_status": "awaiting_approval",
+      "error": null,
+      "workspace_test": "passed",
+      "holdout": "failed",
+      "candidates": [
+        {
+          "number": 1,
+          "id": "46fac258-99db-4ccd-88ee-8d0375cf9cfd",
+          "diff_digest": "91aa9534d1caba799c6c1a63657584dfa3baf9cb3985ba97349c75528413c07c",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 2,
+          "id": "d8fce9f5-0acd-4f78-b65a-9363de6bedac",
+          "diff_digest": "10740d425f96e22e032b3acde28d7d73ce8686d17b900a84f1cca0838d4e31bd",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 3,
+          "id": "0cc8ed46-8661-4d41-95a6-c1fccc0599d4",
+          "diff_digest": "f7f3e3c295e7ab6ed8639f8b47e8ecae8abd8bf56c52b4d753cbfb16c948cfdb",
+          "test_statuses": [
+            "passed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        }
+      ],
+      "approval_status": "pending",
+      "published": false
+    },
+    {
+      "task_id": "2b975054-a6dc-4301-a1e3-c42020aab68f",
+      "mode": "single",
+      "repeat": 1,
+      "execution_status": "failed",
+      "error": "Test retry budget exhausted",
+      "workspace_test": "failed",
+      "holdout": null,
+      "candidates": [
+        {
+          "number": 1,
+          "id": "54977587-58d0-4719-844a-5aa40a726c15",
+          "diff_digest": "6381675c8f28a1dfac9a7ae3719e4d3c184f2e87c9f47fe45b41c5aebb15039b",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 2,
+          "id": "e5fc751b-2994-4280-91f3-5a0987094365",
+          "diff_digest": "69d2951233f02adc0c6eb40dd504f4f1d0a746a94dbea892a82e0e50172ad13e",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        },
+        {
+          "number": 3,
+          "id": "3601caa2-1995-4fee-9f0b-77277b8078fb",
+          "diff_digest": "69d2951233f02adc0c6eb40dd504f4f1d0a746a94dbea892a82e0e50172ad13e",
+          "test_statuses": [
+            "failed"
+          ],
+          "source_sha256": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19"
+        }
+      ],
+      "approval_status": "pending",
+      "published": false
+    }
+  ]
+}

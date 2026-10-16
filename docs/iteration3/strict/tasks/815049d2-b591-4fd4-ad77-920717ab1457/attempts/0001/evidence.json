@@ -1,0 +1,72 @@
+{
+  "candidate_id": "841ce66d-89b3-4f67-a178-af3ed76c5838",
+  "candidate_number": 1,
+  "diff": "--- a/cache.py\n+++ b/cache.py\n@@ -1,2 +1,2 @@\n def is_expired(inserted_at, ttl, now):\n-    return now > inserted_at + ttl\n+    return now >= inserted_at + ttl\n--- a/tests/test_expiry_boundary.py\n+++ b/tests/test_expiry_boundary.py\n@@ -0,0 +1,36 @@\n+from cache import is_expired\n+\n+\n+def test_expires_exactly_at_boundary():\n+    # Entry must be expired exactly at inserted_at + ttl.\n+    assert is_expired(10, 5, 15) is True\n+\n+\n+def test_zero_ttl_expires_immediately_at_insert_time():\n+    # Zero TTL: expired at the insertion instant itself.\n+    assert is_expired(10, 0, 10) is True\n+\n+\n+def test_zero_ttl_expired_after_insert_time():\n+    assert is_expired(10, 0, 11) is True\n+\n+\n+def test_preserved_before_expiry():\n+    # Strictly before the boundary the entry is still alive.\n+    assert is_expired(10, 5, 14) is False\n+    assert is_expired(10, 5, 0) is False\n+\n+\n+def test_preserved_after_expiry():\n+    # Strictly after the boundary the entry is expired.\n+    assert is_expired(10, 5, 16) is True\n+\n+\n+def test_boundary_with_negative_ttl():\n+    # Negative TTL is already past expiry at insertion time.\n+    assert is_expired(10, -1, 10) is True\n+\n+\n+def test_return_type_is_bool():\n+    assert type(is_expired(10, 5, 15)) is bool\n+    assert type(is_expired(10, 5, 14)) is bool\n",
+  "diff_digest": "38ca77a462c91d3344c859ebfd9433300cfc33c3d1781b02c393fa2c40e14cb3",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 1,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "841ce66d-89b3-4f67-a178-af3ed76c5838",
+      "candidate_number": 1,
+      "changed_files": [
+        "cache.py",
+        "tests/test_expiry_boundary.py"
+      ],
+      "contract_tests": [
+        "Expiry at exact boundary: is_expired(10, 5, 15) is True (asserted in tests/test_expiry_boundary.py::test_expires_exactly_at_boundary).",
+        "Zero TTL expires at insertion instant: is_expired(10, 0, 10) is True (asserted in tests/test_expiry_boundary.py::test_zero_ttl_expires_immediately_at_insert_time).",
+        "Zero TTL expired after insertion: is_expired(10, 0, 11) is True (asserted in tests/test_expiry_boundary.py::test_zero_ttl_expired_after_insert_time).",
+        "Preserve alive strictly before expiry: is_expired(10, 5, 14) is False and is_expired(10, 5, 0) is False (asserted in tests/test_expiry_boundary.py::test_preserved_before_expiry).",
+        "Preserve expired strictly after expiry: is_expired(10, 5, 16) is True (asserted in tests/test_expiry_boundary.py::test_preserved_after_expiry).",
+        "Negative TTL already expired at insertion: is_expired(10, -1, 10) is True (asserted in tests/test_expiry_boundary.py::test_boundary_with_negative_ttl).",
+        "Return type is bool for both boundary and pre-boundary inputs (asserted in tests/test_expiry_boundary.py::test_return_type_is_bool)."
+      ],
+      "edits": [
+        {
+          "new": "def is_expired(inserted_at, ttl, now):\n    return now >= inserted_at + ttl",
+          "old": "def is_expired(inserted_at, ttl, now):\n    return now > inserted_at + ttl",
+          "path": "cache.py"
+        },
+        {
+          "new": "from cache import is_expired\n\n\ndef test_expires_exactly_at_boundary():\n    # Entry must be expired exactly at inserted_at + ttl.\n    assert is_expired(10, 5, 15) is True\n\n\ndef test_zero_ttl_expires_immediately_at_insert_time():\n    # Zero TTL: expired at the insertion instant itself.\n    assert is_expired(10, 0, 10) is True\n\n\ndef test_zero_ttl_expired_after_insert_time():\n    assert is_expired(10, 0, 11) is True\n\n\ndef test_preserved_before_expiry():\n    # Strictly before the boundary the entry is still alive.\n    assert is_expired(10, 5, 14) is False\n    assert is_expired(10, 5, 0) is False\n\n\ndef test_preserved_after_expiry():\n    # Strictly after the boundary the entry is expired.\n    assert is_expired(10, 5, 16) is True\n\n\ndef test_boundary_with_negative_ttl():\n    # Negative TTL is already past expiry at insertion time.\n    assert is_expired(10, -1, 10) is True\n\n\ndef test_return_type_is_bool():\n    assert type(is_expired(10, 5, 15)) is bool\n    assert type(is_expired(10, 5, 14)) is bool\n",
+          "old": "",
+          "path": "tests/test_expiry_boundary.py"
+        }
+      ],
+      "rationale": "The issue states cache entries must expire exactly at inserted_at + ttl, including zero TTL. The current `is_expired` uses `now > inserted_at + ttl`, which keeps entries alive at the boundary (e.g. is_expired(10, 5, 15) returns False). The fix is to use `>=` so the boundary counts as expired. This preserves behavior strictly before expiry (now < inserted_at + ttl → False) and strictly after (now > inserted_at + ttl → True), while changing only the exact boundary. Zero TTL: is_expired(10, 0, 10) must be True. I add a new regression test file (tests/test_expiry_boundary.py) that is not in existing_test_paths, covering the boundary, zero TTL, and preservation of before/after behavior with exact input types (ints) and boolean results."
+    }
+  ],
+  "recorded_digest": "38ca77a462c91d3344c859ebfd9433300cfc33c3d1781b02c393fa2c40e14cb3",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "841ce66d-89b3-4f67-a178-af3ed76c5838",
+      "candidate_number": 1,
+      "duration_seconds": 1.0568232000005082,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 8,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.12s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "cache.py": "a5d39b8c40eebb25ccb14b044ee79a2c387b85172fcaa7d18d6ee5468bbe8157",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_contract.py": "cdb9dfe18c755cd72b92c4789ca7967e8c5ddafaafcfa443087e66eea344d5ec",
+    "tests/test_expiry_boundary.py": "c29b150ac23001c39ae71692ba7c84cc51d2a10a6b3349bbd9a6e9856784e099"
+  }
+}
