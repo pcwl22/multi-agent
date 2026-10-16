@@ -8,6 +8,8 @@ COMMON = (
     "Paths are relative to repository. "
     "Translate the ORIGINAL issue into explicit acceptance contracts: literal examples, "
     "input and output types, boundary behavior, preservation and mutation requirements. "
+    "Do not invent additional type or rounding requirements; preserve existing semantics "
+    "unless the issue explicitly changes them. Focus new tests on the stated contracts. "
     "Preserve each example's actual input expression and expected value/type in new tests; "
     "do not silently substitute a more convenient input type. Passing tests are evidence "
     "only for the behaviors they exercise, not proof of every issue requirement. "
