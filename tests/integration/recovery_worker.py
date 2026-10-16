@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+import app
 from app.config.settings import Settings
 from app.sandbox.runner import DockerRunner
 from app.services.tasks import TaskService
@@ -12,6 +13,7 @@ from app.tools.repository import Repository
 
 def main():
     data, source, task_id, crash_point = sys.argv[1:]
+    (Path(data) / "worker-app.txt").write_text(str(Path(app.__file__).resolve()), encoding="utf8")
     settings = Settings(data_dir=Path(data), repository_root=Path(source))
 
     class BeforeTestCrash(DockerRunner):

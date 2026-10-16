@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import app
 from app.config.settings import Settings
 from app.models.schemas import TaskRequest
 from app.services.tasks import TaskService
@@ -31,11 +32,16 @@ def test_process_loss_resumes_recorded_patch_or_refuses_unrecorded_write(tmp_pat
     env.pop("GITHUB_TOKEN", None)
     env["REPOPILOT_MODEL_MODE"] = "mock"
     result = subprocess.run([
-        sys.executable, "-m", "tests.integration.recovery_worker", str(settings.data_dir),
+        sys.executable, "-I", "-c",
+        "import app, runpy, sys; sys.argv = sys.argv[1:]; "
+        "runpy.run_path(sys.argv[0], run_name='__main__')",
+        str(ROOT / "tests/integration/recovery_worker.py"), str(settings.data_dir),
         str(settings.repository_root), task["task_id"], point,
     ], cwd=ROOT, env=env, capture_output=True, timeout=45)
     assert result.returncode == exit_code, result.stderr.decode(errors="replace")
     assert (settings.data_dir / "crash-marker.txt").exists()
+    assert (settings.data_dir / "worker-app.txt").read_text(encoding="utf8") == str(
+        Path(app.__file__).resolve())
     restarted = TaskService(settings)
     try:
         state = restarted.get(task["task_id"])
