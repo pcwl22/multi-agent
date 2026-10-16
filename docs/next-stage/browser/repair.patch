@@ -1,0 +1,30 @@
+--- a/auth.py
++++ b/auth.py
+@@ -5,7 +5,7 @@
+ 
+ def authenticate(authorization: str | None) -> dict:
+     if authorization == "Bearer expired":
+-        raise HTTPException(status_code=500, detail="Token expired")
++        raise HTTPException(status_code=401, detail="Token expired")
+     if authorization != "Bearer valid":
+         raise HTTPException(status_code=401, detail="Unauthorized")
+     return {"user": "alice"}
+--- a/tests/test_auth_expired.py
++++ b/tests/test_auth_expired.py
+@@ -0,0 +1,16 @@
++from auth import app
++from fastapi.testclient import TestClient
++
++
++def test_expired_token_returns_401():
++    response = TestClient(app).get(
++        "/profile", headers={"Authorization": "Bearer expired"}
++    )
++    assert response.status_code == 401
++
++
++def test_expired_token_detail():
++    response = TestClient(app).get(
++        "/profile", headers={"Authorization": "Bearer expired"}
++    )
++    assert response.json() == {"detail": "Token expired"}

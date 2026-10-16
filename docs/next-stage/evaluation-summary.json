@@ -1,0 +1,56 @@
+{
+  "initial_rate_limited": {
+    "runs": 90,
+    "accepted": 23,
+    "provider_errors": 67,
+    "model_calls": 118,
+    "reported_tokens_known_runs": 64409,
+    "token_unknown_runs": 67,
+    "natural_recovered_runs": 2,
+    "retry_exhausted_runs": 0,
+    "same_image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "existing_tests_byte_unchanged": true,
+    "hidden_acceptance_not_in_prompt": true,
+    "mode_outcomes": {
+      "single": {
+        "accepted": 7,
+        "total": 30
+      },
+      "multi_no_review": {
+        "accepted": 7,
+        "total": 30
+      },
+      "multi_full": {
+        "accepted": 9,
+        "total": 30
+      }
+    }
+  },
+  "paced_repeat": {
+    "runs": 90,
+    "accepted": 90,
+    "provider_errors": 0,
+    "model_calls": 183,
+    "reported_tokens_known_runs": 250708,
+    "token_unknown_runs": 0,
+    "natural_recovered_runs": 3,
+    "retry_exhausted_runs": 0,
+    "same_image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "existing_tests_byte_unchanged": true,
+    "hidden_acceptance_not_in_prompt": true,
+    "mode_outcomes": {
+      "single": {
+        "accepted": 30,
+        "total": 30
+      },
+      "multi_no_review": {
+        "accepted": 30,
+        "total": 30
+      },
+      "multi_full": {
+        "accepted": 30,
+        "total": 30
+      }
+    }
+  }
+}

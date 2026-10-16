@@ -1,0 +1,94 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,27 @@
++import copy
++
++
++def _is_mapping(value):
++    return isinstance(value, dict)
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    """Recursively merge ``overrides`` into ``defaults``.
++
++    Nested mappings are merged key by key, with values from ``overrides``
++    winning at the leaves. Non-mapping values (including lists) are replaced
++    rather than concatenated. The returned structure is independent of both
++    inputs: neither input is mutated and no nested object is shared with the
++    result.
++    """
++    result = copy.deepcopy(defaults)
++    for key, override_value in overrides.items():
++        if (
++            key in result
++            and _is_mapping(result[key])
++            and _is_mapping(override_value)
++        ):
++            result[key] = merge_config(result[key], override_value)
++        else:
++            result[key] = copy.deepcopy(override_value)
+     return result
+--- a/tests/test_merge_config_recursive.py
++++ b/tests/test_merge_config_recursive.py
+@@ -0,0 +1,59 @@
++from config import merge_config
++
++
++def test_nested_mappings_merge_recursively():
++    defaults = {"a": {"b": 1, "c": 2}, "d": 3}
++    overrides = {"a": {"c": 20, "e": 5}}
++    assert merge_config(defaults, overrides) == {
++        "a": {"b": 1, "c": 20, "e": 5},
++        "d": 3,
++    }
++
++
++def test_deeply_nested_mappings_merge():
++    defaults = {"a": {"b": {"c": 1, "d": 2}}}
++    overrides = {"a": {"b": {"d": 4, "e": 5}}}
++    assert merge_config(defaults, overrides) == {
++        "a": {"b": {"c": 1, "d": 4, "e": 5}}
++    }
++
++
++def test_lists_are_replaced_not_concatenated():
++    defaults = {"items": [1, 2, 3]}
++    overrides = {"items": [4]}
++    assert merge_config(defaults, overrides) == {"items": [4]}
++
++
++def test_simple_overrides_preserved():
++    assert merge_config({"a": 1}, {"a": 2, "b": 3}) == {"a": 2, "b": 3}
++    assert merge_config({}, {}) == {}
++
++
++def test_inputs_are_not_mutated():
++    defaults = {"a": {"b": 1}, "items": [1, 2]}
++    overrides = {"a": {"c": 2}, "items": [3]}
++    defaults_snapshot = {"a": {"b": 1}, "items": [1, 2]}
++    overrides_snapshot = {"a": {"c": 2}, "items": [3]}
++
++    merge_config(defaults, overrides)
++
++    assert defaults == defaults_snapshot
++    assert overrides == overrides_snapshot
++
++
++def test_result_does_not_share_nested_objects():
++    defaults = {"a": {"b": 1}, "items": [1, 2]}
++    overrides = {"a": {"c": 2}, "items": [3]}
++
++    result = merge_config(defaults, overrides)
++
++    assert result["a"] is not defaults["a"]
++    assert result["a"] is not overrides["a"]
++    assert result["items"] is not defaults["items"]
++    assert result["items"] is not overrides["items"]
++
++    result["a"]["b"] = 999
++    result["items"].append(4)
++    assert defaults["a"]["b"] == 1
++    assert defaults["items"] == [1, 2]
++    assert overrides["items"] == [3]

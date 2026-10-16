@@ -56,3 +56,5 @@
 设置 `REPOPILOT_RUN_DOCKER_TESTS=1` 后执行 `python -m pytest -q`：**67 passed，1 skipped**。跳过为 Windows 创建符号链接权限限制；11 条警告为 TestClient 参数弃用提示。`python -m ruff check .` 通过。所有原有测试文件均保持不变，新增测试覆盖本轮改动。
 
 四阶段已完成实现与上述本地验收。后续真实 LLM、实际草稿 PR 和 CI 结果见 [新增验收记录](live-validation.md)，更新后的完整回归为 78 passed、1 skipped。没有合并 PR。
+
+之后的 PR #2 审查、十案例评测、真实反馈、本地浏览器验收和发布候选准备，见 [后续五阶段记录](next-stage/validation.md)。新回归为 99 passed、1 skipped；十案例补充契约后 84/90。用户明确选择保留草稿、继续本地验证，本轮未合并、推送或新增远端 PR。

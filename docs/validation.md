@@ -4,6 +4,8 @@
 
 ## 最新：真实 DeepSeek 与 PR
 
+后续五阶段已继续推进，最新记录见 [后续本地验收](next-stage/validation.md)。本地回归 99 passed、1 skipped；十案例冻结评测 90/90，补充遗漏的 range 输入契约后，同一批保存修复为 **84/90**。两轮原始生成记录、事后复验和失败均分开保留。PR #2 依用户选择保持草稿；本轮没有远端写入。以下为此前三案例验收的历史记录。
+
 完整记录见 [联网与实际 PR 验收](live-validation.md)。请求与响应模型标识 `deepseek-v4.1-flash`，兼容服务为用户指定的 `muyuan.do`。首轮真实评测 6/9 成功、3 次被不可变测试门禁拒绝；新增拒绝反馈并改进提示后复跑 9/9 成功，18 次调用、25013 Token。两轮所有原始结果均保留。
 
 真实模型生成的另一个 Token 修复经 5 项回归和 3 项独立验收后，已实际创建 [草稿 PR #1](https://github.com/pcwl22/multi-agent/pull/1)，最新 CI 的 Python 3.11 / 3.13、Docker 及专用契约检查通过。新增文件的导入排序曾导致 lint 失败，格式化后复验并更新同一 PR；没有改变测试断言或应用修复。凭据未写入项目文件，短期凭据进程已关闭。
@@ -42,7 +44,7 @@ Docker 启动前还运行过三模式评测，三次均如实记录为 blocked�
 
 首次标准 Docker 构建因 Docker Hub 网络不可达失败。最终使用本机已有基础镜像和宿主 Python 下载的 Linux wheels，采用 `sandbox/Dockerfile.offline` 成功构建。未修改全局网络代理或 Docker 设置。
 
-## 未验证与后续
+## 前一轮当时未验证的范围（历史快照）
 
 - 未配置 OPENAI_API_KEY：真实 LLM 联网修复与 LangSmith 上传未验证。
 - GitHub PR 模块通过 HTTP 合约测试，但没有向真实远端创建测试 PR；真实写入仍需维护者明确授权测试任务。

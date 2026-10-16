@@ -1,0 +1,6 @@
+{
+  "oracle": "app\\evaluation\\expanded\\acceptance\\test_pagination_sequence_acceptance.py",
+  "sha256": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676",
+  "generation_dataset_unchanged": true,
+  "oracle_added_after_generation": true
+}

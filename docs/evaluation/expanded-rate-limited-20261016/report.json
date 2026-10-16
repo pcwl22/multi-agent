@@ -1,0 +1,74 @@
+{
+  "model_mode": "live",
+  "model_name": "deepseek-v4.1-flash",
+  "model_endpoint_host": "muyuan.do",
+  "dataset_cases": 10,
+  "repeats": 3,
+  "dataset_sha256": "26dcb91786dae3d8e665d5d84065a1c128572c1e3fbe95793e0103bbbf0273f9",
+  "corpus_sha256": "634f021c0a22a1f416d1dbd45fd823bbaa816f49386f6b21d56539d834e715c9",
+  "python_version": "3.13.5",
+  "dependencies": {
+    "langgraph": "1.2.9",
+    "langchain-openai": "1.7.2",
+    "mcp": "1.29.0",
+    "pydantic": "2.13.4",
+    "fastapi": "0.136.3"
+  },
+  "configuration": {
+    "workers": 3,
+    "context_chars": 24000,
+    "max_retries": 2,
+    "temperature": 0,
+    "sandbox_image": "repopilot-sandbox:local",
+    "model_timeout": 120.0,
+    "test_timeout": 60
+  },
+  "note": "null means no execution evidence. Mock results do not measure LLM capability.",
+  "modes": {
+    "single": {
+      "runs": 30,
+      "acceptance_evaluated": 7,
+      "repair_evaluated": 30,
+      "bug_fix_success_rate": 0.23333333333333334,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 0.23333333333333334,
+      "average_execution_seconds": 2.559053763333213,
+      "average_model_calls": 1,
+      "average_tokens": 1108.5714285714287,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 7
+    },
+    "multi_no_review": {
+      "runs": 30,
+      "acceptance_evaluated": 7,
+      "repair_evaluated": 30,
+      "bug_fix_success_rate": 0.23333333333333334,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 0.23333333333333334,
+      "average_execution_seconds": 3.537747983333308,
+      "average_model_calls": 1.3333333333333333,
+      "average_tokens": 3136.5714285714284,
+      "average_retries": 0.1,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 7
+    },
+    "multi_full": {
+      "runs": 30,
+      "acceptance_evaluated": 9,
+      "repair_evaluated": 30,
+      "bug_fix_success_rate": 0.3,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 0.3,
+      "average_execution_seconds": 4.831753423333369,
+      "average_model_calls": 1.6,
+      "average_tokens": 3854.777777777778,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 9
+    }
+  }
+}

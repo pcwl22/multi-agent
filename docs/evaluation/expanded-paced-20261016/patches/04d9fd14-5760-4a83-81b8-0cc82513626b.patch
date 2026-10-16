@@ -1,0 +1,73 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_export_rows_csv.py
++++ b/tests/test_export_rows_csv.py
+@@ -0,0 +1,56 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def _round_trip(text):
++    return list(csv.reader(io.StringIO(text)))
++
++
++def test_empty_input():
++    assert export_rows([]) == ""
++
++
++def test_simple_rows_unchanged():
++    assert export_rows([["a", 1], ["b", 2]]) == "a,1\nb,2\n"
++
++
++def test_lf_line_endings():
++    out = export_rows([["a", "b"], ["c", "d"]])
++    assert "\r" not in out
++    assert out == "a,b\nc,d\n"
++
++
++def test_cell_with_comma():
++    out = export_rows([["a,b", "c"]])
++    assert out == '"a,b",c\n'
++    assert _round_trip(out) == [["a,b", "c"]]
++
++
++def test_cell_with_quote():
++    out = export_rows([['he said "hi"', "x"]])
++    assert _round_trip(out) == [['he said "hi"', "x"]]
++
++
++def test_cell_with_newline():
++    out = export_rows([["line1\nline2", "z"]])
++    assert _round_trip(out) == [["line1\nline2", "z"]]
++
++
++def test_unicode_preserved():
++    rows = [["caf\u00e9", "\u4f60\u597d"], ["\U0001f600", "ok"]]
++    out = export_rows(rows)
++    assert "caf\u00e9" in out
++    assert "\u4f60\u597d" in out
++    assert "\U0001f600" in out
++    assert _round_trip(out) == rows
++
++
++def test_round_trip_mixed():
++    rows = [
++        ["plain", "with,comma", 'with"quote', "with\nnewline"],
++        ["\u00e9\u00e8", "1", "2.5", ""],
++    ]
++    out = export_rows(rows)
++    assert _round_trip(out) == rows

@@ -11,7 +11,14 @@ st.caption("LangGraph + MCP · 本地演示 · 修改保存在独立任务副本
 
 def api(method, path, **kwargs):
     response = httpx.request(method, API + path, timeout=15, **kwargs)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        try:
+            detail = response.json().get("detail") or response.reason_phrase
+        except (ValueError, AttributeError):
+            detail = response.reason_phrase
+        raise ValueError(f"{str(detail)[:1000]}（HTTP {response.status_code}）") from exc
     return response.json()
 
 

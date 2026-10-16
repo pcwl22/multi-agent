@@ -6,6 +6,10 @@
 
 ## 快速开始
 
+最新后续验收：十个隔离合成案例 × 三模式 × 三次重复。初始冻结验收 90/90；补充此前遗漏的 `range` 输入契约后，同一批修复 **84/90** 通过。原始失败和补丁均保留，不把合成语料结果解释为真实项目泛化能力。模型逻辑请求 183 次、250708 Token，加入 7.5 秒请求间隔后的该轮服务错误为 0。
+
+另已完成真实反馈恢复、预算耗尽终止和浏览器本地验收；最新本地回归 **99 passed、1 skipped**。按用户决定，PR #2 保持草稿，本轮未推送、合并或新建远端 PR。完整记录见 [后续阶段验收](docs/next-stage/validation.md)。
+
 要求 Python 3.11+、Git、Docker Desktop/Linux Docker。Windows 使用 PowerShell 7。以下命令从项目根目录执行：
 
 ```powershell
@@ -43,6 +47,8 @@ python -m streamlit run frontend/demo.py --server.address 127.0.0.1
 
 访问 Streamlit 显示的本地地址，提交描述后点击“刷新执行进度”。可输入旧任务 ID 加载状态。API 文档位于 `http://127.0.0.1:8000/docs`；POST 由本地 CLI/Streamlit 服务端调用，浏览器 Origin 写请求被拒绝，因此 Swagger 的浏览器写入操作可能受限。服务仅用于本地开发，不要开放公网或使用共享可写的任务目录。
 
+也可用 `python scripts/start_demo.py` 同时启动两个进程，Ctrl+C 一起关闭。真实模型演示用 `python scripts/start_demo.py --live`，密钥通过隐藏输入进入 API 子进程，UI 不接收密钥。完整干净环境步骤与发布包说明见 [v0.1.0 发布准备](docs/release-v0.1.0.md)。
+
 ## 真实模型模式
 
 在 `.env` 或进程环境配置：
@@ -60,6 +66,8 @@ OPENAI_API_KEY=your-key
 兼容服务已通过真实 DeepSeek 联网验收：本轮请求与响应模型标识为 `deepseek-v4.1-flash`，基地址为 `https://muyuan.do/v1`。可将上述模型名和基地址改为服务实际提供的值。密钥无需写入文件，PowerShell 可用 `$env:OPENAI_API_KEY = Read-Host 'API key' -MaskInput` 在当前环境临时配置。详见 [真实联网与 PR 验收](docs/live-validation.md)。
 
 可选 LangSmith：显式设置 `LANGSMITH_TRACING=true` 和 `LANGSMITH_API_KEY`。默认关闭，事件与状态始终保存在本地；LangSmith 上传仍未验收。
+
+有限流的服务可设置 `REPOPILOT_MODEL_MIN_INTERVAL=7.5`。同一进程、同一端点的模型实例共享请求间隔；不同进程不会自动协调。
 
 ## 已实现
 
@@ -145,6 +153,16 @@ python -m app.mcp_server.server
 工具：`list_files`、`search_code`、`read_file`、`find_symbol`、`inspect_dependencies`、`git_diff`。内部 Graph 直接复用同一工具实现，不依赖 MCP 传输才能运行。Git 工具仅处理带本地 `.git` 目录的仓库，不支持 Git linked worktree；输出 tracked diff。任务副本的完整新增文件 diff 由独立 baseline 比较提供。
 
 ## 评测与验证
+
+新增十案例语料推荐使用补充契约版：
+
+```powershell
+$env:REPOPILOT_REPOSITORY_ROOT = 'app/evaluation/expanded/repos'
+$env:REPOPILOT_MODEL_MIN_INTERVAL = '7.5'
+python -m app.evaluation.runner --dataset app/evaluation/expanded/dataset.strict.json --repeats 3 --workers 3
+```
+
+上面的命令需要先按“真实模型模式”配置进程凭据和模型。原始十案例冻结版本 `dataset.json` 保留用于复现；较严格的 84/90 来自对已保存补丁的事后 Docker 复验，没有重新调用模型或修改补丁。明细见 [补充契约复验](docs/evaluation/expanded-strict-replay-20261016/report.md)。以下三案例命令和历史数字继续保留。
 
 ```powershell
 python -m app.evaluation.runner --repeats 3

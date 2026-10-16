@@ -1,0 +1,26 @@
+--- a/auth.py
++++ b/auth.py
+@@ -1,6 +1,6 @@
+ def authenticate(token):
+     if token == "expired":
+-        return 500, "expired"
++        return 401, "expired"
+     if token == "valid":
+         return 200, "alice"
+     return 401, "missing"
+--- a/tests/test_expired_token_regression.py
++++ b/tests/test_expired_token_regression.py
+@@ -0,0 +1,13 @@
++from auth import authenticate
++
++
++def test_expired_token_returns_401():
++    assert authenticate("expired") == (401, "expired")
++
++
++def test_valid_token_still_works():
++    assert authenticate("valid") == (200, "alice")
++
++
++def test_absent_token_still_missing():
++    assert authenticate(None) == (401, "missing")

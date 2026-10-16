@@ -1,8 +1,10 @@
 # v0.1.0 release preparation
 
-Status: local release candidate; no tag, GitHub Release or package publication has
-been performed. Exact validation results and artifact hashes are recorded after
-the current staged acceptance finishes.
+Status: local release candidate. This delivery did not push, merge, create a
+remote PR, tag or release, following the user's choice to keep PR #2 draft.
+Fresh isolated-wheel validation: 99 passed, 1 skipped; pip check and Ruff passed.
+The original ten-case oracle accepted 90/90; the added range contract accepted
+84/90 of the same unchanged patches. See [evidence](next-stage/validation.md).
 
 ## Clean environment
 
@@ -46,7 +48,7 @@ with hidden input. Run a fresh output directory:
 ```powershell
 $env:REPOPILOT_REPOSITORY_ROOT = 'app/evaluation/expanded/repos'
 $env:REPOPILOT_MODEL_MIN_INTERVAL = '7.5'
-python -m app.evaluation.runner --dataset app/evaluation/expanded/dataset.json --repeats 3 --workers 3
+python -m app.evaluation.runner --dataset app/evaluation/expanded/dataset.strict.json --repeats 3 --workers 3
 ```
 
 Every case has a failing independent baseline and hidden holdout. All provider

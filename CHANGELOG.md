@@ -10,6 +10,9 @@
   acceptance and preserved failures; original three-case pilot remains available.
 - Ten separate synthetic cases, including cross-file changes and retrieval noise;
   per-attempt evidence, corpus hashes and bounded parallel evaluation.
+- Added range contract checks expose six incomplete repairs; preserve the original
+  90/90 and report the stricter 84/90 without changing saved patches.
+- Readable API rejection details in the UI, covered by a component test.
 - Process-local endpoint request pacing; controlled live fault-injection
   experiments are labeled separately from benchmark results.
 - Combined local demo launcher with hidden credential input and owned-child

@@ -4,6 +4,8 @@
 
 1. Review PR #2. Completed locally; evidence in `pr2-review.json` and
    `pr2-review.md`. Merge remains subject to digest-bound human approval.
+   User selected keeping the PR draft and continuing local validation; external
+   publication is deferred for this delivery.
 2. Expand to ten isolated cases and run three modes three times with a frozen
    corpus and independent holdouts. Preserve provider failures in original data.
 3. Extract natural feedback recoveries. Supplement finite-failure behavior with

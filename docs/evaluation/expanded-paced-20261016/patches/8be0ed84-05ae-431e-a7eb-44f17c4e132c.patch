@@ -1,0 +1,30 @@
+--- a/cache.py
++++ b/cache.py
+@@ -1,2 +1,2 @@
+ def is_expired(inserted_at, ttl, now):
+-    return now > inserted_at + ttl
++    return now >= inserted_at + ttl
+--- a/tests/test_cache_expiry_boundary.py
++++ b/tests/test_cache_expiry_boundary.py
+@@ -0,0 +1,21 @@
++from cache import is_expired
++
++
++def test_alive_just_before_expiry():
++    assert not is_expired(10, 5, 14)
++
++
++def test_expired_exactly_at_boundary():
++    assert is_expired(10, 5, 15)
++
++
++def test_expired_just_after_expiry():
++    assert is_expired(10, 5, 16)
++
++
++def test_zero_ttl_expires_immediately():
++    assert is_expired(10, 0, 10)
++
++
++def test_zero_ttl_expired_after_insertion():
++    assert is_expired(10, 0, 11)

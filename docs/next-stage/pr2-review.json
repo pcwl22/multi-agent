@@ -17,5 +17,5 @@
   },
   "ruff": "passed",
   "ci": "all checks successful at reviewed head",
-  "merge": "pending digest-bound human approval"
+  "merge": "deferred: user explicitly chose keep draft and continue local validation"
 }

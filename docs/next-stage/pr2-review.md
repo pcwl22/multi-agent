@@ -16,3 +16,6 @@ and Docker end-to-end checks. PR #1's separate repair contract is also green.
 
 PR #2 stays draft, unmerged. This review supplies a concrete patch and digest for
 human merge approval; continuing local development does not merge the PR.
+
+User decision during this run: keep PR #2 draft and continue subsequent local
+validation. No merge, push or new remote publication is performed in this round.
