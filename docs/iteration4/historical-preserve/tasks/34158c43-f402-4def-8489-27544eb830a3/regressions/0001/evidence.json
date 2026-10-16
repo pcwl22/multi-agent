@@ -1,0 +1,10 @@
+{
+  "status": "no_new_tests",
+  "generated_tests": [],
+  "baseline_workspace": null,
+  "baseline_result": null,
+  "fail_to_pass_tests": [],
+  "note": "No added test files to replay.",
+  "attempt": 2,
+  "diff_digest": "81d9ef800bec0961e3fc42b75dc6f058cf7cb1d08156cea245e799d654c65385"
+}

@@ -1,0 +1,121 @@
+{
+  "patches": [
+    {
+      "rationale": "parse_event_time currently does `parsed.replace(tzinfo=timezone.utc)`, which overwrites any parsed offset with UTC instead of converting the instant. Fix: if the parsed datetime is naive, attach UTC; otherwise convert with astimezone(timezone.utc). This preserves Z support (already normalized to +00:00), treats naive as UTC, and correctly shifts offset timestamps. Add a new regression test file covering the acceptance contracts.",
+      "edits": [
+        {
+          "path": "events.py",
+          "old": "def parse_event_time(value):\n    parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n    return parsed.replace(tzinfo=timezone.utc)",
+          "new": "def parse_event_time(value):\n    parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n    if parsed.tzinfo is None:\n        return parsed.replace(tzinfo=timezone.utc)\n    return parsed.astimezone(timezone.utc)"
+        },
+        {
+          "path": "tests/test_events_utc_regression.py",
+          "old": "",
+          "new": "from datetime import datetime, timezone\n\nfrom events import parse_event_time\n\n\ndef test_positive_offset_converted_to_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n    assert result == datetime(2026, 4, 1, 10, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T10:00:00+00:00\"\n\n\ndef test_z_suffix_is_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00Z\")\n    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n\n\ndef test_naive_treated_as_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00\")\n    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n\n\ndef test_negative_offset_converted_to_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n    assert result == datetime(2026, 4, 1, 17, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T17:00:00+00:00\"\n\n\ndef test_zero_offset_is_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00+00:00\")\n    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n\n\ndef test_return_type_and_tzinfo():\n    result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n    assert isinstance(result, datetime)\n    assert result.tzinfo == timezone.utc\n"
+        }
+      ],
+      "contract_tests": [
+        "parse_event_time('2026-04-01T12:00:00+02:00') == datetime(2026,4,1,10,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T10:00:00+00:00' (test_positive_offset_converted_to_utc).",
+        "parse_event_time('2026-04-01T12:00:00Z') == datetime(2026,4,1,12,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T12:00:00+00:00' (test_z_suffix_is_utc).",
+        "parse_event_time('2026-04-01T12:00:00') == datetime(2026,4,1,12,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T12:00:00+00:00' (test_naive_treated_as_utc).",
+        "parse_event_time('2026-04-01T12:00:00-05:00') == datetime(2026,4,1,17,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T17:00:00+00:00' (test_negative_offset_converted_to_utc).",
+        "parse_event_time('2026-04-01T12:00:00+00:00') == datetime(2026,4,1,12,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T12:00:00+00:00' (test_zero_offset_is_utc).",
+        "Return value is a datetime instance with tzinfo == timezone.utc (test_return_type_and_tzinfo).",
+        "Existing behavior for Z and naive inputs preserved: tests/test_contract.py test_existing_contract still passes (Z -> '2026-04-01T12:00:00+00:00', naive hour == 12)."
+      ],
+      "changed_files": [
+        "events.py",
+        "tests/test_events_utc_regression.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".......                                                                  [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n7 passed in 0.09s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 7,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.931430000000546,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_events_utc_regression.py",
+          "name": "test_positive_offset_converted_to_utc",
+          "classname": "tests.test_events_utc_regression",
+          "line": 6,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_events_utc_regression.py",
+          "name": "test_z_suffix_is_utc",
+          "classname": "tests.test_events_utc_regression",
+          "line": 12,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_events_utc_regression.py",
+          "name": "test_naive_treated_as_utc",
+          "classname": "tests.test_events_utc_regression",
+          "line": 18,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_events_utc_regression.py",
+          "name": "test_negative_offset_converted_to_utc",
+          "classname": "tests.test_events_utc_regression",
+          "line": 24,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_events_utc_regression.py",
+          "name": "test_zero_offset_is_utc",
+          "classname": "tests.test_events_utc_regression",
+          "line": 30,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_events_utc_regression.py",
+          "name": "test_return_type_and_tzinfo",
+          "classname": "tests.test_events_utc_regression",
+          "line": 36,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "d86614703e8fc4dad346604e327e34f64a825e04ca011975ac01dee9528e788e"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

@@ -1,0 +1,51 @@
+{
+  "candidate_id": "d0ee72b0-2948-4237-933d-c9eed041b199",
+  "candidate_number": 1,
+  "diff": "",
+  "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "execution_status": "running",
+  "matches_recorded": true,
+  "model_calls_total": 1,
+  "patch_feedback": [
+    {
+      "attempt": 1,
+      "candidate_id": "d0ee72b0-2948-4237-933d-c9eed041b199",
+      "candidate_number": 1,
+      "error": "Edit precondition must match exactly once"
+    }
+  ],
+  "patches": [
+    {
+      "applied": false,
+      "candidate_id": "d0ee72b0-2948-4237-933d-c9eed041b199",
+      "candidate_number": 1,
+      "changed_files": [],
+      "contract_tests": [],
+      "edits": [
+        {
+          "new": "import copy\n\n\ndef _is_mapping(value):\n    return isinstance(value, dict)\n\n\ndef _merge(defaults, overrides):\n    result = {}\n    for key, value in defaults.items():\n        if _is_mapping(value):\n            result[key] = _merge(value, {})\n        else:\n            result[key] = copy.deepcopy(value)\n    for key, value in overrides.items():\n        if _is_mapping(value) and _is_mapping(result.get(key)):\n            result[key] = _merge(result[key], value)\n        else:\n            result[key] = copy.deepcopy(value)\n    return result\n\n\ndef merge_config(defaults, overrides):\n    return _merge(defaults, overrides)",
+          "old": "def merge_config(defaults, overrides):\n    result = dict(defaults)\n    result.update(overrides)\n    return result",
+          "path": "config.py"
+        },
+        {
+          "new": "from config import merge_config\n\n\ndef test_existing_contract():\n    assert merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3}\n    assert merge_config({}, {}) == {}\n\n\ndef test_recursive_merge_overrides_win_at_leaves():\n    defaults = {\"a\": {\"b\": 1, \"c\": 2}, \"d\": 3}\n    overrides = {\"a\": {\"b\": 10}}\n    assert merge_config(defaults, overrides) == {\"a\": {\"b\": 10, \"c\": 2}, \"d\": 3}\n\n\ndef test_deeply_nested_merge():\n    defaults = {\"a\": {\"b\": {\"c\": 1, \"d\": 2}}}\n    overrides = {\"a\": {\"b\": {\"c\": 9}}}\n    assert merge_config(defaults, overrides) == {\"a\": {\"b\": {\"c\": 9, \"d\": 2}}}\n\n\ndef test_lists_are_replaced_not_concatenated():\n    defaults = {\"a\": [1, 2, 3]}\n    overrides = {\"a\": [4]}\n    assert merge_config(defaults, overrides) == {\"a\": [4]}\n\n\ndef test_nested_lists_are_replaced():\n    defaults = {\"a\": {\"b\": [1, 2]}}\n    overrides = {\"a\": {\"b\": [3, 4]}}\n    assert merge_config(defaults, overrides) == {\"a\": {\"b\": [3, 4]}}\n\n\ndef test_inputs_are_not_mutated():\n    defaults = {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    overrides = {\"a\": {\"b\": 2}, \"c\": [3]}\n    defaults_snapshot = {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    overrides_snapshot = {\"a\": {\"b\": 2}, \"c\": [3]}\n    merge_config(defaults, overrides)\n    assert defaults == defaults_snapshot\n    assert overrides == overrides_snapshot\n\n\ndef test_result_does_not_share_nested_objects_with_inputs():\n    defaults = {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    overrides = {\"a\": {\"b\": 2}, \"c\": [3]}\n    result = merge_config(defaults, overrides)\n    assert result[\"a\"] is not defaults[\"a\"]\n    assert result[\"a\"] is not overrides[\"a\"]\n    assert result[\"c\"] is not defaults[\"c\"]\n    assert result[\"c\"] is not overrides[\"c\"]\n\n\ndef test_mutating_result_does_not_affect_inputs():\n    defaults = {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    overrides = {\"a\": {\"b\": 2}, \"c\": [3]}\n    result = merge_config(defaults, overrides)\n    result[\"a\"][\"b\"] = 99\n    result[\"c\"].append(4)\n    assert defaults == {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    assert overrides == {\"a\": {\"b\": 2}, \"c\": [3]}\n\n\ndef test_override_mapping_replaces_non_mapping_default():\n    defaults = {\"a\": 1}\n    overrides = {\"a\": {\"b\": 2}}\n    assert merge_config(defaults, overrides) == {\"a\": {\"b\": 2}}\n\n\ndef test_override_non_mapping_replaces_mapping_default():\n    defaults = {\"a\": {\"b\": 2}}\n    overrides = {\"a\": 1}\n    assert merge_config(defaults, overrides) == {\"a\": 1}\n\n\ndef test_new_keys_from_overrides_are_copied():\n    defaults = {}\n    overrides = {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    result = merge_config(defaults, overrides)\n    assert result == {\"a\": {\"b\": 1}, \"c\": [1, 2]}\n    assert result[\"a\"] is not overrides[\"a\"]\n    assert result[\"c\"] is not overrides[\"c\"]\n\n\ndef test_result_types_are_dicts():\n    result = merge_config({\"a\": {\"b\": 1}}, {\"a\": {\"c\": 2}})\n    assert isinstance(result, dict)\n    assert isinstance(result[\"a\"], dict)\n    assert isinstance(merge_config({\"a\": [1]}, {\"a\": [2]})[\"a\"], list)",
+          "old": "from config import merge_config\n\n\ndef test_existing_contract():\n    assert merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3}\n    assert merge_config({}, {}) == {}",
+          "path": "tests/test_merge_config_regression.py"
+        }
+      ],
+      "rationale": "The current merge_config is a shallow dict update: nested mappings are replaced wholesale, and the returned dict shares nested objects with the inputs. The issue requires a recursive merge where overrides win at leaves, lists are replaced (not concatenated), and the result is independent data with no shared nested objects and no mutation of either input. I'll implement a recursive merge that deep-copies nested mappings and list values, and add a new regression test file covering the stated contracts."
+    }
+  ],
+  "recorded_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "regression_results": [],
+  "repair_feedback": [],
+  "retry_count": 1,
+  "reviews": [],
+  "tests": [],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "config.py": "6d316f33c380dfc1449209a972e1e842d6498862ce385d0168b9a2b58a0187ab",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_contract.py": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590"
+  }
+}

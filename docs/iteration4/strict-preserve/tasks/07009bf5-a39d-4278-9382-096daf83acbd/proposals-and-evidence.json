@@ -1,0 +1,104 @@
+{
+  "patches": [
+    {
+      "rationale": "The issue states cache entries must expire exactly at inserted_at + ttl, including zero TTL. Currently `is_expired` uses `now > inserted_at + ttl`, which keeps entries alive at the boundary (now == inserted_at + ttl). The fix is to use `>=` so the boundary is expired. This preserves behavior strictly before expiry (now < inserted_at + ttl -> False) and strictly after (now > inserted_at + ttl -> True), and changes the boundary to True. Zero TTL: inserted_at + 0 == inserted_at, so now == inserted_at is expired, and now < inserted_at is not expired. I add a NEW regression test file covering the boundary, zero TTL, and preservation cases with exact input/result types.",
+      "edits": [
+        {
+          "path": "cache.py",
+          "old": "def is_expired(inserted_at, ttl, now):\n    return now > inserted_at + ttl",
+          "new": "def is_expired(inserted_at, ttl, now):\n    return now >= inserted_at + ttl"
+        },
+        {
+          "path": "tests/test_expiry_boundary_regression.py",
+          "old": "",
+          "new": "from cache import is_expired\n\n\ndef test_expires_exactly_at_inserted_at_plus_ttl():\n    # Boundary: now == inserted_at + ttl must be expired.\n    assert is_expired(10, 5, 15) is True\n\n\ndef test_alive_strictly_before_expiry():\n    # Preserve behavior before the boundary.\n    assert is_expired(10, 5, 14) is False\n    assert is_expired(10, 5, 0) is False\n\n\ndef test_expired_strictly_after_expiry():\n    # Preserve behavior after the boundary.\n    assert is_expired(10, 5, 16) is True\n    assert is_expired(10, 5, 100) is True\n\n\ndef test_zero_ttl_expires_at_inserted_at():\n    # Zero TTL: entry expires exactly at inserted_at.\n    assert is_expired(10, 0, 10) is True\n    assert is_expired(10, 0, 9) is False\n    assert is_expired(10, 0, 11) is True\n\n\ndef test_result_type_is_bool():\n    assert type(is_expired(10, 5, 15)) is bool\n    assert type(is_expired(10, 5, 14)) is bool\n"
+        }
+      ],
+      "contract_tests": [],
+      "changed_files": [
+        "cache.py",
+        "tests/test_expiry_boundary_regression.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "......                                                                   [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n6 passed in 0.08s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 6,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.8674667999985104,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_expiry_boundary_regression.py",
+          "name": "test_expires_exactly_at_inserted_at_plus_ttl",
+          "classname": "tests.test_expiry_boundary_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_expiry_boundary_regression.py",
+          "name": "test_alive_strictly_before_expiry",
+          "classname": "tests.test_expiry_boundary_regression",
+          "line": 9,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_expiry_boundary_regression.py",
+          "name": "test_expired_strictly_after_expiry",
+          "classname": "tests.test_expiry_boundary_regression",
+          "line": 15,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_expiry_boundary_regression.py",
+          "name": "test_zero_ttl_expires_at_inserted_at",
+          "classname": "tests.test_expiry_boundary_regression",
+          "line": 21,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_expiry_boundary_regression.py",
+          "name": "test_result_type_is_bool",
+          "classname": "tests.test_expiry_boundary_regression",
+          "line": 28,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "f950ae45ba51a76d7ae223bb9668760bfdb708e96e00e5987bc9a1d1efecac56"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

@@ -1,0 +1,160 @@
+{
+  "candidate_id": "c56e8813-082f-40ce-9b5b-411d597561ae",
+  "candidate_number": 3,
+  "diff": "--- a/pagination.py\n+++ b/pagination.py\n@@ -1,5 +1,5 @@\n def paginate(items, page, page_size):\n     if page < 1 or page_size < 1:\n         return []\n-    start = page * page_size\n-    return items[start : start + page_size]\n+    start = (page - 1) * page_size\n+    return list(items[start : start + page_size])\n--- a/tests/test_pagination_regression.py\n+++ b/tests/test_pagination_regression.py\n@@ -0,0 +1,50 @@\n+from pagination import paginate\n+\n+\n+def test_issue_literal_range_page2_size2():\n+    # Literal issue input passed unchanged: range(1, 8).\n+    result = paginate(range(1, 8), 2, 2)\n+    assert result == [3, 4]\n+    assert isinstance(result, list)\n+\n+\n+def test_first_page_is_one_based():\n+    result = paginate(range(1, 8), 1, 2)\n+    assert result == [1, 2]\n+    assert isinstance(result, list)\n+\n+\n+def test_last_partial_page():\n+    result = paginate(range(1, 8), 4, 2)\n+    assert result == [7]\n+    assert isinstance(result, list)\n+\n+\n+def test_beyond_last_page_returns_empty_list():\n+    result = paginate(range(1, 8), 5, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_empty_input_returns_empty_list():\n+    result = paginate([], 1, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_invalid_page_returns_empty_list():\n+    result = paginate(range(1, 8), 0, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_invalid_page_size_returns_empty_list():\n+    result = paginate(range(1, 8), 1, 0)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_input_not_mutated():\n+    items = [1, 2, 3, 4, 5, 6, 7]\n+    paginate(items, 2, 2)\n+    assert items == [1, 2, 3, 4, 5, 6, 7]\n",
+  "diff_digest": "b007db1435486556004f7307e0adf926b83a2892c36b4beff22c97b7673dd5fa",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 3,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "c56e8813-082f-40ce-9b5b-411d597561ae",
+      "candidate_number": 3,
+      "changed_files": [
+        "pagination.py",
+        "tests/test_pagination_regression.py"
+      ],
+      "contract_tests": [
+        "test_issue_literal_range_page2_size2: paginate(range(1, 8), 2, 2) == [3, 4] and isinstance(result, list) — literal issue input unchanged, exact expected value and type.",
+        "test_first_page_is_one_based: paginate(range(1, 8), 1, 2) == [1, 2] and isinstance(result, list) — one-based page numbering.",
+        "test_last_partial_page: paginate(range(1, 8), 4, 2) == [7] and isinstance(result, list) — final partial page.",
+        "test_beyond_last_page_returns_empty_list: paginate(range(1, 8), 5, 2) == [] and isinstance(result, list) — beyond last page returns empty list.",
+        "test_empty_input_returns_empty_list: paginate([], 1, 2) == [] and isinstance(result, list) — empty input preserved.",
+        "test_invalid_page_returns_empty_list: paginate(range(1, 8), 0, 2) == [] and isinstance(result, list) — invalid page preserved.",
+        "test_invalid_page_size_returns_empty_list: paginate(range(1, 8), 1, 0) == [] and isinstance(result, list) — invalid page_size preserved.",
+        "test_input_not_mutated: paginate(items, 2, 2) leaves items == [1, 2, 3, 4, 5, 6, 7] — no mutation of caller input."
+      ],
+      "edits": [
+        {
+          "new": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = (page - 1) * page_size\n    return list(items[start : start + page_size])",
+          "old": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = page * page_size\n    return items[start : start + page_size]",
+          "path": "pagination.py"
+        },
+        {
+          "new": "from pagination import paginate\n\n\ndef test_issue_literal_range_page2_size2():\n    # Literal issue input passed unchanged: range(1, 8).\n    result = paginate(range(1, 8), 2, 2)\n    assert result == [3, 4]\n    assert isinstance(result, list)\n\n\ndef test_first_page_is_one_based():\n    result = paginate(range(1, 8), 1, 2)\n    assert result == [1, 2]\n    assert isinstance(result, list)\n\n\ndef test_last_partial_page():\n    result = paginate(range(1, 8), 4, 2)\n    assert result == [7]\n    assert isinstance(result, list)\n\n\ndef test_beyond_last_page_returns_empty_list():\n    result = paginate(range(1, 8), 5, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_empty_input_returns_empty_list():\n    result = paginate([], 1, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_invalid_page_returns_empty_list():\n    result = paginate(range(1, 8), 0, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_invalid_page_size_returns_empty_list():\n    result = paginate(range(1, 8), 1, 0)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_input_not_mutated():\n    items = [1, 2, 3, 4, 5, 6, 7]\n    paginate(items, 2, 2)\n    assert items == [1, 2, 3, 4, 5, 6, 7]\n",
+          "old": "",
+          "path": "tests/test_pagination_regression.py"
+        }
+      ],
+      "rationale": "The bug is the off-by-one start index: `page * page_size` treats pages as zero-based. The fix is `(page - 1) * page_size`, which makes page 1 return the first slice and page 2 size 2 return [3,4] for range(1,8). Slicing a range returns a range, so the function must return a list to satisfy the issue's expected `[3,4]` and `[]` results. Empty/invalid inputs still return [] and pages beyond the last return []. The new regression file passes the literal issue input `range(1,8)` unchanged and asserts exact list results and types."
+    }
+  ],
+  "recorded_digest": "b007db1435486556004f7307e0adf926b83a2892c36b4beff22c97b7673dd5fa",
+  "regression_results": [],
+  "repair_feedback": [],
+  "retry_count": 2,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 3,
+      "candidate_id": "c56e8813-082f-40ce-9b5b-411d597561ae",
+      "candidate_number": 3,
+      "cases": [
+        {
+          "classname": "tests.test_contract",
+          "details": "",
+          "file": "tests/test_contract.py",
+          "line": 4,
+          "message": "",
+          "name": "test_existing_contract",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 4,
+          "message": "",
+          "name": "test_issue_literal_range_page2_size2",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 11,
+          "message": "",
+          "name": "test_first_page_is_one_based",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 17,
+          "message": "",
+          "name": "test_last_partial_page",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 23,
+          "message": "",
+          "name": "test_beyond_last_page_returns_empty_list",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 29,
+          "message": "",
+          "name": "test_empty_input_returns_empty_list",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 35,
+          "message": "",
+          "name": "test_invalid_page_returns_empty_list",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 41,
+          "message": "",
+          "name": "test_invalid_page_size_returns_empty_list",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_pagination_regression",
+          "details": "",
+          "file": "tests/test_pagination_regression.py",
+          "line": 47,
+          "message": "",
+          "name": "test_input_not_mutated",
+          "status": "passed"
+        }
+      ],
+      "cases_truncated": false,
+      "diff_digest": "b007db1435486556004f7307e0adf926b83a2892c36b4beff22c97b7673dd5fa",
+      "duration_seconds": 0.9095622999993793,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 9,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".........                                                                [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n9 passed in 0.08s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pagination.py": "21347470398b90f14d77890ee8f15cdd6a451f58945c08de5de3011398797331",
+    "tests/test_contract.py": "dd502c4f8354dd9bd8066e2988899c660201b5bc533784087bbcfa119dc7d4f3",
+    "tests/test_pagination_regression.py": "12ed4b52cd2ba99d7a524ec7fcd0dfd38a138db03773ae195f3aca080a7d3cee"
+  }
+}

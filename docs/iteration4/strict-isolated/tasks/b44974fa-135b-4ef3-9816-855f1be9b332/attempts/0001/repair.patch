@@ -1,0 +1,44 @@
+--- a/slugs.py
++++ b/slugs.py
+@@ -1,5 +1,10 @@
+ import re
++import unicodedata
+ 
+ 
+ def slugify(value):
+-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
++    decomposed = unicodedata.normalize("NFKD", value)
++    ascii_value = "".join(
++        char for char in decomposed if not unicodedata.combining(char)
++    )
++    return re.sub(r"[^a-z0-9]+", "-", ascii_value.lower()).strip("-")
+--- a/tests/test_slugify_unicode.py
++++ b/tests/test_slugify_unicode.py
+@@ -0,0 +1,27 @@
++from slugs import slugify
++
++
++def test_precomposed_accents_transliterate():
++    assert slugify("Caf\u00e9 d\u00e9j\u00e0 vu") == "cafe-deja-vu"
++
++
++def test_decomposed_accents_match_precomposed():
++    decomposed = "cafe\u0301 de\u0301ja\u0300 vu"
++    assert slugify(decomposed) == "cafe-deja-vu"
++    assert slugify(decomposed) == slugify("Caf\u00e9 d\u00e9j\u00e0 vu")
++
++
++def test_ascii_word_separation_preserved():
++    assert slugify("Hello, World!") == "hello-world"
++    assert slugify("foo   bar") == "foo-bar"
++
++
++def test_dashes_trimmed():
++    assert slugify("  --Caf\u00e9--  ") == "cafe"
++    assert slugify("") == ""
++
++
++def test_result_is_ascii_str():
++    result = slugify("Caf\u00e9 d\u00e9j\u00e0 vu")
++    assert isinstance(result, str)
++    assert result.isascii()

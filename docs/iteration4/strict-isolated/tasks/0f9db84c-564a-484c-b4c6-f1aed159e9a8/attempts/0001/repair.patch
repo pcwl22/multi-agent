@@ -1,0 +1,89 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_export_rows.py
++++ b/tests/test_export_rows.py
+@@ -0,0 +1,72 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def test_empty_input_yields_empty_output():
++    result = export_rows([])
++    assert result == ""
++    assert isinstance(result, str)
++
++
++def test_simple_rows_unchanged():
++    result = export_rows([["a", 1], ["b", 2]])
++    assert result == "a,1\nb,2\n"
++    assert isinstance(result, str)
++
++
++def test_single_simple_row_unchanged():
++    assert export_rows([["a", "b", "c"]]) == "a,b,c\n"
++
++
++def test_comma_cell_is_quoted_and_round_trips():
++    rows = [["a,b", "c"]]
++    out = export_rows(rows)
++    assert out == '"a,b",c\n'
++    assert list(csv.reader(io.StringIO(out))) == rows
++
++
++def test_quote_cell_is_escaped_and_round_trips():
++    rows = [['he said "hi"', "x"]]
++    out = export_rows(rows)
++    assert out == '"he said ""hi""",x\n'
++    assert list(csv.reader(io.StringIO(out))) == rows
++
++
++def test_newline_cell_is_quoted_and_round_trips():
++    rows = [["line1\nline2", "z"]]
++    out = export_rows(rows)
++    assert out == '"line1\nline2",z\n'
++    assert list(csv.reader(io.StringIO(out))) == rows
++
++
++def test_unicode_preserved():
++    rows = [["caf\u00e9", "\u65e5\u672c\u8a9e", "\U0001f600"]]
++    out = export_rows(rows)
++    assert "caf\u00e9" in out
++    assert "\u65e5\u672c\u8a9e" in out
++    assert "\U0001f600" in out
++    assert list(csv.reader(io.StringIO(out))) == rows
++
++
++def test_lf_line_endings_only():
++    out = export_rows([["a", "b"], ["c", "d"]])
++    assert "\r" not in out
++    assert out == "a,b\nc,d\n"
++
++
++def test_round_trip_mixed_special_cells():
++    rows = [
++        ["plain", "with,comma", 'with"quote', "with\nnewline"],
++        ["\u00e9\u00e8", "1", "2", "3"],
++    ]
++    out = export_rows(rows)
++    assert list(csv.reader(io.StringIO(out))) == rows
++
++
++def test_non_string_cells_are_stringified():
++    rows = [[1, 2.5, None, True]]
++    out = export_rows(rows)
++    assert out == "1,2.5,None,True\n"
++    assert list(csv.reader(io.StringIO(out))) == [["1", "2.5", "None", "True"]]

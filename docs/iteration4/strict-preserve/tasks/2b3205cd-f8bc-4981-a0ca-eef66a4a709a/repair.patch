@@ -1,0 +1,46 @@
+--- a/auth.py
++++ b/auth.py
+@@ -1,6 +1,6 @@
+ def authenticate(token):
+     if token == "expired":
+-        return 500, "expired"
++        return 401, "expired"
+     if token == "valid":
+         return 200, "alice"
+     return 401, "missing"
+--- a/tests/test_expired_token_regression.py
++++ b/tests/test_expired_token_regression.py
+@@ -0,0 +1,33 @@
++from auth import authenticate
++
++
++def test_expired_token_returns_401_expired():
++    result = authenticate("expired")
++    assert result == (401, "expired")
++    assert isinstance(result, tuple)
++    assert isinstance(result[0], int)
++    assert isinstance(result[1], str)
++
++
++def test_valid_token_behavior_preserved():
++    result = authenticate("valid")
++    assert result == (200, "alice")
++    assert isinstance(result, tuple)
++    assert isinstance(result[0], int)
++    assert isinstance(result[1], str)
++
++
++def test_absent_token_behavior_preserved():
++    result = authenticate(None)
++    assert result == (401, "missing")
++    assert isinstance(result, tuple)
++    assert isinstance(result[0], int)
++    assert isinstance(result[1], str)
++
++
++def test_unknown_token_behavior_preserved():
++    result = authenticate("unknown")
++    assert result == (401, "missing")
++    assert isinstance(result, tuple)
++    assert isinstance(result[0], int)
++    assert isinstance(result[1], str)

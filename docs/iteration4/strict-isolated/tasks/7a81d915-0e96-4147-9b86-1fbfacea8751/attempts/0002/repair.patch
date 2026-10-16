@@ -1,0 +1,27 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,22 @@
++from collections.abc import Mapping
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {}
++    for key, value in defaults.items():
++        if isinstance(value, Mapping):
++            result[key] = merge_config(value, {})
++        else:
++            result[key] = value
++    for key, value in overrides.items():
++        if (
++            key in result
++            and isinstance(result[key], Mapping)
++            and isinstance(value, Mapping)
++        ):
++            result[key] = merge_config(result[key], value)
++        elif isinstance(value, Mapping):
++            result[key] = merge_config(value, {})
++        else:
++            result[key] = value
+     return result

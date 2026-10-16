@@ -1,0 +1,253 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug: `discounted_total` multiplies `amount * (1 - discount_percent)`, treating the discount as a fraction (0-1) rather than a percentage (0-100). For `discounted_total(100, 20)` this yields `100 * (1 - 20) = -1900`, not 80. The fix divides the percentage by 100 so the discount is interpreted as a percentage in the range 0-100. Zero amount and no-discount cases remain preserved: `0 * anything == 0` and `amount * (1 - 0) == amount`. Signature and return type (float via round) are unchanged. New regression tests are added in a new file `tests/test_pricing_regression.py` (not in existing_test_paths), covering the stated examples and boundaries.",
+      "edits": [
+        {
+          "path": "pricing.py",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)"
+        },
+        {
+          "path": "tests/test_pricing_regression.py",
+          "old": "",
+          "new": "from pricing import discounted_total\n\n\ndef test_discounted_total_percentage_example():\n    # Issue contract: 100 with discount 20 must equal 80.\n    result = discounted_total(100, 20)\n    assert result == 80\n    assert isinstance(result, (int, float))\n\n\ndef test_discounted_total_zero_amount_preserved():\n    # Zero amount preserved regardless of discount.\n    assert discounted_total(0, 20) == 0\n    assert discounted_total(0, 0) == 0\n    assert discounted_total(0, 100) == 0\n\n\ndef test_discounted_total_no_discount_preserved():\n    # No discount preserved: amount returned unchanged.\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(12.5, 0) == 12.5\n\n\ndef test_discounted_total_percentage_boundaries():\n    # Discount values are percentages in the range 0 to 100.\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(100, 100) == 0\n    assert discounted_total(100, 50) == 50\n    assert discounted_total(200, 25) == 150\n\n\ndef test_discounted_total_returns_rounded_value():\n    # Return type/value semantics preserved (rounded to 2 decimals).\n    assert discounted_total(10, 33) == 6.7\n    assert discounted_total(99.99, 10) == 89.99\n"
+        }
+      ],
+      "contract_tests": [
+        "discounted_total(100, 20) returns 80 -> tests/test_pricing_regression.py::test_discounted_total_percentage_example asserts discounted_total(100, 20) == 80.",
+        "discounted_total(0, 20) returns 0 (zero amount preserved) -> tests/test_pricing_regression.py::test_discounted_total_zero_amount_preserved asserts discounted_total(0, 20) == 0 (plus 0,0 and 0,100).",
+        "discounted_total(100, 0) returns 100 (no discount preserved) -> tests/test_pricing_regression.py::test_discounted_total_no_discount_preserved asserts discounted_total(100, 0) == 100 (plus 12.5,0).",
+        "Discount values interpreted as percentages in range 0 to 100 -> tests/test_pricing_regression.py::test_discounted_total_percentage_boundaries asserts 100/0==100, 100/100==0, 100/50==50, 200/25==150.",
+        "Return type/value semantics preserved (rounded numeric result) -> tests/test_pricing_regression.py::test_discounted_total_returns_rounded_value asserts discounted_total(10, 33) == 6.7 and discounted_total(99.99, 10) == 89.99.",
+        "Existing tests remain unchanged and continue to pass -> no edits made to tests/test_contract.py; its assertions discounted_total(0, 20) == 0 and discounted_total(12.5, 0) == 12.5 still hold under the corrected percentage semantics."
+      ],
+      "changed_files": [
+        "pricing.py",
+        "tests/test_pricing_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "8df9d607-28a5-4255-9475-0894261643a1",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "......                                                                   [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n6 passed in 0.11s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 6,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9535065000018221,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pricing_regression.py",
+          "name": "test_discounted_total_percentage_example",
+          "classname": "tests.test_pricing_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pricing_regression.py",
+          "name": "test_discounted_total_zero_amount_preserved",
+          "classname": "tests.test_pricing_regression",
+          "line": 11,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pricing_regression.py",
+          "name": "test_discounted_total_no_discount_preserved",
+          "classname": "tests.test_pricing_regression",
+          "line": 18,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pricing_regression.py",
+          "name": "test_discounted_total_percentage_boundaries",
+          "classname": "tests.test_pricing_regression",
+          "line": 24,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pricing_regression.py",
+          "name": "test_discounted_total_returns_rounded_value",
+          "classname": "tests.test_pricing_regression",
+          "line": 32,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "4d7497b9dfea443e80d8904aa08f7648601e8ff94a024511dec685fc5aeb3d97",
+      "candidate_id": "8df9d607-28a5-4255-9475-0894261643a1",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [
+    {
+      "approved": true,
+      "summary": "The candidate fixes discounted_total to interpret discount_percent as a percentage (dividing by 100), so discounted_total(100, 20) == 80. Zero-amount and no-discount cases are preserved, existing tests are untouched, and new regression tests were added. Regression evidence shows the added tests failed on the original source (e.g., -1900 vs 80) and pass on the candidate, confirming the fix addresses the stated bug.",
+      "concerns": [
+        "The issue states discount values range 0 to 100 but does not require validation or clamping of out-of-range inputs; the implementation does not add such validation, which is consistent with preserving existing semantics.",
+        "The added test test_discounted_total_returns_rounded_value asserts rounding behavior (e.g., 10 with 33% -> 6.7) that is not explicitly stated in the issue, but it preserves the pre-existing round(..., 2) semantics rather than introducing new behavior."
+      ],
+      "contract_checks": [
+        {
+          "requirement": "discounted_total(100, 20) returns 80 (percentage discount from 0 to 100).",
+          "satisfied": true,
+          "evidence": "pricing.py now returns round(amount * (1 - discount_percent / 100), 2); 100 * (1 - 20/100) = 80.0. Test tests/test_pricing_regression.py::test_discounted_total_percentage_example asserts discounted_total(100, 20) == 80 and passed on the candidate; regression evidence shows it failed on the original source with -1900."
+        },
+        {
+          "requirement": "discounted_total(0, 20) returns 0 (zero amount preserved).",
+          "satisfied": true,
+          "evidence": "0 * (1 - 20/100) = 0.0. Test test_discounted_total_zero_amount_preserved asserts discounted_total(0, 20) == 0 (plus 0,0 and 0,100) and passed; existing tests/test_contract.py::test_existing_contract also asserts discounted_total(0, 20) == 0 and remains unchanged."
+        },
+        {
+          "requirement": "discounted_total(100, 0) returns 100 (no discount preserved).",
+          "satisfied": true,
+          "evidence": "100 * (1 - 0/100) = 100.0. Test test_discounted_total_no_discount_preserved asserts discounted_total(100, 0) == 100 (plus 12.5,0) and passed; existing test_contract.py asserts discounted_total(12.5, 0) == 12.5 and remains unchanged."
+        },
+        {
+          "requirement": "Discount values are interpreted as percentages in the range 0 to 100.",
+          "satisfied": true,
+          "evidence": "Implementation divides discount_percent by 100, treating it as a percentage. Test test_discounted_total_percentage_boundaries asserts 100/0==100, 100/100==0, 100/50==50, 200/25==150 and passed on the candidate; regression evidence shows it failed on the original source (e.g., -9900 for 100/100)."
+        },
+        {
+          "requirement": "Existing tests remain unchanged and continue to pass.",
+          "satisfied": true,
+          "evidence": "tests/test_contract.py is not modified in the diff; its assertions discounted_total(0, 20) == 0 and discounted_total(12.5, 0) == 12.5 hold under the corrected semantics. Full test run reports 6 passed, 0 failed."
+        },
+        {
+          "requirement": "New regression tests are added covering the stated examples.",
+          "satisfied": true,
+          "evidence": "New file tests/test_pricing_regression.py adds 5 tests covering the 100/20==80 example, zero-amount preservation, no-discount preservation, percentage boundaries, and rounding. Regression evidence confirms 3 of these failed on the original source and all pass on the candidate."
+        },
+        {
+          "requirement": "Function signature and return type unchanged.",
+          "satisfied": true,
+          "evidence": "Signature remains discounted_total(amount, discount_percent); return is still round(..., 2), a numeric value. Test test_discounted_total_percentage_example asserts isinstance(result, (int, float)) and passed."
+        }
+      ],
+      "attempt": 1,
+      "candidate_id": "8df9d607-28a5-4255-9475-0894261643a1",
+      "candidate_number": 1
+    }
+  ],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": [
+    {
+      "status": "demonstrated",
+      "generated_tests": [
+        "tests/test_pricing_regression.py"
+      ],
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-isolated-data\\tasks\\b98e1067-c94e-4ff3-b874-123f27bd2f81\\regression\\attempt-1-ee39a22a-8221-4a73-b8a3-047827c3c759",
+      "baseline_result": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": ".F..FF                                                                   [100%]\n=================================== FAILURES ===================================\n___________________ test_discounted_total_percentage_example ___________________\n\n    def test_discounted_total_percentage_example():\n        # Issue contract: 100 with discount 20 must equal 80.\n        result = discounted_total(100, 20)\n>       assert result == 80\nE       assert -1900 == 80\n\ntests/test_pricing_regression.py:7: AssertionError\n_________________ test_discounted_total_percentage_boundaries __________________\n\n    def test_discounted_total_percentage_boundaries():\n        # Discount values are percentages in the range 0 to 100.\n        assert discounted_total(100, 0) == 100\n>       assert discounted_total(100, 100) == 0\nE       assert -9900 == 0\nE        +  where -9900 = discounted_total(100, 100)\n\ntests/test_pricing_regression.py:27: AssertionError\n_________________ test_discounted_total_returns_rounded_value __________________\n\n    def test_discounted_total_returns_rounded_value():\n        # Return type/value semantics preserved (rounded to 2 decimals).\n>       assert discounted_total(10, 33) == 6.7\nE       assert -320 == 6.7\nE        +  where -320 = discounted_total(10, 33)\n\ntests/test_pricing_regression.py:34: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pricing_regression.py::test_discounted_total_percentage_example\nFAILED tests/test_pricing_regression.py::test_discounted_total_percentage_boundaries\nFAILED tests/test_pricing_regression.py::test_discounted_total_returns_rounded_value\n3 failed, 3 passed in 0.13s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 3,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9942607999983011,
+        "evidence": "docker",
+        "cases": [
+          {
+            "file": "tests/test_pricing_regression.py",
+            "name": "test_discounted_total_percentage_example",
+            "classname": "tests.test_pricing_regression",
+            "line": 4,
+            "status": "failed",
+            "message": "assert -1900 == 80",
+            "details": "def test_discounted_total_percentage_example():\n        # Issue contract: 100 with discount 20 must equal 80.\n        result = discounted_total(100, 20)\n>       assert result == 80\nE       assert -1900 == 80\n\ntests/test_pricing_regression.py:7: AssertionError"
+          },
+          {
+            "file": "tests/test_pricing_regression.py",
+            "name": "test_discounted_total_percentage_boundaries",
+            "classname": "tests.test_pricing_regression",
+            "line": 24,
+            "status": "failed",
+            "message": "assert -9900 == 0\n +  where -9900 = discounted_total(100, 100)",
+            "details": "def test_discounted_total_percentage_boundaries():\n        # Discount values are percentages in the range 0 to 100.\n        assert discounted_total(100, 0) == 100\n>       assert discounted_total(100, 100) == 0\nE       assert -9900 == 0\nE        +  where -9900 = discounted_total(100, 100)\n\ntests/test_pricing_regression.py:27: AssertionError"
+          },
+          {
+            "file": "tests/test_pricing_regression.py",
+            "name": "test_discounted_total_returns_rounded_value",
+            "classname": "tests.test_pricing_regression",
+            "line": 32,
+            "status": "failed",
+            "message": "assert -320 == 6.7\n +  where -320 = discounted_total(10, 33)",
+            "details": "def test_discounted_total_returns_rounded_value():\n        # Return type/value semantics preserved (rounded to 2 decimals).\n>       assert discounted_total(10, 33) == 6.7\nE       assert -320 == 6.7\nE        +  where -320 = discounted_total(10, 33)\n\ntests/test_pricing_regression.py:34: AssertionError"
+          },
+          {
+            "file": "tests/test_contract.py",
+            "name": "test_existing_contract",
+            "classname": "tests.test_contract",
+            "line": 4,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pricing_regression.py",
+            "name": "test_discounted_total_zero_amount_preserved",
+            "classname": "tests.test_pricing_regression",
+            "line": 11,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pricing_regression.py",
+            "name": "test_discounted_total_no_discount_preserved",
+            "classname": "tests.test_pricing_regression",
+            "line": 18,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          }
+        ],
+        "cases_truncated": false
+      },
+      "fail_to_pass_tests": [
+        "tests/test_pricing_regression.py::tests.test_pricing_regression::test_discounted_total_percentage_example",
+        "tests/test_pricing_regression.py::tests.test_pricing_regression::test_discounted_total_percentage_boundaries",
+        "tests/test_pricing_regression.py::tests.test_pricing_regression::test_discounted_total_returns_rounded_value"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "attempt": 1,
+      "diff_digest": "4d7497b9dfea443e80d8904aa08f7648601e8ff94a024511dec685fc5aeb3d97",
+      "candidate_id": "8df9d607-28a5-4255-9475-0894261643a1",
+      "candidate_number": 1
+    }
+  ]
+}

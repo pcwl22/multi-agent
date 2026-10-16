@@ -1,0 +1,20 @@
+[
+  {
+    "id": "one-based-page",
+    "issue": "paginate in pagination.py uses one-based page numbers. For range(1,8), page 2 size 2 must return [3,4]. Preserve empty/invalid inputs and return [] beyond the last page. Add a new regression test file.",
+    "repository": "E:\\multi-agent\\app\\evaluation\\expanded\\repos\\one-based-page",
+    "acceptance": "test_pagination_sequence_acceptance.py"
+  },
+  {
+    "id": "recursive-config",
+    "issue": "merge_config in config.py must recursively merge nested mappings, with overrides winning at leaves, and return independent data without mutating or sharing nested objects with either input. Lists are replaced, not concatenated. Preserve simple overrides and add new regression tests.",
+    "repository": "E:\\multi-agent\\app\\evaluation\\expanded\\repos\\recursive-config",
+    "acceptance": "test_recursive_config.py"
+  },
+  {
+    "id": "itsdangerous-date-overflow",
+    "issue": "TimestampSigner.unsign in src/itsdangerous/timed.py leaks a datetime ValueError when an invalid signature contains a decoded timestamp outside datetime's supported year range. Report BadTimeSignature with the original payload and date_signed=None for malformed timestamps on the invalid-signature path. Preserve valid roundtrips, ordinary invalid-signature date_signed metadata and expiry behavior. The public timed serializer must retain its BadSignature-family error contract too. Add NEW regression tests; do not edit existing tests.",
+    "repository": "E:\\multi-agent\\.repopilot\\pilots\\corpus\\repos\\itsdangerous-date-overflow",
+    "acceptance": "test_itsdangerous_overflow.py"
+  }
+]

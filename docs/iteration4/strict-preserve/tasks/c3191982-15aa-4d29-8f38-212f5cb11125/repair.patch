@@ -1,0 +1,52 @@
+--- a/cache.py
++++ b/cache.py
+@@ -1,2 +1,2 @@
+ def is_expired(inserted_at, ttl, now):
+-    return now > inserted_at + ttl
++    return now >= inserted_at + ttl
+--- a/tests/test_cache_expiry_boundary.py
++++ b/tests/test_cache_expiry_boundary.py
+@@ -0,0 +1,43 @@
++from cache import is_expired
++
++
++def test_alive_strictly_before_expiry():
++    # now < inserted_at + ttl -> alive (False)
++    assert is_expired(10, 5, 14) is False
++
++
++def test_expired_exactly_at_boundary_positive_ttl():
++    # now == inserted_at + ttl -> expired (True)
++    assert is_expired(10, 5, 15) is True
++
++
++def test_expired_strictly_after_expiry():
++    # now > inserted_at + ttl -> expired (True)
++    assert is_expired(10, 5, 16) is True
++
++
++def test_zero_ttl_expired_at_insertion():
++    # ttl == 0 and now == inserted_at -> expired (True)
++    assert is_expired(10, 0, 10) is True
++
++
++def test_zero_ttl_alive_before_insertion():
++    # ttl == 0 and now < inserted_at -> alive (False)
++    assert is_expired(10, 0, 9) is False
++
++
++def test_zero_ttl_expired_after_insertion():
++    # ttl == 0 and now > inserted_at -> expired (True)
++    assert is_expired(10, 0, 11) is True
++
++
++def test_return_type_is_bool():
++    assert isinstance(is_expired(10, 5, 14), bool)
++    assert isinstance(is_expired(10, 5, 15), bool)
++    assert isinstance(is_expired(10, 0, 10), bool)
++
++
++def test_input_types_preserved():
++    # ints in, bool out; no unit/type conversion introduced
++    assert is_expired(0, 0, 0) is True
++    assert is_expired(0, 1, 0) is False

@@ -1,0 +1,228 @@
+{
+  "patches": [
+    {
+      "rationale": "The expired-token branch in auth.py returns (500, \"expired\"); the issue requires (401, \"expired\"). Change only that branch, preserving the valid-token (200, \"alice\") and absent-token (401, \"missing\") behaviors. Add a NEW regression test file tests/test_auth_expired_token.py asserting the exact tuple types/values for expired, valid, and absent tokens.",
+      "edits": [
+        {
+          "path": "auth.py",
+          "old": "    if token == \"expired\":\n        return 500, \"expired\"",
+          "new": "    if token == \"expired\":\n        return 401, \"expired\""
+        },
+        {
+          "path": "tests/test_auth_expired_token.py",
+          "old": "",
+          "new": "from auth import authenticate\n\n\ndef test_expired_token_returns_401_expired():\n    result = authenticate(\"expired\")\n    assert result == (401, \"expired\")\n    assert isinstance(result, tuple)\n    assert isinstance(result[0], int)\n    assert result[0] == 401\n    assert isinstance(result[1], str)\n    assert result[1] == \"expired\"\n\n\ndef test_expired_token_does_not_return_500():\n    status, message = authenticate(\"expired\")\n    assert status != 500\n    assert status == 401\n    assert message == \"expired\"\n\n\ndef test_valid_token_behavior_preserved():\n    result = authenticate(\"valid\")\n    assert result == (200, \"alice\")\n    assert isinstance(result, tuple)\n    assert isinstance(result[0], int)\n    assert result[0] == 200\n    assert isinstance(result[1], str)\n    assert result[1] == \"alice\"\n\n\ndef test_absent_token_behavior_preserved():\n    result = authenticate(None)\n    assert result == (401, \"missing\")\n    assert isinstance(result, tuple)\n    assert isinstance(result[0], int)\n    assert result[0] == 401\n    assert isinstance(result[1], str)\n    assert result[1] == \"missing\"\n"
+        }
+      ],
+      "contract_tests": [
+        "authenticate(\"expired\") returns exactly (401, \"expired\") with int 401 and str \"expired\" — asserted in tests/test_auth_expired_token.py::test_expired_token_returns_401_expired.",
+        "authenticate(\"expired\") does not return status 500 — asserted in tests/test_auth_expired_token.py::test_expired_token_does_not_return_500.",
+        "authenticate(\"valid\") preserves (200, \"alice\") with int 200 and str \"alice\" — asserted in tests/test_auth_expired_token.py::test_valid_token_behavior_preserved.",
+        "authenticate(None) preserves (401, \"missing\") with int 401 and str \"missing\" — asserted in tests/test_auth_expired_token.py::test_absent_token_behavior_preserved.",
+        "A NEW regression test file tests/test_auth_expired_token.py exists and existing tests/test_contract.py is unmodified."
+      ],
+      "changed_files": [
+        "auth.py",
+        "tests/test_auth_expired_token.py"
+      ],
+      "applied": true,
+      "candidate_id": "fc5e7154-c268-48fd-8b8c-9ce835580a07",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".....                                                                    [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n5 passed in 0.10s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.01971009999761,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_expired_token_returns_401_expired",
+          "classname": "tests.test_auth_expired_token",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_expired_token_does_not_return_500",
+          "classname": "tests.test_auth_expired_token",
+          "line": 14,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_valid_token_behavior_preserved",
+          "classname": "tests.test_auth_expired_token",
+          "line": 21,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_absent_token_behavior_preserved",
+          "classname": "tests.test_auth_expired_token",
+          "line": 31,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "2e468dacb2d9a040f2ce1544b3ce2d7fdb73395d1b5bc09fc940258b91dc8c75",
+      "candidate_id": "fc5e7154-c268-48fd-8b8c-9ce835580a07",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [
+    {
+      "approved": true,
+      "summary": "The diff makes the minimal, correct change: the expired-token branch in auth.py now returns (401, \"expired\") instead of (500, \"expired\"). Valid-token (200, \"alice\") and absent-token (401, \"missing\") branches are untouched. A new regression test file tests/test_auth_expired_token.py is added covering the expired contract plus preserved behaviors, and existing tests/test_contract.py is unmodified. Regression evidence shows the two expired-token tests failed on the original source (500) and pass on the candidate, confirming the fix addresses the reported bug.",
+      "concerns": [
+        "The issue's literal example is authenticate(\"expired\") -> (401, 'expired'); the test uses the same input expression, so the contract is faithfully exercised.",
+        "The absent-token test uses None, matching the existing test_contract.py convention for the missing-token path; this is the repository's established representation of an absent token."
+      ],
+      "contract_checks": [
+        {
+          "requirement": "authenticate with an expired token returns exactly the tuple (401, 'expired') with int 401 and str 'expired'.",
+          "satisfied": true,
+          "evidence": "auth.py: `if token == \"expired\": return 401, \"expired\"`. Test test_expired_token_returns_401_expired asserts result == (401, \"expired\"), isinstance tuple, result[0] int == 401, result[1] str == \"expired\". Passed on candidate; failed on baseline with (500, 'expired')."
+        },
+        {
+          "requirement": "authenticate with a valid token preserves its original return value and type.",
+          "satisfied": true,
+          "evidence": "auth.py valid branch unchanged: `if token == \"valid\": return 200, \"alice\"`. Test test_valid_token_behavior_preserved asserts (200, \"alice\") with int/str types. Existing tests/test_contract.py also asserts authenticate(\"valid\") == (200, \"alice\") and is unmodified."
+        },
+        {
+          "requirement": "authenticate with an absent/missing token preserves its original return value and type.",
+          "satisfied": true,
+          "evidence": "auth.py fallthrough unchanged: `return 401, \"missing\"`. Test test_absent_token_behavior_preserved asserts authenticate(None) == (401, \"missing\") with int/str types. Existing tests/test_contract.py asserts authenticate(None) == (401, \"missing\") and is unmodified."
+        },
+        {
+          "requirement": "No 500 status or unhandled exception is produced for the expired-token case.",
+          "satisfied": true,
+          "evidence": "auth.py expired branch returns 401, not 500; no exception raised. Test test_expired_token_does_not_return_500 asserts status != 500 and status == 401. Baseline showed 500; candidate passes."
+        },
+        {
+          "requirement": "A NEW regression test file exists covering the expired-token contract and preserved valid/absent behaviors.",
+          "satisfied": true,
+          "evidence": "tests/test_auth_expired_token.py is added (new file, 38 lines) with four tests: expired returns (401,'expired'), expired not 500, valid preserved, absent preserved. Diff shows it as a new file (@@ -0,0 +1,38 @@)."
+        },
+        {
+          "requirement": "Existing tests are not modified, and the full suite still passes.",
+          "satisfied": true,
+          "evidence": "Diff touches only auth.py and the new test file; tests/test_contract.py is not in the diff. Candidate test run: 5 passed, 0 failed, exit_code 0."
+        }
+      ],
+      "attempt": 1,
+      "candidate_id": "fc5e7154-c268-48fd-8b8c-9ce835580a07",
+      "candidate_number": 1
+    }
+  ],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": [
+    {
+      "status": "demonstrated",
+      "generated_tests": [
+        "tests/test_auth_expired_token.py"
+      ],
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-isolated-data\\tasks\\dc9b0a4b-1a45-401c-963d-4bf00a405aa3\\regression\\attempt-1-838e2df9-c6b3-4d09-947c-fc8326a74553",
+      "baseline_result": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "FF...                                                                    [100%]\n=================================== FAILURES ===================================\n____________________ test_expired_token_returns_401_expired ____________________\n\n    def test_expired_token_returns_401_expired():\n        result = authenticate(\"expired\")\n>       assert result == (401, \"expired\")\nE       AssertionError: assert (500, 'expired') == (401, 'expired')\nE         \nE         At index 0 diff: 500 != 401\nE         Use -v to get more diff\n\ntests/test_auth_expired_token.py:6: AssertionError\n____________________ test_expired_token_does_not_return_500 ____________________\n\n    def test_expired_token_does_not_return_500():\n        status, message = authenticate(\"expired\")\n>       assert status != 500\nE       assert 500 != 500\n\ntests/test_auth_expired_token.py:16: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_auth_expired_token.py::test_expired_token_returns_401_expired\nFAILED tests/test_auth_expired_token.py::test_expired_token_does_not_return_500\n2 failed, 3 passed in 0.11s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 3,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9264680999986012,
+        "evidence": "docker",
+        "cases": [
+          {
+            "file": "tests/test_auth_expired_token.py",
+            "name": "test_expired_token_returns_401_expired",
+            "classname": "tests.test_auth_expired_token",
+            "line": 4,
+            "status": "failed",
+            "message": "AssertionError: assert (500, 'expired') == (401, 'expired')\n  \n  At index 0 diff: 500 != 401\n  Use -v to get more diff",
+            "details": "def test_expired_token_returns_401_expired():\n        result = authenticate(\"expired\")\n>       assert result == (401, \"expired\")\nE       AssertionError: assert (500, 'expired') == (401, 'expired')\nE         \nE         At index 0 diff: 500 != 401\nE         Use -v to get more diff\n\ntests/test_auth_expired_token.py:6: AssertionError"
+          },
+          {
+            "file": "tests/test_auth_expired_token.py",
+            "name": "test_expired_token_does_not_return_500",
+            "classname": "tests.test_auth_expired_token",
+            "line": 14,
+            "status": "failed",
+            "message": "assert 500 != 500",
+            "details": "def test_expired_token_does_not_return_500():\n        status, message = authenticate(\"expired\")\n>       assert status != 500\nE       assert 500 != 500\n\ntests/test_auth_expired_token.py:16: AssertionError"
+          },
+          {
+            "file": "tests/test_auth_expired_token.py",
+            "name": "test_valid_token_behavior_preserved",
+            "classname": "tests.test_auth_expired_token",
+            "line": 21,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_auth_expired_token.py",
+            "name": "test_absent_token_behavior_preserved",
+            "classname": "tests.test_auth_expired_token",
+            "line": 31,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_contract.py",
+            "name": "test_existing_contract",
+            "classname": "tests.test_contract",
+            "line": 4,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          }
+        ],
+        "cases_truncated": false
+      },
+      "fail_to_pass_tests": [
+        "tests/test_auth_expired_token.py::tests.test_auth_expired_token::test_expired_token_returns_401_expired",
+        "tests/test_auth_expired_token.py::tests.test_auth_expired_token::test_expired_token_does_not_return_500"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "attempt": 1,
+      "diff_digest": "2e468dacb2d9a040f2ce1544b3ce2d7fdb73395d1b5bc09fc940258b91dc8c75",
+      "candidate_id": "fc5e7154-c268-48fd-8b8c-9ce835580a07",
+      "candidate_number": 1
+    }
+  ]
+}

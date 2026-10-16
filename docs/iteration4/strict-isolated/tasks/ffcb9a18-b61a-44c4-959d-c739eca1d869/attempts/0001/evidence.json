@@ -1,0 +1,393 @@
+{
+  "candidate_id": "c990caf3-c148-467d-8e4d-c3f9276b73a8",
+  "candidate_number": 1,
+  "diff": "--- a/exporter.py\n+++ b/exporter.py\n@@ -1,2 +1,10 @@\n+import csv\n+import io\n+\n+\n def export_rows(rows):\n-    return \"\".join(\",\".join(str(cell) for cell in row) + \"\\n\" for row in rows)\n+    buffer = io.StringIO()\n+    writer = csv.writer(buffer, lineterminator=\"\\n\")\n+    for row in rows:\n+        writer.writerow([str(cell) for cell in row])\n+    return buffer.getvalue()\n--- a/tests/test_exporter_csv.py\n+++ b/tests/test_exporter_csv.py\n@@ -0,0 +1,74 @@\n+import csv\n+import io\n+\n+from exporter import export_rows\n+\n+\n+def _round_trip(text):\n+    return list(csv.reader(io.StringIO(text)))\n+\n+\n+def test_empty_input_unchanged():\n+    result = export_rows([])\n+    assert isinstance(result, str)\n+    assert result == \"\"\n+\n+\n+def test_simple_rows_unchanged():\n+    result = export_rows([[\"a\", 1], [\"b\", 2]])\n+    assert isinstance(result, str)\n+    assert result == \"a,1\\nb,2\\n\"\n+\n+\n+def test_comma_in_cell_is_quoted():\n+    result = export_rows([[\"a,b\", \"c\"]])\n+    assert result == '\"a,b\",c\\n'\n+    assert _round_trip(result) == [[\"a,b\", \"c\"]]\n+\n+\n+def test_double_quote_in_cell_is_escaped():\n+    result = export_rows([['he said \"hi\"', \"x\"]])\n+    assert result == '\"he said \"\"hi\"\"\",x\\n'\n+    assert _round_trip(result) == [['he said \"hi\"', \"x\"]]\n+\n+\n+def test_newline_in_cell_is_quoted():\n+    result = export_rows([[\"line1\\nline2\", \"z\"]])\n+    assert result == '\"line1\\nline2\",z\\n'\n+    assert _round_trip(result) == [[\"line1\\nline2\", \"z\"]]\n+\n+\n+def test_carriage_return_in_cell_round_trips():\n+    result = export_rows([[\"a\\rb\", \"c\"]])\n+    assert _round_trip(result) == [[\"a\\rb\", \"c\"]]\n+\n+\n+def test_mixed_special_characters_round_trip():\n+    row = ['a,b', 'q\"q', 'n\\nn', 'r\\rr', 'plain']\n+    result = export_rows([row])\n+    assert _round_trip(result) == [row]\n+\n+\n+def test_unicode_preserved_verbatim():\n+    row = [\"caf\\u00e9\", \"\\u65e5\\u672c\\u8a9e\", \"\\U0001f600\"]\n+    result = export_rows([row])\n+    assert \"caf\\u00e9\" in result\n+    assert \"\\u65e5\\u672c\\u8a9e\" in result\n+    assert \"\\U0001f600\" in result\n+    assert _round_trip(result) == [row]\n+\n+\n+def test_output_uses_lf_only():\n+    result = export_rows([[\"a\", \"b\"], [\"c\", \"d\"]])\n+    assert \"\\r\" not in result\n+    assert result.endswith(\"\\n\")\n+\n+\n+def test_arbitrary_rows_round_trip():\n+    rows = [\n+        [\"plain\", \"with,comma\", 'with\"quote'],\n+        [\"multi\\nline\", \"cr\\rhere\", \"\\u00fcnicode\"],\n+        [\"\", \"\", \"\"],\n+    ]\n+    result = export_rows(rows)\n+    assert _round_trip(result) == rows\n",
+  "diff_digest": "9e937d26feb20d3a4e26cd6500dcf53a42d492ea37aef5a05cd5240fe1b17cf2",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 3,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "c990caf3-c148-467d-8e4d-c3f9276b73a8",
+      "candidate_number": 1,
+      "changed_files": [
+        "exporter.py",
+        "tests/test_exporter_csv.py"
+      ],
+      "contract_tests": [
+        "export_rows([]) returns a str equal to \"\" (empty input unchanged).",
+        "export_rows([[\"a\", 1], [\"b\", 2]]) returns a str equal to \"a,1\\nb,2\\n\" (simple rows unchanged).",
+        "export_rows([[\"a,b\", \"c\"]]) == '\"a,b\",c\\n' and csv.reader parses it as [[\"a,b\", \"c\"]] (comma cell quoted).",
+        "export_rows([['he said \"hi\"', \"x\"]]) == '\"he said \"\"hi\"\"\",x\\n' and csv.reader recovers the original value (quote cell escaped).",
+        "export_rows([[\"line1\\nline2\", \"z\"]]) == '\"line1\\nline2\",z\\n' and csv.reader recovers the original value (LF cell quoted).",
+        "export_rows([[\"a\\rb\", \"c\"]]) round-trips through csv.reader to [[\"a\\rb\", \"c\"]] (CR cell handled).",
+        "export_rows([['a,b', 'q\"q', 'n\\nn', 'r\\rr', 'plain']]) round-trips through csv.reader to the original row (mixed special characters).",
+        "export_rows([[\"caf\\u00e9\", \"\\u65e5\\u672c\\u8a9e\", \"\\U0001f600\"]]) contains the Unicode characters verbatim and round-trips (Unicode preserved).",
+        "export_rows([[\"a\", \"b\"], [\"c\", \"d\"]]) contains no \"\\r\" and ends with \"\\n\" (LF line endings).",
+        "export_rows on arbitrary rows of string cells round-trips through csv.reader to the original values.",
+        "legacy_examples.py is not modified and remains unused.",
+        "Existing tests in tests/test_contract.py continue to pass unchanged."
+      ],
+      "edits": [
+        {
+          "new": "import csv\nimport io\n\n\ndef export_rows(rows):\n    buffer = io.StringIO()\n    writer = csv.writer(buffer, lineterminator=\"\\n\")\n    for row in rows:\n        writer.writerow([str(cell) for cell in row])\n    return buffer.getvalue()\n",
+          "old": "def export_rows(rows):\n    return \"\".join(\",\".join(str(cell) for cell in row) + \"\\n\" for row in rows)\n",
+          "path": "exporter.py"
+        },
+        {
+          "new": "import csv\nimport io\n\nfrom exporter import export_rows\n\n\ndef _round_trip(text):\n    return list(csv.reader(io.StringIO(text)))\n\n\ndef test_empty_input_unchanged():\n    result = export_rows([])\n    assert isinstance(result, str)\n    assert result == \"\"\n\n\ndef test_simple_rows_unchanged():\n    result = export_rows([[\"a\", 1], [\"b\", 2]])\n    assert isinstance(result, str)\n    assert result == \"a,1\\nb,2\\n\"\n\n\ndef test_comma_in_cell_is_quoted():\n    result = export_rows([[\"a,b\", \"c\"]])\n    assert result == '\"a,b\",c\\n'\n    assert _round_trip(result) == [[\"a,b\", \"c\"]]\n\n\ndef test_double_quote_in_cell_is_escaped():\n    result = export_rows([['he said \"hi\"', \"x\"]])\n    assert result == '\"he said \"\"hi\"\"\",x\\n'\n    assert _round_trip(result) == [['he said \"hi\"', \"x\"]]\n\n\ndef test_newline_in_cell_is_quoted():\n    result = export_rows([[\"line1\\nline2\", \"z\"]])\n    assert result == '\"line1\\nline2\",z\\n'\n    assert _round_trip(result) == [[\"line1\\nline2\", \"z\"]]\n\n\ndef test_carriage_return_in_cell_round_trips():\n    result = export_rows([[\"a\\rb\", \"c\"]])\n    assert _round_trip(result) == [[\"a\\rb\", \"c\"]]\n\n\ndef test_mixed_special_characters_round_trip():\n    row = ['a,b', 'q\"q', 'n\\nn', 'r\\rr', 'plain']\n    result = export_rows([row])\n    assert _round_trip(result) == [row]\n\n\ndef test_unicode_preserved_verbatim():\n    row = [\"caf\\u00e9\", \"\\u65e5\\u672c\\u8a9e\", \"\\U0001f600\"]\n    result = export_rows([row])\n    assert \"caf\\u00e9\" in result\n    assert \"\\u65e5\\u672c\\u8a9e\" in result\n    assert \"\\U0001f600\" in result\n    assert _round_trip(result) == [row]\n\n\ndef test_output_uses_lf_only():\n    result = export_rows([[\"a\", \"b\"], [\"c\", \"d\"]])\n    assert \"\\r\" not in result\n    assert result.endswith(\"\\n\")\n\n\ndef test_arbitrary_rows_round_trip():\n    rows = [\n        [\"plain\", \"with,comma\", 'with\"quote'],\n        [\"multi\\nline\", \"cr\\rhere\", \"\\u00fcnicode\"],\n        [\"\", \"\", \"\"],\n    ]\n    result = export_rows(rows)\n    assert _round_trip(result) == rows\n",
+          "old": "",
+          "path": "tests/test_exporter_csv.py"
+        }
+      ],
+      "rationale": "The current export_rows naively joins cells with commas and newlines, which breaks for cells containing commas, quotes, CR, or LF. I'll rewrite it to use the stdlib csv module with lineterminator='\\n' so output is RFC-4180-style, LF-terminated, and round-trips through csv.reader. Empty input still yields \"\" (csv.writer writes nothing for no rows), and simple rows are unchanged since csv.writer only quotes when needed. Unicode is preserved because csv.writer writes str directly. legacy_examples.py is left untouched."
+    }
+  ],
+  "recorded_digest": "9e937d26feb20d3a4e26cd6500dcf53a42d492ea37aef5a05cd5240fe1b17cf2",
+  "regression_results": [
+    {
+      "attempt": 1,
+      "baseline_result": {
+        "cases": [
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "def test_comma_in_cell_is_quoted():\n        result = export_rows([[\"a,b\", \"c\"]])\n>       assert result == '\"a,b\",c\\n'\nE       assert 'a,b,c\\n' == '\"a,b\",c\\n'\nE         \nE         - \"a,b\",c\nE         ? -   -\nE         + a,b,c\n\ntests/test_exporter_csv.py:25: AssertionError",
+            "file": "tests/test_exporter_csv.py",
+            "line": 23,
+            "message": "assert 'a,b,c\\n' == '\"a,b\",c\\n'\n  \n  - \"a,b\",c\n  ? -   -\n  + a,b,c",
+            "name": "test_comma_in_cell_is_quoted",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "def test_double_quote_in_cell_is_escaped():\n        result = export_rows([['he said \"hi\"', \"x\"]])\n>       assert result == '\"he said \"\"hi\"\"\",x\\n'\nE       assert 'he said \"hi\",x\\n' == '\"he said \"\"hi\"\"\",x\\n'\nE         \nE         - \"he said \"\"hi\"\"\",x\nE         ? -        -    --\nE         + he said \"hi\",x\n\ntests/test_exporter_csv.py:31: AssertionError",
+            "file": "tests/test_exporter_csv.py",
+            "line": 29,
+            "message": "assert 'he said \"hi\",x\\n' == '\"he said \"\"hi\"\"\",x\\n'\n  \n  - \"he said \"\"hi\"\"\",x\n  ? -        -    --\n  + he said \"hi\",x",
+            "name": "test_double_quote_in_cell_is_escaped",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "def test_newline_in_cell_is_quoted():\n        result = export_rows([[\"line1\\nline2\", \"z\"]])\n>       assert result == '\"line1\\nline2\",z\\n'\nE       assert 'line1\\nline2,z\\n' == '\"line1\\nline2\",z\\n'\nE         \nE         - \"line1\nE         ? -\nE         + line1\nE         - line2\",z\nE         ?      -\nE         + line2,z\n\ntests/test_exporter_csv.py:37: AssertionError",
+            "file": "tests/test_exporter_csv.py",
+            "line": 35,
+            "message": "assert 'line1\\nline2,z\\n' == '\"line1\\nline2\",z\\n'\n  \n  - \"line1\n  ? -\n  + line1\n  - line2\",z\n  ?      -\n  + line2,z",
+            "name": "test_newline_in_cell_is_quoted",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "def test_carriage_return_in_cell_round_trips():\n        result = export_rows([[\"a\\rb\", \"c\"]])\n>       assert _round_trip(result) == [[\"a\\rb\", \"c\"]]\n\ntests/test_exporter_csv.py:43: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntext = 'a\\rb,c\\n'\n\n    def _round_trip(text):\n>       return list(csv.reader(io.StringIO(text)))\nE       _csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?\n\ntests/test_exporter_csv.py:8: Error",
+            "file": "tests/test_exporter_csv.py",
+            "line": 41,
+            "message": "_csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?",
+            "name": "test_carriage_return_in_cell_round_trips",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "def test_mixed_special_characters_round_trip():\n        row = ['a,b', 'q\"q', 'n\\nn', 'r\\rr', 'plain']\n        result = export_rows([row])\n>       assert _round_trip(result) == [row]\n\ntests/test_exporter_csv.py:49: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntext = 'a,b,q\"q,n\\nn,r\\rr,plain\\n'\n\n    def _round_trip(text):\n>       return list(csv.reader(io.StringIO(text)))\nE       _csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?\n\ntests/test_exporter_csv.py:8: Error",
+            "file": "tests/test_exporter_csv.py",
+            "line": 46,
+            "message": "_csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?",
+            "name": "test_mixed_special_characters_round_trip",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "def test_arbitrary_rows_round_trip():\n        rows = [\n            [\"plain\", \"with,comma\", 'with\"quote'],\n            [\"multi\\nline\", \"cr\\rhere\", \"\\u00fcnicode\"],\n            [\"\", \"\", \"\"],\n        ]\n        result = export_rows(rows)\n>       assert _round_trip(result) == rows\n\ntests/test_exporter_csv.py:74: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntext = 'plain,with,comma,with\"quote\\nmulti\\nline,cr\\rhere,ünicode\\n,,\\n'\n\n    def _round_trip(text):\n>       return list(csv.reader(io.StringIO(text)))\nE       _csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?\n\ntests/test_exporter_csv.py:8: Error",
+            "file": "tests/test_exporter_csv.py",
+            "line": 67,
+            "message": "_csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?",
+            "name": "test_arbitrary_rows_round_trip",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_contract",
+            "details": "",
+            "file": "tests/test_contract.py",
+            "line": 4,
+            "message": "",
+            "name": "test_existing_contract",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "",
+            "file": "tests/test_exporter_csv.py",
+            "line": 11,
+            "message": "",
+            "name": "test_empty_input_unchanged",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "",
+            "file": "tests/test_exporter_csv.py",
+            "line": 17,
+            "message": "",
+            "name": "test_simple_rows_unchanged",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "",
+            "file": "tests/test_exporter_csv.py",
+            "line": 52,
+            "message": "",
+            "name": "test_unicode_preserved_verbatim",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_exporter_csv",
+            "details": "",
+            "file": "tests/test_exporter_csv.py",
+            "line": 61,
+            "message": "",
+            "name": "test_output_uses_lf_only",
+            "status": "passed"
+          }
+        ],
+        "cases_truncated": false,
+        "duration_seconds": 1.1093987000022025,
+        "errors": 0,
+        "evidence": "docker",
+        "exit_code": 1,
+        "failed": 6,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "output_truncated": false,
+        "passed": 5,
+        "skipped": 0,
+        "status": "failed",
+        "stderr": "",
+        "stdout": "...FFFFF..F                                                              [100%]\n=================================== FAILURES ===================================\n_________________________ test_comma_in_cell_is_quoted _________________________\n\n    def test_comma_in_cell_is_quoted():\n        result = export_rows([[\"a,b\", \"c\"]])\n>       assert result == '\"a,b\",c\\n'\nE       assert 'a,b,c\\n' == '\"a,b\",c\\n'\nE         \nE         - \"a,b\",c\nE         ? -   -\nE         + a,b,c\n\ntests/test_exporter_csv.py:25: AssertionError\n_____________________ test_double_quote_in_cell_is_escaped _____________________\n\n    def test_double_quote_in_cell_is_escaped():\n        result = export_rows([['he said \"hi\"', \"x\"]])\n>       assert result == '\"he said \"\"hi\"\"\",x\\n'\nE       assert 'he said \"hi\",x\\n' == '\"he said \"\"hi\"\"\",x\\n'\nE         \nE         - \"he said \"\"hi\"\"\",x\nE         ? -        -    --\nE         + he said \"hi\",x\n\ntests/test_exporter_csv.py:31: AssertionError\n________________________ test_newline_in_cell_is_quoted ________________________\n\n    def test_newline_in_cell_is_quoted():\n        result = export_rows([[\"line1\\nline2\", \"z\"]])\n>       assert result == '\"line1\\nline2\",z\\n'\nE       assert 'line1\\nline2,z\\n' == '\"line1\\nline2\",z\\n'\nE         \nE         - \"line1\nE         ? -\nE         + line1\nE         - line2\",z\nE         ?      -\nE         + line2,z\n\ntests/test_exporter_csv.py:37: AssertionError\n___________________ test_carriage_return_in_cell_round_trips ___________________\n\n    def test_carriage_return_in_cell_round_trips():\n        result = export_rows([[\"a\\rb\", \"c\"]])\n>       assert _round_trip(result) == [[\"a\\rb\", \"c\"]]\n\ntests/test_exporter_csv.py:43: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntext = 'a\\rb,c\\n'\n\n    def _round_trip(text):\n>       return list(csv.reader(io.StringIO(text)))\nE       _csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?\n\ntests/test_exporter_csv.py:8: Error\n___________________ test_mixed_special_characters_round_trip ___________________\n\n    def test_mixed_special_characters_round_trip():\n        row = ['a,b', 'q\"q', 'n\\nn', 'r\\rr', 'plain']\n        result = export_rows([row])\n>       assert _round_trip(result) == [row]\n\ntests/test_exporter_csv.py:49: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntext = 'a,b,q\"q,n\\nn,r\\rr,plain\\n'\n\n    def _round_trip(text):\n>       return list(csv.reader(io.StringIO(text)))\nE       _csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?\n\ntests/test_exporter_csv.py:8: Error\n________________________ test_arbitrary_rows_round_trip ________________________\n\n    def test_arbitrary_rows_round_trip():\n        rows = [\n            [\"plain\", \"with,comma\", 'with\"quote'],\n            [\"multi\\nline\", \"cr\\rhere\", \"\\u00fcnicode\"],\n            [\"\", \"\", \"\"],\n        ]\n        result = export_rows(rows)\n>       assert _round_trip(result) == rows\n\ntests/test_exporter_csv.py:74: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntext = 'plain,with,comma,with\"quote\\nmulti\\nline,cr\\rhere,ünicode\\n,,\\n'\n\n    def _round_trip(text):\n>       return list(csv.reader(io.StringIO(text)))\nE       _csv.Error: new-line character seen in unquoted field - do you need to open the file with newline=''?\n\ntests/test_exporter_csv.py:8: Error\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_exporter_csv.py::test_comma_in_cell_is_quoted - assert 'a,b...\nFAILED tests/test_exporter_csv.py::test_double_quote_in_cell_is_escaped - ass...\nFAILED tests/test_exporter_csv.py::test_newline_in_cell_is_quoted - assert 'l...\nFAILED tests/test_exporter_csv.py::test_carriage_return_in_cell_round_trips\nFAILED tests/test_exporter_csv.py::test_mixed_special_characters_round_trip\nFAILED tests/test_exporter_csv.py::test_arbitrary_rows_round_trip - _csv.Erro...\n6 failed, 5 passed in 0.20s\n"
+      },
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-isolated-data\\tasks\\ffcb9a18-b61a-44c4-959d-c739eca1d869\\regression\\attempt-1-8085856b-0c00-4b18-857b-5eab5f2c9414",
+      "candidate_id": "c990caf3-c148-467d-8e4d-c3f9276b73a8",
+      "candidate_number": 1,
+      "diff_digest": "9e937d26feb20d3a4e26cd6500dcf53a42d492ea37aef5a05cd5240fe1b17cf2",
+      "fail_to_pass_tests": [
+        "tests/test_exporter_csv.py::tests.test_exporter_csv::test_comma_in_cell_is_quoted",
+        "tests/test_exporter_csv.py::tests.test_exporter_csv::test_double_quote_in_cell_is_escaped",
+        "tests/test_exporter_csv.py::tests.test_exporter_csv::test_newline_in_cell_is_quoted",
+        "tests/test_exporter_csv.py::tests.test_exporter_csv::test_carriage_return_in_cell_round_trips",
+        "tests/test_exporter_csv.py::tests.test_exporter_csv::test_mixed_special_characters_round_trip",
+        "tests/test_exporter_csv.py::tests.test_exporter_csv::test_arbitrary_rows_round_trip"
+      ],
+      "generated_tests": [
+        "tests/test_exporter_csv.py"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "status": "demonstrated"
+    }
+  ],
+  "repair_feedback": [],
+  "retry_count": 0,
+  "reviews": [
+    {
+      "approved": true,
+      "attempt": 1,
+      "candidate_id": "c990caf3-c148-467d-8e4d-c3f9276b73a8",
+      "candidate_number": 1,
+      "concerns": [
+        "Minor: the diff header for tests/test_exporter_csv.py shows '@@ -0,0 +1,74 @@' but the file content is 74 lines including trailing newline; this is cosmetic and does not affect correctness.",
+        "The candidate does not add a test asserting the exact output for the CR case (only round-trip), but the issue only requires CR handling to round-trip, which is covered."
+      ],
+      "contract_checks": [
+        {
+          "evidence": "test_empty_input_unchanged asserts isinstance(result, str) and result == \"\". csv.writer over an empty row list writes nothing, so buffer.getvalue() == \"\". Passed on candidate; also passed on baseline (test_empty_input_unchanged in the 5 passing baseline tests).",
+          "requirement": "export_rows([]) returns a str equal to \"\" (empty input unchanged).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_simple_rows_unchanged asserts result == \"a,1\\nb,2\\n\". csv.writer with lineterminator='\\n' emits exactly this. Passed on candidate and on baseline (unchanged behavior).",
+          "requirement": "export_rows([[\"a\", 1], [\"b\", 2]]) returns a str equal to \"a,1\\nb,2\\n\" (simple rows unchanged).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_comma_in_cell_is_quoted asserts exact output and round-trip. Baseline failed with 'a,b,c\\n' (unquoted); candidate passes. csv.writer quotes fields containing the delimiter.",
+          "requirement": "export_rows([[\"a,b\", \"c\"]]) == '\"a,b\",c\\n' and csv.reader parses it as [[\"a,b\", \"c\"]] (comma cell quoted).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_double_quote_in_cell_is_escaped asserts exact output and round-trip. Baseline failed with 'he said \"hi\",x\\n'; candidate passes. csv.writer doubles embedded quotes and wraps the field.",
+          "requirement": "export_rows([['he said \"hi\"', \"x\"]]) == '\"he said \"\"hi\"\"\",x\\n' and csv.reader recovers the original value (quote cell escaped).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_newline_in_cell_is_quoted asserts exact output and round-trip. Baseline failed with 'line1\\nline2,z\\n'; candidate passes. csv.writer quotes fields containing newlines.",
+          "requirement": "export_rows([[\"line1\\nline2\", \"z\"]]) == '\"line1\\nline2\",z\\n' and csv.reader recovers the original value (LF cell quoted).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_carriage_return_in_cell_round_trips asserts round-trip. Baseline raised _csv.Error: new-line character seen in unquoted field; candidate passes. csv.writer quotes fields containing CR.",
+          "requirement": "export_rows([[\"a\\rb\", \"c\"]]) round-trips through csv.reader to [[\"a\\rb\", \"c\"]] (CR cell handled).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_mixed_special_characters_round_trip asserts round-trip. Baseline raised _csv.Error; candidate passes.",
+          "requirement": "export_rows([['a,b', 'q\"q', 'n\\nn', 'r\\rr', 'plain']]) round-trips through csv.reader to the original row (mixed special characters).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_unicode_preserved_verbatim asserts substring presence of each Unicode char and round-trip. io.StringIO + csv.writer do not ASCII-escape; candidate passes.",
+          "requirement": "export_rows([[\"caf\\u00e9\", \"\\u65e5\\u672c\\u8a9e\", \"\\U0001f600\"]]) contains the Unicode characters verbatim and round-trips (Unicode preserved).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_output_uses_lf_only asserts \"\\r\" not in result and result.endswith(\"\\n\"). lineterminator='\\n' guarantees this; candidate passes.",
+          "requirement": "export_rows([[\"a\", \"b\"], [\"c\", \"d\"]]) contains no \"\\r\" and ends with \"\\n\" (LF line endings).",
+          "satisfied": true
+        },
+        {
+          "evidence": "test_arbitrary_rows_round_trip covers plain, comma, quote, multiline, CR, Unicode, and empty cells. Baseline raised _csv.Error; candidate passes.",
+          "requirement": "export_rows on arbitrary rows of string cells round-trips through csv.reader to the original values.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Diff touches only exporter.py and adds tests/test_exporter_csv.py. legacy_examples.py content is unchanged and no production module imports it (README confirms it is not imported by production code).",
+          "requirement": "legacy_examples.py is not modified and remains unused.",
+          "satisfied": true
+        },
+        {
+          "evidence": "tests/test_contract.py is not in the diff (unchanged). Its assertions export_rows([]) == \"\" and export_rows([[\"a\", 1], [\"b\", 2]]) == \"a,1\\nb,2\\n\" hold under the new implementation; the full suite reports 11 passed, 0 failed.",
+          "requirement": "Existing tests in tests/test_contract.py continue to pass unchanged.",
+          "satisfied": true
+        }
+      ],
+      "summary": "The candidate replaces the naive join-based export_rows with a stdlib csv.writer using lineterminator='\\n', which produces valid RFC-4180 CSV. All 12 acceptance contracts are satisfied: empty input returns \"\", simple rows are unchanged, comma/quote/newline/CR cells are quoted and escaped, Unicode is preserved verbatim, output uses LF only, csv.reader round-trips arbitrary rows, legacy_examples.py is untouched, and existing tests/test_contract.py still passes. Regression evidence is solid: the 6 fail_to_pass tests failed on the original source (with concrete assertion/parse errors) and pass on the candidate; the 5 pass-on-both tests confirm preserved behavior."
+    }
+  ],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "c990caf3-c148-467d-8e4d-c3f9276b73a8",
+      "candidate_number": 1,
+      "cases": [
+        {
+          "classname": "tests.test_contract",
+          "details": "",
+          "file": "tests/test_contract.py",
+          "line": 4,
+          "message": "",
+          "name": "test_existing_contract",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 11,
+          "message": "",
+          "name": "test_empty_input_unchanged",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 17,
+          "message": "",
+          "name": "test_simple_rows_unchanged",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 23,
+          "message": "",
+          "name": "test_comma_in_cell_is_quoted",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 29,
+          "message": "",
+          "name": "test_double_quote_in_cell_is_escaped",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 35,
+          "message": "",
+          "name": "test_newline_in_cell_is_quoted",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 41,
+          "message": "",
+          "name": "test_carriage_return_in_cell_round_trips",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 46,
+          "message": "",
+          "name": "test_mixed_special_characters_round_trip",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 52,
+          "message": "",
+          "name": "test_unicode_preserved_verbatim",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 61,
+          "message": "",
+          "name": "test_output_uses_lf_only",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_exporter_csv",
+          "details": "",
+          "file": "tests/test_exporter_csv.py",
+          "line": 67,
+          "message": "",
+          "name": "test_arbitrary_rows_round_trip",
+          "status": "passed"
+        }
+      ],
+      "cases_truncated": false,
+      "diff_digest": "9e937d26feb20d3a4e26cd6500dcf53a42d492ea37aef5a05cd5240fe1b17cf2",
+      "duration_seconds": 1.0427191000017046,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 11,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "...........                                                              [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n11 passed in 0.11s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "exporter.py": "fcbf9ff0838d4622a827ea3760b99b9f14875964331696c98ea8144ce3b63090",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_contract.py": "294b53192e67ea04369f2cedd2641f1200113c94607aa0084d6b17354c52ff93",
+    "tests/test_exporter_csv.py": "915225961edb395b70ddce1536d2f8dfbbebb4ca6a884c85c78403c3e3e02f40"
+  }
+}

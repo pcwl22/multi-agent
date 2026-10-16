@@ -1,0 +1,111 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -124,7 +124,15 @@
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OverflowError, OSError):
++                    # The decoded timestamp is outside the range supported
++                    # by datetime. Report it as a malformed timestamp with
++                    # no date_signed rather than leaking the raw error.
++                    raise BadTimeSignature(
++                        "Malformed timestamp", payload=value, date_signed=None
++                    )
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+--- a/tests/test_itsdangerous/test_timed_malformed_regression.py
++++ b/tests/test_itsdangerous/test_timed_malformed_regression.py
+@@ -0,0 +1,89 @@
++import sys
++
++import pytest
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++
++
++@pytest.fixture
++def signer():
++    return TimestampSigner("secret-key")
++
++
++@pytest.fixture
++def serializer():
++    return TimedSerializer("secret-key")
++
++
++# The decoded timestamp in this value is far outside datetime's supported
++# year range, and the signature does not match.
++MALFORMED_INVALID = b"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY"
++
++
++@pytest.mark.skipif(
++    sys.platform == "win32", reason="Freezegun Invalid argument occurs on Windows"
++)
++def test_malformed_timestamp_invalid_signature_raises_bad_time_signature(signer):
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(MALFORMED_INVALID)
++
++    exc = exc_info.value
++    assert isinstance(exc, BadSignature)
++    assert exc.payload == b"value"
++    assert exc.date_signed is None
++    assert "Malformed" in str(exc)
++
++
++def test_malformed_timestamp_invalid_signature_no_value_error(signer):
++    # Must not leak a raw datetime ValueError.
++    with pytest.raises(BadTimeSignature):
++        signer.unsign(MALFORMED_INVALID)
++
++
++def test_valid_roundtrip_unchanged(signer):
++    signed = signer.sign(b"value")
++    assert signer.unsign(signed) == b"value"
++
++    value, ts = signer.unsign(signed, return_timestamp=True)
++    assert value == b"value"
++    assert ts.tzinfo is not None
++
++
++def test_ordinary_invalid_signature_keeps_date_signed(signer):
++    signed = signer.sign(b"value")
++    # Corrupt the signature but keep a valid-range timestamp.
++    tampered = signed[:-1] + (b"A" if signed[-1:] != b"A" else b"B")
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    exc = exc_info.value
++    assert exc.payload == b"value"
++    assert exc.date_signed is not None
++
++
++def test_expiry_behavior_unchanged(signer):
++    signed = signer.sign(b"value")
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=-1)
++
++    exc = exc_info.value
++    assert exc.payload == b"value"
++    assert exc.date_signed is not None
++
++
++def test_timed_serializer_malformed_raises_bad_signature_family(serializer):
++    with pytest.raises(BadSignature) as exc_info:
++        serializer.loads(MALFORMED_INVALID)
++
++    assert isinstance(exc_info.value, BadTimeSignature)
++
++
++def test_timed_serializer_valid_roundtrip_unchanged(serializer):
++    signed = serializer.dumps({"a": 1})
++    assert serializer.loads(signed) == {"a": 1}

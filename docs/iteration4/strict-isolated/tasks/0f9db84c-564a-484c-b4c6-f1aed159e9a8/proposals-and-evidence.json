@@ -1,0 +1,165 @@
+{
+  "patches": [
+    {
+      "rationale": "The current export_rows joins cells with commas and rows with '\\n' without any CSV quoting, so cells containing commas, quotes, or newlines produce invalid CSV. Replace the ad-hoc join with csv.writer over a StringIO buffer using QUOTE_MINIMAL and lineterminator='\\n'. This preserves empty output (no rows -> empty string), preserves simple output exactly ('a,1\\nb,2\\n'), keeps LF endings, preserves Unicode (StringIO is text-mode, no encoding coercion), and correctly quotes/escapes commas, quotes, and newlines so csv.reader round-trips. legacy_examples is untouched. New regression tests in tests/test_export_rows.py cover each acceptance contract with exact inputs and result types.",
+      "edits": [
+        {
+          "path": "exporter.py",
+          "old": "def export_rows(rows):\n    return \"\".join(\",\".join(str(cell) for cell in row) + \"\\n\" for row in rows)\n",
+          "new": "import csv\nimport io\n\n\ndef export_rows(rows):\n    buffer = io.StringIO()\n    writer = csv.writer(buffer, quoting=csv.QUOTE_MINIMAL, lineterminator=\"\\n\")\n    for row in rows:\n        writer.writerow([str(cell) for cell in row])\n    return buffer.getvalue()\n"
+        },
+        {
+          "path": "tests/test_export_rows.py",
+          "old": "",
+          "new": "import csv\nimport io\n\nfrom exporter import export_rows\n\n\ndef test_empty_input_yields_empty_output():\n    result = export_rows([])\n    assert result == \"\"\n    assert isinstance(result, str)\n\n\ndef test_simple_rows_unchanged():\n    result = export_rows([[\"a\", 1], [\"b\", 2]])\n    assert result == \"a,1\\nb,2\\n\"\n    assert isinstance(result, str)\n\n\ndef test_single_simple_row_unchanged():\n    assert export_rows([[\"a\", \"b\", \"c\"]]) == \"a,b,c\\n\"\n\n\ndef test_comma_cell_is_quoted_and_round_trips():\n    rows = [[\"a,b\", \"c\"]]\n    out = export_rows(rows)\n    assert out == '\"a,b\",c\\n'\n    assert list(csv.reader(io.StringIO(out))) == rows\n\n\ndef test_quote_cell_is_escaped_and_round_trips():\n    rows = [['he said \"hi\"', \"x\"]]\n    out = export_rows(rows)\n    assert out == '\"he said \"\"hi\"\"\",x\\n'\n    assert list(csv.reader(io.StringIO(out))) == rows\n\n\ndef test_newline_cell_is_quoted_and_round_trips():\n    rows = [[\"line1\\nline2\", \"z\"]]\n    out = export_rows(rows)\n    assert out == '\"line1\\nline2\",z\\n'\n    assert list(csv.reader(io.StringIO(out))) == rows\n\n\ndef test_unicode_preserved():\n    rows = [[\"caf\\u00e9\", \"\\u65e5\\u672c\\u8a9e\", \"\\U0001f600\"]]\n    out = export_rows(rows)\n    assert \"caf\\u00e9\" in out\n    assert \"\\u65e5\\u672c\\u8a9e\" in out\n    assert \"\\U0001f600\" in out\n    assert list(csv.reader(io.StringIO(out))) == rows\n\n\ndef test_lf_line_endings_only():\n    out = export_rows([[\"a\", \"b\"], [\"c\", \"d\"]])\n    assert \"\\r\" not in out\n    assert out == \"a,b\\nc,d\\n\"\n\n\ndef test_round_trip_mixed_special_cells():\n    rows = [\n        [\"plain\", \"with,comma\", 'with\"quote', \"with\\nnewline\"],\n        [\"\\u00e9\\u00e8\", \"1\", \"2\", \"3\"],\n    ]\n    out = export_rows(rows)\n    assert list(csv.reader(io.StringIO(out))) == rows\n\n\ndef test_non_string_cells_are_stringified():\n    rows = [[1, 2.5, None, True]]\n    out = export_rows(rows)\n    assert out == \"1,2.5,None,True\\n\"\n    assert list(csv.reader(io.StringIO(out))) == [[\"1\", \"2.5\", \"None\", \"True\"]]\n"
+        }
+      ],
+      "contract_tests": [
+        "export_rows produces comma-delimited CSV text: test_simple_rows_unchanged asserts export_rows([[\"a\", 1], [\"b\", 2]]) == \"a,1\\nb,2\\n\" (str).",
+        "Cells containing commas are quoted so csv.reader parses them as a single field: test_comma_cell_is_quoted_and_round_trips asserts export_rows([[\"a,b\", \"c\"]]) == '\"a,b\",c\\n' and csv.reader yields [[\"a,b\", \"c\"]].",
+        "Cells containing double quotes are escaped per CSV rules (doubled quotes) and round-trip exactly: test_quote_cell_is_escaped_and_round_trips asserts export_rows([['he said \"hi\"', \"x\"]]) == '\"he said \"\"hi\"\"\",x\\n' and csv.reader yields the original row.",
+        "Cells containing newlines are quoted and round-trip exactly via csv.reader: test_newline_cell_is_quoted_and_round_trips asserts export_rows([[\"line1\\nline2\", \"z\"]]) == '\"line1\\nline2\",z\\n' and csv.reader yields the original row.",
+        "Unicode characters in cells are preserved unchanged in the output: test_unicode_preserved asserts 'caf\\u00e9', '\\u65e5\\u672c\\u8a9e', and '\\U0001f600' appear verbatim and round-trip via csv.reader.",
+        "Output uses LF ('\\n') line endings, not CRLF: test_lf_line_endings_only asserts '\\r' not in out and out == \"a,b\\nc,d\\n\".",
+        "Empty input yields empty output (unchanged from current behavior): test_empty_input_yields_empty_output asserts export_rows([]) == \"\" and isinstance(result, str).",
+        "Simple rows without special characters produce the same output as before (unchanged): test_simple_rows_unchanged and test_single_simple_row_unchanged assert exact prior strings \"a,1\\nb,2\\n\" and \"a,b,c\\n\".",
+        "csv.reader(export_rows(rows)) equals the original rows for all covered cases: test_round_trip_mixed_special_cells asserts list(csv.reader(io.StringIO(out))) == rows for mixed comma/quote/newline/Unicode rows; other round-trip tests cover each special case individually.",
+        "legacy_examples is not used or modified: no edit touches legacy_examples.py and exporter.py imports only csv and io.",
+        "Non-string cells remain stringified as before: test_non_string_cells_are_stringified asserts export_rows([[1, 2.5, None, True]]) == \"1,2.5,None,True\\n\" and csv.reader yields the stringified row."
+      ],
+      "changed_files": [
+        "exporter.py",
+        "tests/test_export_rows.py"
+      ],
+      "applied": true,
+      "candidate_id": "54531021-31cd-48e3-8028-92d784664743",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "...........                                                              [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n11 passed in 0.11s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 11,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9529839000024367,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_empty_input_yields_empty_output",
+          "classname": "tests.test_export_rows",
+          "line": 7,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_simple_rows_unchanged",
+          "classname": "tests.test_export_rows",
+          "line": 13,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_single_simple_row_unchanged",
+          "classname": "tests.test_export_rows",
+          "line": 19,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_comma_cell_is_quoted_and_round_trips",
+          "classname": "tests.test_export_rows",
+          "line": 23,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_quote_cell_is_escaped_and_round_trips",
+          "classname": "tests.test_export_rows",
+          "line": 30,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_newline_cell_is_quoted_and_round_trips",
+          "classname": "tests.test_export_rows",
+          "line": 37,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_unicode_preserved",
+          "classname": "tests.test_export_rows",
+          "line": 44,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_lf_line_endings_only",
+          "classname": "tests.test_export_rows",
+          "line": 53,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_round_trip_mixed_special_cells",
+          "classname": "tests.test_export_rows",
+          "line": 59,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_export_rows.py",
+          "name": "test_non_string_cells_are_stringified",
+          "classname": "tests.test_export_rows",
+          "line": 68,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "37d3220e647f74206be75bb6093d7c0acbc7215c1bcf2668e39a8c3c68454d11",
+      "candidate_id": "54531021-31cd-48e3-8028-92d784664743",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

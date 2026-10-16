@@ -1,0 +1,17 @@
+--- a/jsonpointer.py
++++ b/jsonpointer.py
+@@ -239,7 +239,13 @@
+             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):
+                 raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+-            return int(part)
++            try:
++                return int(part)
++            except ValueError:
++                # A syntactically valid numeric index may still exceed
++                # Python's integer string conversion digit limit. Treat it
++                # as an invalid sequence index rather than leaking ValueError.
++                raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+         elif hasattr(doc, '__getitem__'):
+             # Allow indexing via ducktyping

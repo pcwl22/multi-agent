@@ -1,0 +1,111 @@
+{
+  "patches": [
+    {
+      "rationale": "The expired-token branch in auth.py returns (500, 'expired'); the issue requires (401, 'expired'). Only that branch changes; valid and absent paths are untouched. A new regression test file tests/test_auth_expired_token.py is added covering expired, valid, and absent token behavior with exact tuple and type assertions.",
+      "edits": [
+        {
+          "path": "auth.py",
+          "old": "    if token == \"expired\":\n        return 500, \"expired\"",
+          "new": "    if token == \"expired\":\n        return 401, \"expired\""
+        },
+        {
+          "path": "tests/test_auth_expired_token.py",
+          "old": "",
+          "new": "from auth import authenticate\n\n\ndef test_expired_token_returns_401_expired():\n    result = authenticate(\"expired\")\n    assert result == (401, \"expired\")\n    assert isinstance(result, tuple)\n    assert len(result) == 2\n    assert type(result[0]) is int\n    assert type(result[1]) is str\n\n\ndef test_valid_token_behavior_preserved():\n    result = authenticate(\"valid\")\n    assert result == (200, \"alice\")\n    assert isinstance(result, tuple)\n    assert type(result[0]) is int\n    assert type(result[1]) is str\n\n\ndef test_absent_token_behavior_preserved():\n    result = authenticate(None)\n    assert result == (401, \"missing\")\n    assert isinstance(result, tuple)\n    assert type(result[0]) is int\n    assert type(result[1]) is str\n\n\ndef test_unknown_token_behavior_preserved():\n    result = authenticate(\"unknown\")\n    assert result == (401, \"missing\")\n    assert type(result[0]) is int\n    assert type(result[1]) is str\n\n\ndef test_expired_token_does_not_raise():\n    try:\n        result = authenticate(\"expired\")\n    except Exception as exc:  # pragma: no cover\n        raise AssertionError(\"authenticate raised for expired token: %r\" % (exc,))\n    assert result == (401, \"expired\")\n"
+        }
+      ],
+      "contract_tests": [
+        "authenticate(expired_token) returns exactly (401, 'expired'): tests/test_auth_expired_token.py::test_expired_token_returns_401_expired asserts authenticate(\"expired\") == (401, \"expired\").",
+        "Expired-token return is a 2-tuple of (int, str), not an exception or 500: test_expired_token_returns_401_expired asserts isinstance(result, tuple), len(result) == 2, type(result[0]) is int, type(result[1]) is str; test_expired_token_does_not_raise asserts no exception is raised.",
+        "authenticate(valid_token) preserves original return value and type: test_valid_token_behavior_preserved asserts authenticate(\"valid\") == (200, \"alice\") with type(result[0]) is int and type(result[1]) is str.",
+        "authenticate(absent_token) preserves original return value and type: test_absent_token_behavior_preserved asserts authenticate(None) == (401, \"missing\") with type(result[0]) is int and type(result[1]) is str.",
+        "No other behavior of authenticate changes: test_unknown_token_behavior_preserved asserts authenticate(\"unknown\") == (401, \"missing\") with type(result[0]) is int and type(result[1]) is str, confirming the fallback branch is unchanged.",
+        "A new regression test file exists and tests expired, valid, and absent token behavior: tests/test_auth_expired_token.py contains test_expired_token_returns_401_expired, test_valid_token_behavior_preserved, and test_absent_token_behavior_preserved."
+      ],
+      "changed_files": [
+        "auth.py",
+        "tests/test_auth_expired_token.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "......                                                                   [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n6 passed in 0.10s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 6,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.029849299997295,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_expired_token_returns_401_expired",
+          "classname": "tests.test_auth_expired_token",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_valid_token_behavior_preserved",
+          "classname": "tests.test_auth_expired_token",
+          "line": 13,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_absent_token_behavior_preserved",
+          "classname": "tests.test_auth_expired_token",
+          "line": 21,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_unknown_token_behavior_preserved",
+          "classname": "tests.test_auth_expired_token",
+          "line": 29,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth_expired_token.py",
+          "name": "test_expired_token_does_not_raise",
+          "classname": "tests.test_auth_expired_token",
+          "line": 36,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "bb1164ed03fecf551e57f7d082fc4a487e084aa6c5e4cf803092a9126489da97"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

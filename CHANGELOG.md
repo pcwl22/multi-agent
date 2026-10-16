@@ -2,6 +2,14 @@
 
 ## 0.1.0 — release candidate, unpublished
 
+- Bounded JUnit failure observations and repeated candidate/failure fingerprints;
+  model feedback keeps original versus generated test provenance.
+- Docker-only same-test original-baseline regression witnesses for Reviewer;
+  missing evidence and smoke tests are explicitly not regression proof.
+- Persistent task-creation intent, bounded Windows activation retries and explicit
+  preparation resume; interrupted pristine candidates retain identity.
+- Full source suite 159 passed, 1 skipped; all 52 prior test files retained.
+
 - Optional per-task isolated attempts: complete candidates start from the original
   baseline; every prior workspace, wrong generated test, diff and evidence remains.
 - Candidate identity joins the diff digest for isolated-mode approval/publication;

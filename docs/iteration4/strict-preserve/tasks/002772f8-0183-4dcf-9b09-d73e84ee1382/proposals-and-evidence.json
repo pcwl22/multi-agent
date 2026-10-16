@@ -1,0 +1,137 @@
+{
+  "patches": [
+    {
+      "rationale": "The issue states money.py's discount must interpret 20 as 20% and checkout.py's invoice_total must apply tax to the discounted subtotal. The actual public function is `discounted(amount, percent)` in money.py, currently computing `amount * (1 - percent)` (treating percent as a fraction). The fix: treat `percent` as a percentage, i.e. `amount * (1 - percent / 100)`. In checkout.py, `invoice_total` currently applies tax to the original `amount`; it must apply tax to the discounted subtotal. Note the existing test uses tax_rate 0.1 (fraction) and expects 110 for no discount, so tax_rate stays a fraction; only the discount argument is a percentage. Example: discounted(100, 20) = 80; invoice_total(100, 20, 0.1) = 80 + 80*0.1 = 88. No-discount: discounted(100,0)=100, invoice_total(100,0,0.1)=110. No-tax: invoice_total(100,20,0)=80. Signatures/names/return types unchanged. New regression tests added in a new file.",
+      "edits": [
+        {
+          "path": "money.py",
+          "old": "def discounted(amount, percent):\n    return amount * (1 - percent)",
+          "new": "def discounted(amount, percent):\n    return amount * (1 - percent / 100)"
+        },
+        {
+          "path": "checkout.py",
+          "old": "def invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + amount * tax_rate, 2)",
+          "new": "def invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + subtotal * tax_rate, 2)"
+        },
+        {
+          "path": "tests/test_regression_checkout.py",
+          "old": "",
+          "new": "from checkout import invoice_total\nfrom money import discounted\n\n\ndef test_discounted_treats_percent_as_percentage():\n    # 20 means 20%, so 100 - 20% = 80\n    result = discounted(100, 20)\n    assert result == 80\n    assert isinstance(result, (int, float))\n\n\ndef test_discounted_zero_preserves_amount():\n    assert discounted(100, 0) == 100\n    assert discounted(0, 20) == 0\n\n\ndef test_invoice_total_combined_example():\n    # 100, discount 20%, tax 10% -> 80 + 8 = 88\n    result = invoice_total(100, 20, 0.1)\n    assert result == 88\n    assert isinstance(result, (int, float))\n\n\ndef test_invoice_total_tax_applied_to_discounted_subtotal():\n    # tax must be on discounted subtotal (80), not original (100)\n    assert invoice_total(100, 20, 0.1) == 88\n    assert invoice_total(100, 20, 0.1) != 90\n\n\ndef test_invoice_total_no_discount_preserved():\n    assert invoice_total(100, 0, 0.1) == 110\n\n\ndef test_invoice_total_no_tax_preserved():\n    assert invoice_total(100, 20, 0) == 80\n\n\ndef test_invoice_total_zero_amount():\n    assert invoice_total(0, 20, 0.1) == 0\n"
+        }
+      ],
+      "contract_tests": [
+        "money.discounted(100, 20) == 80 (20 interpreted as 20%) -> test_discounted_treats_percent_as_percentage",
+        "money.discounted(100, 0) == 100 (no-discount preserved) -> test_discounted_zero_preserves_amount",
+        "checkout.invoice_total(100, 20, 0.1) == 88 (combined example) -> test_invoice_total_combined_example",
+        "checkout.invoice_total applies tax to discounted subtotal, not original (88 != 90) -> test_invoice_total_tax_applied_to_discounted_subtotal",
+        "checkout.invoice_total(100, 0, 0.1) == 110 (no-discount preserved) -> test_invoice_total_no_discount_preserved",
+        "checkout.invoice_total(100, 20, 0) == 80 (no-tax preserved) -> test_invoice_total_no_tax_preserved",
+        "checkout.invoice_total(0, 20, 0.1) == 0 (zero amount preserved) -> test_invoice_total_zero_amount",
+        "Return types remain numeric (int/float) for both public functions -> isinstance assertions in test_discounted_treats_percent_as_percentage and test_invoice_total_combined_example"
+      ],
+      "changed_files": [
+        "money.py",
+        "checkout.py",
+        "tests/test_regression_checkout.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.08s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.8633707000008144,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 5,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_discounted_treats_percent_as_percentage",
+          "classname": "tests.test_regression_checkout",
+          "line": 5,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_discounted_zero_preserves_amount",
+          "classname": "tests.test_regression_checkout",
+          "line": 12,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_invoice_total_combined_example",
+          "classname": "tests.test_regression_checkout",
+          "line": 17,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_invoice_total_tax_applied_to_discounted_subtotal",
+          "classname": "tests.test_regression_checkout",
+          "line": 24,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_invoice_total_no_discount_preserved",
+          "classname": "tests.test_regression_checkout",
+          "line": 30,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_invoice_total_no_tax_preserved",
+          "classname": "tests.test_regression_checkout",
+          "line": 34,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_regression_checkout.py",
+          "name": "test_invoice_total_zero_amount",
+          "classname": "tests.test_regression_checkout",
+          "line": 38,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "98367ff2e0af780365c3dd6d2c887f35b2d975acf23e963631807b72d53f4709"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

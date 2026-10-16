@@ -1,0 +1,356 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug is that `dict(reservations)` collapses repeated SKU entries, keeping only the last quantity. Fix by iterating over every reservation tuple and subtracting each quantity, clamping at zero, ignoring unknown SKUs, and building a fresh dict so inputs are not mutated. Add a new regression test file covering the literal example, repeated SKUs, clamping, unknown SKUs, input preservation, return type/keys, and preserved existing behavior.",
+      "edits": [
+        {
+          "path": "inventory.py",
+          "old": "def available_units(stock, reservations):\n    reserved = dict(reservations)\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}",
+          "new": "def available_units(stock, reservations):\n    available = dict(stock)\n    for sku, qty in reservations:\n        if sku in available:\n            available[sku] = max(0, available[sku] - qty)\n    return available"
+        },
+        {
+          "path": "tests/test_inventory_regression.py",
+          "old": "",
+          "new": "from inventory import available_units\n\n\ndef test_repeated_sku_reservations_are_all_subtracted():\n    assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 5}\n\n\ndef test_literal_example_returns_exact_mapping():\n    result = available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)])\n    assert result == {\"A\": 5}\n    assert type(result) is dict\n\n\ndef test_over_reservation_clamps_at_zero():\n    assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3), (\"A\", 100)]) == {\"A\": 0}\n\n\ndef test_unknown_sku_reservations_are_ignored():\n    assert available_units({\"A\": 10}, [(\"B\", 5), (\"A\", 2)]) == {\"A\": 8}\n\n\ndef test_unknown_sku_does_not_add_keys():\n    result = available_units({\"A\": 10}, [(\"Z\", 1)])\n    assert result == {\"A\": 10}\n    assert set(result.keys()) == {\"A\"}\n\n\ndef test_input_stock_is_not_mutated():\n    stock = {\"A\": 10}\n    available_units(stock, [(\"A\", 2), (\"A\", 3)])\n    assert stock == {\"A\": 10}\n\n\ndef test_input_reservations_is_not_mutated():\n    reservations = [(\"A\", 2), (\"A\", 3)]\n    available_units({\"A\": 10}, reservations)\n    assert reservations == [(\"A\", 2), (\"A\", 3)]\n\n\ndef test_return_keys_match_stock_keys():\n    stock = {\"A\": 10, \"B\": 4}\n    result = available_units(stock, [(\"A\", 1)])\n    assert set(result.keys()) == set(stock.keys())\n\n\ndef test_single_reservation_preserved():\n    assert available_units({\"A\": 10}, [(\"A\", 2)]) == {\"A\": 8}\n\n\ndef test_multiple_distinct_skus_preserved():\n    assert available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"B\", 1)]) == {\"A\": 8, \"B\": 4}\n\n\ndef test_empty_inputs():\n    assert available_units({}, []) == {}\n"
+        }
+      ],
+      "contract_tests": [
+        "available_units({'A': 10}, [('A', 2), ('A', 3)]) returns {'A': 5} — test_repeated_sku_reservations_are_all_subtracted and test_literal_example_returns_exact_mapping.",
+        "All reservation quantities for a SKU are subtracted, including repeated SKU entries — test_repeated_sku_reservations_are_all_subtracted (2+3 subtracted, not just last value).",
+        "Resulting available quantity is clamped at zero (never negative) — test_over_reservation_clamps_at_zero asserts {'A': 0}.",
+        "Reservations for SKUs not present in stock are ignored (no new keys, no error) — test_unknown_sku_reservations_are_ignored and test_unknown_sku_does_not_add_keys.",
+        "The input stock mapping is not mutated — test_input_stock_is_not_mutated asserts stock == {'A': 10} after call.",
+        "The input reservations sequence is not mutated — test_input_reservations_is_not_mutated asserts list unchanged after call.",
+        "Return type is a mapping with the same keys as the input stock — test_literal_example_returns_exact_mapping asserts type(result) is dict; test_return_keys_match_stock_keys asserts key equality.",
+        "Existing behavior for single reservations and multiple distinct SKUs is preserved — test_single_reservation_preserved and test_multiple_distinct_skus_preserved; test_empty_inputs covers empty case."
+      ],
+      "changed_files": [
+        "inventory.py",
+        "tests/test_inventory_regression.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "............                                                             [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n12 passed in 0.11s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 12,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.992296799999167,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_repeated_sku_reservations_are_all_subtracted",
+          "classname": "tests.test_inventory_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_literal_example_returns_exact_mapping",
+          "classname": "tests.test_inventory_regression",
+          "line": 8,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_over_reservation_clamps_at_zero",
+          "classname": "tests.test_inventory_regression",
+          "line": 14,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_unknown_sku_reservations_are_ignored",
+          "classname": "tests.test_inventory_regression",
+          "line": 18,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_unknown_sku_does_not_add_keys",
+          "classname": "tests.test_inventory_regression",
+          "line": 22,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_input_stock_is_not_mutated",
+          "classname": "tests.test_inventory_regression",
+          "line": 28,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_input_reservations_is_not_mutated",
+          "classname": "tests.test_inventory_regression",
+          "line": 34,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_return_keys_match_stock_keys",
+          "classname": "tests.test_inventory_regression",
+          "line": 40,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_single_reservation_preserved",
+          "classname": "tests.test_inventory_regression",
+          "line": 46,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_multiple_distinct_skus_preserved",
+          "classname": "tests.test_inventory_regression",
+          "line": 50,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_empty_inputs",
+          "classname": "tests.test_inventory_regression",
+          "line": 54,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "80f68d9a4800fba08e7a481d4d5ba33e7a6020597540d49b579c750ed5cb5960"
+    }
+  ],
+  "review_results": [
+    {
+      "approved": true,
+      "summary": "The candidate implementation of available_units in inventory.py correctly subtracts all reservation quantities per SKU, including repeated entries, clamps at zero, ignores unknown SKUs, and preserves inputs. The literal example {'A':10} with [('A',2),('A',3)] returns {'A':5}. Regression evidence shows the two key tests failed on the original source ({'A':7}) and pass on the candidate. All acceptance contracts are satisfied with concrete test evidence.",
+      "concerns": [],
+      "contract_checks": [
+        {
+          "requirement": "available_units({'A': 10}, [('A', 2), ('A', 3)]) returns {'A': 5}.",
+          "satisfied": true,
+          "evidence": "inventory.py: available = dict(stock); loop subtracts each reservation. test_repeated_sku_reservations_are_all_subtracted and test_literal_example_returns_exact_mapping assert == {'A': 5}; both failed on baseline with {'A': 7} and pass on candidate."
+        },
+        {
+          "requirement": "All reservation quantities for a SKU are subtracted, including repeated SKU entries (no collapsing to last value).",
+          "satisfied": true,
+          "evidence": "The loop `for sku, qty in reservations: available[sku] = max(0, available[sku] - qty)` accumulates every tuple. Baseline used dict(reservations) collapsing to last value (7); candidate yields 5, confirmed by regression evidence."
+        },
+        {
+          "requirement": "Resulting available quantity is clamped at zero (never negative).",
+          "satisfied": true,
+          "evidence": "max(0, available[sku] - qty) applied per reservation. test_over_reservation_clamps_at_zero asserts {'A': 0} for reservations totaling 105 against stock 10."
+        },
+        {
+          "requirement": "Reservations for SKUs not present in stock are ignored (no new keys, no error).",
+          "satisfied": true,
+          "evidence": "`if sku in available` guard skips unknown SKUs. test_unknown_sku_reservations_are_ignored asserts {'A': 8}; test_unknown_sku_does_not_add_keys asserts result == {'A': 10} and keys == {'A'}."
+        },
+        {
+          "requirement": "The input stock mapping is not mutated.",
+          "satisfied": true,
+          "evidence": "available = dict(stock) creates a copy; mutations target the copy. test_input_stock_is_not_mutated asserts stock == {'A': 10} after the call."
+        },
+        {
+          "requirement": "The input reservations sequence is not mutated.",
+          "satisfied": true,
+          "evidence": "The loop only reads reservations; no assignment to it. test_input_reservations_is_not_mutated asserts reservations == [('A', 2), ('A', 3)] after the call."
+        },
+        {
+          "requirement": "Return type is a mapping with the same keys as the input stock.",
+          "satisfied": true,
+          "evidence": "Returns the dict copy `available`, initialized from stock, so keys match. test_literal_example_returns_exact_mapping asserts type(result) is dict; test_return_keys_match_stock_keys asserts set(result.keys()) == set(stock.keys())."
+        },
+        {
+          "requirement": "Existing behavior for single reservations and multiple distinct SKUs is preserved.",
+          "satisfied": true,
+          "evidence": "test_single_reservation_preserved asserts {'A': 8}; test_multiple_distinct_skus_preserved asserts {'A': 8, 'B': 4}; test_empty_inputs asserts {}; existing tests/test_contract.py test_existing_contract passes (12 passed total)."
+        }
+      ],
+      "attempt": 1
+    }
+  ],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": [
+    {
+      "status": "demonstrated",
+      "generated_tests": [
+        "tests/test_inventory_regression.py"
+      ],
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-preserve-data\\tasks\\50c4bbb6-78e3-4d5e-abed-023344f96a9a\\regression\\attempt-1-168161d0-6148-48d0-8090-43fe428d1689",
+      "baseline_result": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": ".FF.........                                                             [100%]\n=================================== FAILURES ===================================\n______________ test_repeated_sku_reservations_are_all_subtracted _______________\n\n    def test_repeated_sku_reservations_are_all_subtracted():\n>       assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:5: AssertionError\n__________________ test_literal_example_returns_exact_mapping __________________\n\n    def test_literal_example_returns_exact_mapping():\n        result = available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)])\n>       assert result == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:10: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_inventory_regression.py::test_repeated_sku_reservations_are_all_subtracted\nFAILED tests/test_inventory_regression.py::test_literal_example_returns_exact_mapping\n2 failed, 10 passed in 0.24s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 10,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.1663937999983318,
+        "evidence": "docker",
+        "cases": [
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_repeated_sku_reservations_are_all_subtracted",
+            "classname": "tests.test_inventory_regression",
+            "line": 4,
+            "status": "failed",
+            "message": "AssertionError: assert {'A': 7} == {'A': 5}\n  \n  Differing items:\n  {'A': 7} != {'A': 5}\n  Use -v to get more diff",
+            "details": "def test_repeated_sku_reservations_are_all_subtracted():\n>       assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:5: AssertionError"
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_literal_example_returns_exact_mapping",
+            "classname": "tests.test_inventory_regression",
+            "line": 8,
+            "status": "failed",
+            "message": "AssertionError: assert {'A': 7} == {'A': 5}\n  \n  Differing items:\n  {'A': 7} != {'A': 5}\n  Use -v to get more diff",
+            "details": "def test_literal_example_returns_exact_mapping():\n        result = available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)])\n>       assert result == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:10: AssertionError"
+          },
+          {
+            "file": "tests/test_contract.py",
+            "name": "test_existing_contract",
+            "classname": "tests.test_contract",
+            "line": 4,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_over_reservation_clamps_at_zero",
+            "classname": "tests.test_inventory_regression",
+            "line": 14,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_unknown_sku_reservations_are_ignored",
+            "classname": "tests.test_inventory_regression",
+            "line": 18,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_unknown_sku_does_not_add_keys",
+            "classname": "tests.test_inventory_regression",
+            "line": 22,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_input_stock_is_not_mutated",
+            "classname": "tests.test_inventory_regression",
+            "line": 28,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_input_reservations_is_not_mutated",
+            "classname": "tests.test_inventory_regression",
+            "line": 34,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_return_keys_match_stock_keys",
+            "classname": "tests.test_inventory_regression",
+            "line": 40,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_single_reservation_preserved",
+            "classname": "tests.test_inventory_regression",
+            "line": 46,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_multiple_distinct_skus_preserved",
+            "classname": "tests.test_inventory_regression",
+            "line": 50,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_empty_inputs",
+            "classname": "tests.test_inventory_regression",
+            "line": 54,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          }
+        ],
+        "cases_truncated": false
+      },
+      "fail_to_pass_tests": [
+        "tests/test_inventory_regression.py::tests.test_inventory_regression::test_repeated_sku_reservations_are_all_subtracted",
+        "tests/test_inventory_regression.py::tests.test_inventory_regression::test_literal_example_returns_exact_mapping"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "attempt": 1,
+      "diff_digest": "80f68d9a4800fba08e7a481d4d5ba33e7a6020597540d49b579c750ed5cb5960"
+    }
+  ]
+}

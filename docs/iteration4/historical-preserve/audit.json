@@ -1,0 +1,78 @@
+[
+  {
+    "task_id": "06cdb3c5-98cc-4fd6-95b6-c7259ba87301",
+    "case_id": "jsonpointer-large-index",
+    "mode": "single",
+    "creation_failed": false,
+    "creation_attempts": 1,
+    "creation_failures": [],
+    "candidates": [],
+    "regression_witnesses": [],
+    "original_test_files_unchanged": 2
+  },
+  {
+    "task_id": "a04ead1e-1a35-46b1-8190-e03fe4700422",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "single",
+    "creation_failed": false,
+    "creation_attempts": 1,
+    "creation_failures": [],
+    "candidates": [],
+    "regression_witnesses": [],
+    "original_test_files_unchanged": 6
+  },
+  {
+    "task_id": "9f7fbf46-05e8-43e0-a740-d67ce3c12e8f",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_no_review",
+    "creation_failed": false,
+    "creation_attempts": 1,
+    "creation_failures": [],
+    "candidates": [],
+    "regression_witnesses": [],
+    "original_test_files_unchanged": 2
+  },
+  {
+    "task_id": "0f633064-0ae6-4dca-85f2-9559aa24e825",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_no_review",
+    "creation_failed": false,
+    "creation_attempts": 1,
+    "creation_failures": [],
+    "candidates": [],
+    "regression_witnesses": [],
+    "original_test_files_unchanged": 6
+  },
+  {
+    "task_id": "cbdb433a-575c-4ed1-aad6-cfbf56d9ed2f",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "creation_failed": false,
+    "creation_attempts": 1,
+    "creation_failures": [],
+    "candidates": [],
+    "regression_witnesses": [
+      {
+        "attempt": 1,
+        "candidate_id": null,
+        "status": "demonstrated",
+        "copied_test_sha256": {
+          "tests/test_long_index_regression.py": "3ca945c34cd54b6f72c18c8b2464c89075beae78af962f633f030e9522ec532b"
+        },
+        "baseline_original_files_verified": 10
+      }
+    ],
+    "original_test_files_unchanged": 2
+  },
+  {
+    "task_id": "34158c43-f402-4def-8489-27544eb830a3",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "creation_failed": false,
+    "creation_attempts": 1,
+    "creation_failures": [],
+    "candidates": [],
+    "regression_witnesses": [],
+    "original_test_files_unchanged": 6
+  }
+]

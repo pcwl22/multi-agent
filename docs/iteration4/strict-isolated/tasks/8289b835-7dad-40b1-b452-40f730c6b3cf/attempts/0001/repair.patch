@@ -1,0 +1,53 @@
+--- a/cache.py
++++ b/cache.py
+@@ -1,2 +1,2 @@
+ def is_expired(inserted_at, ttl, now):
+-    return now > inserted_at + ttl
++    return now >= inserted_at + ttl
+--- a/tests/test_cache_expiry.py
++++ b/tests/test_cache_expiry.py
+@@ -0,0 +1,44 @@
++from cache import is_expired
++
++
++def test_alive_strictly_before_boundary():
++    # now < inserted_at + ttl -> alive
++    assert is_expired(10, 5, 14) is False
++
++
++def test_expired_exactly_at_boundary():
++    # now == inserted_at + ttl -> expired
++    assert is_expired(10, 5, 15) is True
++
++
++def test_expired_strictly_after_boundary():
++    # now > inserted_at + ttl -> expired
++    assert is_expired(10, 5, 16) is True
++
++
++def test_zero_ttl_expired_at_insertion():
++    # ttl == 0 -> boundary is inserted_at itself -> expired at insertion
++    assert is_expired(10, 0, 10) is True
++
++
++def test_zero_ttl_alive_before_insertion():
++    # strictly before the zero-ttl boundary -> alive
++    assert is_expired(10, 0, 9) is False
++
++
++def test_boundary_is_exactly_inserted_at_plus_ttl():
++    inserted_at = 100
++    ttl = 7
++    boundary = inserted_at + ttl
++    assert is_expired(inserted_at, ttl, boundary - 1) is False
++    assert is_expired(inserted_at, ttl, boundary) is True
++    assert is_expired(inserted_at, ttl, boundary + 1) is True
++
++
++def test_boundary_uses_existing_time_type():
++    # Production time type is int; boundary arithmetic must stay int.
++    inserted_at = 3
++    ttl = 4
++    boundary = inserted_at + ttl
++    assert isinstance(boundary, int)
++    assert is_expired(inserted_at, ttl, boundary) is True

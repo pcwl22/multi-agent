@@ -6,7 +6,9 @@
 
 ## 快速开始
 
-最新版本增加可选的独立尝试副本：每轮从原始基线生成完整候选，旧错误测试和补丁保留在原目录；审批同时绑定候选身份与 Diff 摘要。默认沿用原策略，旧任务保持兼容。本地完整回归 **143 passed、1 skipped**，原有测试不改动。见 [本轮阶段验收](docs/iteration3/validation.md) 和 [独立尝试使用说明](docs/iteration3/isolated-attempts.md)。
+最新版本补充结构化 Docker 失败反馈、重复候选识别、Reviewer 基线回归证据及 Windows 创建失败恢复。本地完整回归 **159 passed、1 skipped**，原有 52 个测试文件未改动。默认继续使用 `preserve`；独立副本保持可选。见 [第四轮验收](docs/iteration4/validation.md) 和 [实现与恢复边界](docs/iteration4/implementation.md)。
+
+上一轮增加可选的独立尝试副本：每轮从原始基线生成完整候选，旧错误测试和补丁保留在原目录；审批同时绑定候选身份与 Diff 摘要。默认沿用原策略，旧任务保持兼容。本地完整回归 **143 passed、1 skipped**，原有测试不改动。见 [本轮阶段验收](docs/iteration3/validation.md) 和 [独立尝试使用说明](docs/iteration3/isolated-attempts.md)。
 
 此前的字面输入契约检查、真实历史仓库试点与 129 项回归记录保留在 [第二轮验收](docs/iteration2/validation.md)；历史仓库复现见 [说明](docs/iteration2/pilots/README.md)。
 

@@ -1,0 +1,145 @@
+--- a/jsonpointer.py
++++ b/jsonpointer.py
+@@ -239,7 +239,12 @@
+             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):
+                 raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+-            return int(part)
++            try:
++                return int(part)
++            except ValueError:
++                # e.g. the digit string exceeds Python's integer string
++                # conversion limit; treat it as an invalid sequence index
++                raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+         elif hasattr(doc, '__getitem__'):
+             # Allow indexing via ducktyping
+--- a/tests/test_long_index_regression.py
++++ b/tests/test_long_index_regression.py
+@@ -0,0 +1,126 @@
++#!/usr/bin/env python
++
++import unittest
++
++from jsonpointer import (
++    JsonPointer,
++    JsonPointerException,
++    EndOfList,
++    resolve_pointer,
++    set_pointer,
++)
++
++
++# A digit string long enough to exceed CPython's default integer string
++# conversion limit (sys.get_int_max_str_digits(), default 4300).
++LONG_INDEX = '1' + '0' * 5000
++
++
++class LongNumericIndexTests(unittest.TestCase):
++
++    def test_resolve_long_index_raises_jsonpointerexception(self):
++        doc = {'foo': ['bar', 'baz']}
++        ptr = JsonPointer('/foo/' + LONG_INDEX)
++        with self.assertRaises(JsonPointerException):
++            ptr.resolve(doc)
++
++    def test_resolve_pointer_long_index_raises_jsonpointerexception(self):
++        doc = {'foo': ['bar', 'baz']}
++        with self.assertRaises(JsonPointerException):
++            resolve_pointer(doc, '/foo/' + LONG_INDEX)
++
++    def test_to_last_long_index_raises_jsonpointerexception(self):
++        doc = {'foo': ['bar', 'baz']}
++        ptr = JsonPointer('/foo/' + LONG_INDEX)
++        with self.assertRaises(JsonPointerException):
++            ptr.to_last(doc)
++
++    def test_set_long_index_raises_jsonpointerexception(self):
++        doc = {'foo': ['bar', 'baz']}
++        ptr = JsonPointer('/foo/' + LONG_INDEX)
++        with self.assertRaises(JsonPointerException):
++            ptr.set(doc, 'x')
++
++    def test_set_pointer_long_index_raises_jsonpointerexception(self):
++        doc = {'foo': ['bar', 'baz']}
++        with self.assertRaises(JsonPointerException):
++            set_pointer(doc, '/foo/' + LONG_INDEX, 'x')
++
++    def test_resolve_long_index_returns_exact_default(self):
++        doc = {'foo': ['bar', 'baz']}
++        sentinel = object()
++        ptr = JsonPointer('/foo/' + LONG_INDEX)
++        result = ptr.resolve(doc, sentinel)
++        self.assertIs(result, sentinel)
++
++    def test_resolve_pointer_long_index_returns_exact_default(self):
++        doc = {'foo': ['bar', 'baz']}
++        sentinel = object()
++        result = resolve_pointer(doc, '/foo/' + LONG_INDEX, sentinel)
++        self.assertIs(result, sentinel)
++
++    def test_long_numeric_object_key_remains_string(self):
++        doc = {LONG_INDEX: 'value'}
++        ptr = JsonPointer('/' + LONG_INDEX)
++        self.assertEqual(ptr.resolve(doc), 'value')
++        self.assertIsInstance(ptr.get_parts()[0], str)
++
++    def test_long_numeric_object_key_set_remains_string(self):
++        doc = {}
++        ptr = JsonPointer('/' + LONG_INDEX)
++        ptr.set(doc, 'value')
++        self.assertIn(LONG_INDEX, doc)
++        self.assertEqual(doc[LONG_INDEX], 'value')
++
++    def test_ordinary_array_index_still_resolves(self):
++        doc = {'foo': ['bar', 'baz']}
++        self.assertEqual(resolve_pointer(doc, '/foo/0'), 'bar')
++        self.assertEqual(resolve_pointer(doc, '/foo/1'), 'baz')
++
++    def test_ordinary_array_index_still_sets(self):
++        doc = {'foo': ['bar', 'baz']}
++        result = set_pointer(doc, '/foo/0', 'qux')
++        self.assertEqual(result['foo'][0], 'qux')
++        self.assertIs(result, doc)
++
++    def test_ordinary_array_index_to_last(self):
++        doc = {'foo': ['bar', 'baz']}
++        ptr = JsonPointer('/foo/1')
++        parent, part = ptr.to_last(doc)
++        self.assertEqual(parent, ['bar', 'baz'])
++        self.assertEqual(part, 1)
++
++    def test_end_of_list_preserved(self):
++        doc = {'foo': ['bar', 'baz']}
++        self.assertIsInstance(resolve_pointer(doc, '/foo/-'), EndOfList)
++        with self.assertRaises(JsonPointerException):
++            resolve_pointer(doc, '/foo/-/1')
++
++    def test_end_of_list_set_appends(self):
++        doc = {'foo': ['bar', 'baz']}
++        result = set_pointer(doc, '/foo/-', 'qux')
++        self.assertEqual(result['foo'], ['bar', 'baz', 'qux'])
++
++    def test_set_inplace_mutation_preserved(self):
++        doc = {'foo': ['bar', 'baz']}
++        result = set_pointer(doc, '/foo/0', 'qux', inplace=True)
++        self.assertIs(result, doc)
++        self.assertEqual(doc['foo'][0], 'qux')
++
++    def test_set_not_inplace_does_not_mutate(self):
++        doc = {'foo': ['bar', 'baz']}
++        result = set_pointer(doc, '/foo/0', 'qux', inplace=False)
++        self.assertIsNot(result, doc)
++        self.assertEqual(doc['foo'][0], 'bar')
++        self.assertEqual(result['foo'][0], 'qux')
++
++    def test_invalid_sequence_index_still_raises(self):
++        doc = {'foo': ['bar', 'baz']}
++        with self.assertRaises(JsonPointerException):
++            resolve_pointer(doc, '/foo/01')
++        with self.assertRaises(JsonPointerException):
++            resolve_pointer(doc, '/foo/-1')
++
++
++if __name__ == '__main__':
++    unittest.main()

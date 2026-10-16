@@ -1,0 +1,23 @@
+{
+  "status": "local unpublished candidate",
+  "runtime_code_commit": "2e6b0f2d5e7619be6bce91849ea741f82a7986d1",
+  "directory": "dist/iteration4-2e6b0f2",
+  "artifacts": [
+    {
+      "file": "repopilot-0.1.0-py3-none-any.whl",
+      "bytes": 87526,
+      "sha256": "a6976150797636f8d1b7755ea26d8d9afffd900b64507965cd4c932fc03ddf1f"
+    },
+    {
+      "file": "repopilot-0.1.0.tar.gz",
+      "bytes": 3370618,
+      "sha256": "ed13b29005d8643dc1bc57fede557903c35332ed6e2168f3d4030b264c44a753"
+    }
+  ],
+  "exact_wheel_clean_tested": true,
+  "companion_checksums_excluded_from_source_archive": true,
+  "preexisting_tests_unchanged": 52,
+  "credential_scan": "passed",
+  "diagnostic_tasks": 9,
+  "formal_comparison_tasks": 90
+}

@@ -1,0 +1,237 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug is that `discounted_total` multiplies by `(1 - discount_percent)` instead of treating `discount_percent` as a percentage (dividing by 100). Fix: `amount * (1 - discount_percent / 100)`. This makes `discounted_total(100, 20) == 80`, preserves `discounted_total(amount, 0) == amount`, and `discounted_total(0, discount) == 0`. Existing tests remain untouched; new regression tests are added in a new file.",
+      "edits": [
+        {
+          "path": "pricing.py",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)"
+        },
+        {
+          "path": "tests/test_discounted_total_regression.py",
+          "old": "",
+          "new": "from pricing import discounted_total\n\n\ndef test_literal_example_100_with_20_percent_discount():\n    result = discounted_total(100, 20)\n    assert result == 80\n    assert isinstance(result, int)\n\n\ndef test_zero_amount_stays_zero_for_valid_discounts():\n    for discount in (0, 20, 50, 100):\n        result = discounted_total(0, discount)\n        assert result == 0\n        assert isinstance(result, int)\n\n\ndef test_no_discount_leaves_amount_unchanged():\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(12.5, 0) == 12.5\n    assert discounted_total(0, 0) == 0\n\n\ndef test_discount_is_interpreted_as_percentage():\n    assert discounted_total(200, 25) == 150\n    assert discounted_total(50, 10) == 45\n    assert discounted_total(100, 100) == 0\n"
+        }
+      ],
+      "contract_tests": [
+        "`discounted_total(100, 20)` returns `80` (literal example from the issue). -> tests/test_discounted_total_regression.py::test_literal_example_100_with_20_percent_discount asserts `discounted_total(100, 20) == 80` and `isinstance(result, int)`.",
+        "A discount of 0 leaves the amount unchanged: `discounted_total(amount, 0) == amount`. -> tests/test_discounted_total_regression.py::test_no_discount_leaves_amount_unchanged asserts `discounted_total(100, 0) == 100`, `discounted_total(12.5, 0) == 12.5`, and `discounted_total(0, 0) == 0`.",
+        "A zero amount stays zero: `discounted_total(0, discount) == 0` for any valid discount in 0..100. -> tests/test_discounted_total_regression.py::test_zero_amount_stays_zero_for_valid_discounts asserts `discounted_total(0, discount) == 0` and `isinstance(result, int)` for discount in (0, 20, 50, 100).",
+        "The discount parameter is interpreted as a percentage in the range 0 to 100. -> tests/test_discounted_total_regression.py::test_discount_is_interpreted_as_percentage asserts `discounted_total(200, 25) == 150`, `discounted_total(50, 10) == 45`, and `discounted_total(100, 100) == 0`.",
+        "Existing behavior for other valid inputs is preserved; no existing tests are modified. -> tests/test_contract.py is left unchanged; tests/test_discounted_total_regression.py::test_no_discount_leaves_amount_unchanged re-asserts the preserved `discounted_total(12.5, 0) == 12.5` behavior.",
+        "New regression tests cover the literal example, zero amount, and no-discount cases. -> tests/test_discounted_total_regression.py contains test_literal_example_100_with_20_percent_discount, test_zero_amount_stays_zero_for_valid_discounts, and test_no_discount_leaves_amount_unchanged."
+      ],
+      "changed_files": [
+        "pricing.py",
+        "tests/test_discounted_total_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "03829cb5-b431-4b7c-aeee-ebc54cb7aa28",
+      "candidate_number": 1
+    },
+    {
+      "rationale": "The original implementation `round(amount * (1 - discount_percent), 2)` treats the discount as a fraction, so `discounted_total(100, 20)` returns `-1900.0` instead of `80`. The issue states the discount is a percentage in 0..100, so the fix divides by 100. The previous candidate's source fix was correct, but its NEW tests added an unjustified `isinstance(result, int)` requirement: the original function returns `round(...)`, which yields a float for float inputs and also for integer inputs (e.g. `round(80.0, 2)` is `80.0`). The issue never requires an int return type, so those assertions are unsupported and must be removed. The new regression tests assert only the stated contracts: the literal example `discounted_total(100, 20) == 80`, zero amount stays zero, no discount leaves the amount unchanged, and percentage interpretation. Existing tests in tests/test_contract.py are untouched.",
+      "edits": [
+        {
+          "path": "pricing.py",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)"
+        },
+        {
+          "path": "tests/test_discounted_total_regression.py",
+          "old": "",
+          "new": "from pricing import discounted_total\n\n\ndef test_literal_example_100_with_20_percent_discount():\n    result = discounted_total(100, 20)\n    assert result == 80\n\n\ndef test_zero_amount_stays_zero_for_valid_discounts():\n    for discount in (0, 20, 50, 100):\n        result = discounted_total(0, discount)\n        assert result == 0\n\n\ndef test_no_discount_leaves_amount_unchanged():\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(12.5, 0) == 12.5\n    assert discounted_total(0, 0) == 0\n\n\ndef test_discount_is_interpreted_as_percentage():\n    assert discounted_total(200, 25) == 150\n    assert discounted_total(50, 10) == 45\n    assert discounted_total(100, 100) == 0\n"
+        }
+      ],
+      "contract_tests": [
+        "tests/test_discounted_total_regression.py::test_literal_example_100_with_20_percent_discount asserts discounted_total(100, 20) == 80, the literal example from the issue.",
+        "tests/test_discounted_total_regression.py::test_zero_amount_stays_zero_for_valid_discounts asserts discounted_total(0, discount) == 0 for discount in (0, 20, 50, 100), preserving zero amount.",
+        "tests/test_discounted_total_regression.py::test_no_discount_leaves_amount_unchanged asserts discounted_total(100, 0) == 100, discounted_total(12.5, 0) == 12.5, and discounted_total(0, 0) == 0, preserving no-discount behavior.",
+        "tests/test_discounted_total_regression.py::test_discount_is_interpreted_as_percentage asserts discounted_total(200, 25) == 150, discounted_total(50, 10) == 45, and discounted_total(100, 100) == 0, confirming the discount is a percentage in 0..100.",
+        "tests/test_contract.py::test_existing_contract remains unmodified and continues to assert discounted_total(0, 20) == 0 and discounted_total(12.5, 0) == 12.5."
+      ],
+      "changed_files": [
+        "pricing.py",
+        "tests/test_discounted_total_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "19ff931b-77dd-4eca-91e1-89b778fabccf",
+      "candidate_number": 2
+    }
+  ],
+  "test_results": [
+    {
+      "status": "failed",
+      "exit_code": 1,
+      "stdout": ".FF..                                                                    [100%]\n=================================== FAILURES ===================================\n______________ test_literal_example_100_with_20_percent_discount _______________\n\n    def test_literal_example_100_with_20_percent_discount():\n        result = discounted_total(100, 20)\n        assert result == 80\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(80.0, int)\n\ntests/test_discounted_total_regression.py:7: AssertionError\n_______________ test_zero_amount_stays_zero_for_valid_discounts ________________\n\n    def test_zero_amount_stays_zero_for_valid_discounts():\n        for discount in (0, 20, 50, 100):\n            result = discounted_total(0, discount)\n            assert result == 0\n>           assert isinstance(result, int)\nE           assert False\nE            +  where False = isinstance(0.0, int)\n\ntests/test_discounted_total_regression.py:14: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_discounted_total_regression.py::test_literal_example_100_with_20_percent_discount\nFAILED tests/test_discounted_total_regression.py::test_zero_amount_stays_zero_for_valid_discounts\n2 failed, 3 passed in 0.11s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 3,
+      "failed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9562628000021505,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_literal_example_100_with_20_percent_discount",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 4,
+          "status": "failed",
+          "message": "assert False\n +  where False = isinstance(80.0, int)",
+          "details": "def test_literal_example_100_with_20_percent_discount():\n        result = discounted_total(100, 20)\n        assert result == 80\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(80.0, int)\n\ntests/test_discounted_total_regression.py:7: AssertionError"
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_zero_amount_stays_zero_for_valid_discounts",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 10,
+          "status": "failed",
+          "message": "assert False\n +  where False = isinstance(0.0, int)",
+          "details": "def test_zero_amount_stays_zero_for_valid_discounts():\n        for discount in (0, 20, 50, 100):\n            result = discounted_total(0, discount)\n            assert result == 0\n>           assert isinstance(result, int)\nE           assert False\nE            +  where False = isinstance(0.0, int)\n\ntests/test_discounted_total_regression.py:14: AssertionError"
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_no_discount_leaves_amount_unchanged",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 17,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_discount_is_interpreted_as_percentage",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 23,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "47dd48f0c1e9bb4fb8f2a73e972a56e1c55737f20a7908716034627b168cb6b2",
+      "candidate_id": "03829cb5-b431-4b7c-aeee-ebc54cb7aa28",
+      "candidate_number": 1
+    },
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".....                                                                    [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n5 passed in 0.08s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.8856005000016012,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_literal_example_100_with_20_percent_discount",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_zero_amount_stays_zero_for_valid_discounts",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 9,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_no_discount_leaves_amount_unchanged",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 15,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_discount_is_interpreted_as_percentage",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 21,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 2,
+      "diff_digest": "a23e3c6422f5de7343a4afd1fb39868c4c08844d44f3f851dd5d4c1bd358f49d",
+      "candidate_id": "19ff931b-77dd-4eca-91e1-89b778fabccf",
+      "candidate_number": 2
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [
+    {
+      "attempt": 1,
+      "diff_digest": "47dd48f0c1e9bb4fb8f2a73e972a56e1c55737f20a7908716034627b168cb6b2",
+      "failure_fingerprint": "f21b5988baee6f0624adbb7fd8bb32cfc97d524e2ce69d802d2dd9d44aecf2d8",
+      "identical_prior_failures": 0,
+      "observations": [
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "test": "test_literal_example_100_with_20_percent_discount",
+          "origin": "generated_test",
+          "line": 4,
+          "message": "assert False\n +  where False = isinstance(80.0, int)",
+          "assertion": "False",
+          "actual_expression": null,
+          "expected_expression": null,
+          "details": "def test_literal_example_100_with_20_percent_discount():\n        result = discounted_total(100, 20)\n        assert result == 80\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(80.0, int)\n\ntests/test_discounted_total_regression.py:7: AssertionError"
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "test": "test_zero_amount_stays_zero_for_valid_discounts",
+          "origin": "generated_test",
+          "line": 10,
+          "message": "assert False\n +  where False = isinstance(0.0, int)",
+          "assertion": "False",
+          "actual_expression": null,
+          "expected_expression": null,
+          "details": "def test_zero_amount_stays_zero_for_valid_discounts():\n        for discount in (0, 20, 50, 100):\n            result = discounted_total(0, discount)\n            assert result == 0\n>           assert isinstance(result, int)\nE           assert False\nE            +  where False = isinstance(0.0, int)\n\ntests/test_discounted_total_regression.py:14: AssertionError"
+        }
+      ],
+      "evidence": "docker",
+      "raw_fallback": false,
+      "instruction": "Compare the observed assertion with the ORIGINAL issue. Correct source or an unjustified NEW test; existing tests stay immutable.",
+      "candidate_id": "03829cb5-b431-4b7c-aeee-ebc54cb7aa28",
+      "candidate_number": 1
+    }
+  ],
+  "regression_results": []
+}

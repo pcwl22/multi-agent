@@ -1,0 +1,148 @@
+--- a/pricing.py
++++ b/pricing.py
+@@ -1,2 +1,2 @@
+ def discounted_total(amount, discount_percent):
+-    return round(amount * (1 - discount_percent), 2)
++    return round(amount * (1 - discount_percent / 100), 2)
+--- a/tests/test_issue_acceptance.py
++++ b/tests/test_issue_acceptance.py
+@@ -0,0 +1,49 @@
++from pricing import discounted_total
++
++
++def test_discounted_total_percentage_example():
++    # Issue: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++
++
++def test_discounted_total_zero_amount_preserved():
++    # Issue: zero amount preserved.
++    result = discounted_total(0, 20)
++    assert result == 0
++
++
++def test_discounted_total_no_discount_preserved():
++    # Issue: no discount preserved.
++    result = discounted_total(100, 0)
++    assert result == 100
++
++
++def test_discounted_total_zero_percent_boundary():
++    # Boundary: 0 percent discount returns the original amount.
++    result = discounted_total(100, 0)
++    assert result == 100
++
++
++def test_discounted_total_full_percent_boundary():
++    # Boundary: 100 percent discount returns zero.
++    result = discounted_total(100, 100)
++    assert result == 0
++
++
++def test_discounted_total_percentage_midrange():
++    # Percentage interpretation: 25 percent off 200 is 150.
++    result = discounted_total(200, 25)
++    assert result == 150
++
++
++def test_discounted_total_fractional_amount_no_discount():
++    # Preserve fractional amounts when there is no discount.
++    result = discounted_total(12.5, 0)
++    assert result == 12.5
++
++
++def test_discounted_total_fractional_amount_with_discount():
++    # Percentage interpretation with a fractional amount: 10 percent off 12.5 is 11.25.
++    result = discounted_total(12.5, 10)
++    assert result == 11.25
+--- a/tests/test_issue_contract.py
++++ b/tests/test_issue_contract.py
+@@ -0,0 +1,43 @@
++from pricing import discounted_total
++
++
++def test_discounted_total_percentage_example():
++    # Issue: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++
++
++def test_discounted_total_zero_amount_preserved():
++    # Issue: zero amount preserved.
++    result = discounted_total(0, 20)
++    assert result == 0
++
++
++def test_discounted_total_no_discount_preserved():
++    # Issue: no discount preserved.
++    result = discounted_total(100, 0)
++    assert result == 100
++
++
++def test_discounted_total_zero_percent_boundary():
++    # Boundary: 0 percent discount returns the original amount.
++    result = discounted_total(100, 0)
++    assert result == 100
++
++
++def test_discounted_total_full_percent_boundary():
++    # Boundary: 100 percent discount returns zero.
++    result = discounted_total(100, 100)
++    assert result == 0
++
++
++def test_discounted_total_percentage_midrange():
++    # Percentage interpretation: 25 percent off 200 is 150.
++    result = discounted_total(200, 25)
++    assert result == 150
++
++
++def test_discounted_total_fractional_amount_no_discount():
++    # Preserve fractional amounts when there is no discount.
++    result = discounted_total(12.5, 0)
++    assert result == 12.5
+--- a/tests/test_pricing_regression.py
++++ b/tests/test_pricing_regression.py
+@@ -0,0 +1,41 @@
++from pricing import discounted_total
++
++
++def test_discounted_total_percentage_example():
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, int)
++
++
++def test_discounted_total_zero_amount_preserved():
++    result = discounted_total(0, 20)
++    assert result == 0
++    assert isinstance(result, int)
++
++
++def test_discounted_total_no_discount_preserved():
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, int)
++
++
++def test_discounted_total_full_discount_boundary():
++    result = discounted_total(100, 100)
++    assert result == 0
++    assert isinstance(result, int)
++
++
++def test_discounted_total_zero_discount_boundary():
++    result = discounted_total(100, 0)
++    assert result == 100
++
++
++def test_discounted_total_fractional_amount():
++    result = discounted_total(12.5, 0)
++    assert result == 12.5
++    assert isinstance(result, float)
++
++
++def test_discounted_total_percentage_midrange():
++    result = discounted_total(200, 25)
++    assert result == 150

@@ -11,3 +11,4 @@ global-exclude *.py[cod]
 exclude docs/next-stage/release-artifacts.json
 exclude docs/iteration2/release-artifacts.json
 exclude docs/iteration3/release-artifacts.json
+exclude docs/iteration4/release-artifacts.json

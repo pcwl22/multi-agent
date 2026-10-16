@@ -1,0 +1,87 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_export_rows_csv.py
++++ b/tests/test_export_rows_csv.py
+@@ -0,0 +1,70 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def _round_trip(rows):
++    return list(csv.reader(io.StringIO(export_rows(rows))))
++
++
++def test_empty_input_preserves_empty_output():
++    result = export_rows([])
++    assert result == ""
++    assert isinstance(result, str)
++
++
++def test_simple_rows_remain_unquoted_comma_delimited():
++    result = export_rows([["a", 1], ["b", 2]])
++    assert result == "a,1\nb,2\n"
++    assert isinstance(result, str)
++
++
++def test_cell_with_comma_is_quoted_and_round_trips():
++    rows = [["a,b", "c"]]
++    result = export_rows(rows)
++    assert result == '"a,b",c\n'
++    assert _round_trip(rows) == [["a,b", "c"]]
++
++
++def test_cell_with_double_quote_is_escaped_and_round_trips():
++    rows = [['he said "hi"', "x"]]
++    result = export_rows(rows)
++    assert result == '"he said ""hi""",x\n'
++    assert _round_trip(rows) == [['he said "hi"', "x"]]
++
++
++def test_cell_with_newline_is_quoted_and_round_trips():
++    rows = [["line1\nline2", "z"]]
++    result = export_rows(rows)
++    assert result == '"line1\nline2",z\n'
++    assert _round_trip(rows) == [["line1\nline2", "z"]]
++
++
++def test_unicode_is_preserved_and_round_trips():
++    rows = [["caf\u00e9", "\u4e2d\u6587", "\U0001f600"]]
++    result = export_rows(rows)
++    assert "caf\u00e9" in result
++    assert "\u4e2d\u6587" in result
++    assert "\U0001f600" in result
++    assert _round_trip(rows) == [["caf\u00e9", "\u4e2d\u6587", "\U0001f600"]]
++
++
++def test_round_trip_mixed_special_cells():
++    rows = [
++        ["plain", "with,comma", 'with"quote', "with\nnewline"],
++        ["caf\u00e9", "\u4e2d\u6587", "\U0001f600", ""],
++    ]
++    assert _round_trip(rows) == [list(row) for row in rows]
++
++
++def test_output_uses_lf_line_endings_only():
++    result = export_rows([["a", "b"], ["c", "d"]])
++    assert "\r\n" not in result
++    assert "\r" not in result
++    assert result == "a,b\nc,d\n"
++
++
++def test_return_type_is_str():
++    assert isinstance(export_rows([["a"]]), str)
++    assert isinstance(export_rows([]), str)

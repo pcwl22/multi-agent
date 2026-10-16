@@ -1,0 +1,194 @@
+{
+  "patches": [
+    {
+      "rationale": "Rewrite merge_config to recursively merge nested mappings, replace lists wholesale, and return fully independent data (deep-copied leaves) without mutating or aliasing either input. Add a new regression test file covering all acceptance contracts.",
+      "edits": [
+        {
+          "path": "config.py",
+          "old": "def merge_config(defaults, overrides):\n    result = dict(defaults)\n    result.update(overrides)\n    return result",
+          "new": "import copy\nfrom collections.abc import Mapping\n\n\ndef merge_config(defaults, overrides):\n    result = {}\n    for key, value in defaults.items():\n        if key in overrides:\n            override_value = overrides[key]\n            if isinstance(value, Mapping) and isinstance(override_value, Mapping):\n                result[key] = merge_config(value, override_value)\n            else:\n                result[key] = copy.deepcopy(override_value)\n        else:\n            result[key] = copy.deepcopy(value)\n    for key, value in overrides.items():\n        if key not in defaults:\n            result[key] = copy.deepcopy(value)\n    return result"
+        },
+        {
+          "path": "tests/test_merge_config_regression.py",
+          "old": "",
+          "new": "from config import merge_config\n\n\ndef test_returns_all_keys_from_base_and_overrides():\n    result = merge_config({\"a\": 1, \"b\": 2}, {\"b\": 3, \"c\": 4})\n    assert result == {\"a\": 1, \"b\": 3, \"c\": 4}\n    assert isinstance(result, dict)\n\n\ndef test_recursive_merge_of_nested_mappings():\n    base = {\"db\": {\"host\": \"localhost\", \"port\": 5432}}\n    overrides = {\"db\": {\"port\": 6543, \"user\": \"admin\"}}\n    result = merge_config(base, overrides)\n    assert result == {\"db\": {\"host\": \"localhost\", \"port\": 6543, \"user\": \"admin\"}}\n    assert isinstance(result[\"db\"], dict)\n\n\ndef test_override_wins_at_leaf():\n    result = merge_config({\"a\": {\"b\": 1}}, {\"a\": {\"b\": 2}})\n    assert result[\"a\"][\"b\"] == 2\n\n\ndef test_keys_only_in_overrides_included():\n    result = merge_config({\"a\": 1}, {\"b\": 2})\n    assert result == {\"a\": 1, \"b\": 2}\n\n\ndef test_keys_only_in_base_preserved():\n    result = merge_config({\"a\": 1, \"b\": 2}, {\"c\": 3})\n    assert result == {\"a\": 1, \"b\": 2, \"c\": 3}\n\n\ndef test_lists_are_replaced_not_concatenated():\n    base = {\"items\": [1, 2, 3]}\n    overrides = {\"items\": [4, 5]}\n    result = merge_config(base, overrides)\n    assert result[\"items\"] == [4, 5]\n    assert isinstance(result[\"items\"], list)\n\n\ndef test_lists_replaced_in_nested_mappings():\n    base = {\"a\": {\"items\": [1, 2]}}\n    overrides = {\"a\": {\"items\": [3]}}\n    result = merge_config(base, overrides)\n    assert result[\"a\"][\"items\"] == [3]\n\n\ndef test_does_not_mutate_base():\n    base = {\"a\": {\"b\": 1}, \"items\": [1, 2]}\n    overrides = {\"a\": {\"b\": 2}, \"items\": [3]}\n    base_snapshot = {\"a\": {\"b\": 1}, \"items\": [1, 2]}\n    merge_config(base, overrides)\n    assert base == base_snapshot\n\n\ndef test_does_not_mutate_overrides():\n    base = {\"a\": {\"b\": 1}}\n    overrides = {\"a\": {\"b\": 2}, \"items\": [3]}\n    overrides_snapshot = {\"a\": {\"b\": 2}, \"items\": [3]}\n    merge_config(base, overrides)\n    assert overrides == overrides_snapshot\n\n\ndef test_result_shares_no_nested_objects_with_inputs():\n    base = {\"a\": {\"b\": 1}, \"items\": [1, 2]}\n    overrides = {\"a\": {\"c\": 2}, \"items\": [3]}\n    result = merge_config(base, overrides)\n    assert result[\"a\"] is not base[\"a\"]\n    assert result[\"a\"] is not overrides[\"a\"]\n    assert result[\"items\"] is not base[\"items\"]\n    assert result[\"items\"] is not overrides[\"items\"]\n\n\ndef test_mutating_result_does_not_affect_inputs():\n    base = {\"a\": {\"b\": 1}, \"items\": [1, 2]}\n    overrides = {\"a\": {\"c\": 2}, \"items\": [3]}\n    result = merge_config(base, overrides)\n    result[\"a\"][\"b\"] = 999\n    result[\"items\"].append(4)\n    assert base == {\"a\": {\"b\": 1}, \"items\": [1, 2]}\n    assert overrides == {\"a\": {\"c\": 2}, \"items\": [3]}\n\n\ndef test_mutating_inputs_does_not_affect_result():\n    base = {\"a\": {\"b\": 1}, \"items\": [1, 2]}\n    overrides = {\"a\": {\"c\": 2}, \"items\": [3]}\n    result = merge_config(base, overrides)\n    base[\"a\"][\"b\"] = 999\n    base[\"items\"].append(4)\n    overrides[\"a\"][\"c\"] = 888\n    overrides[\"items\"].append(5)\n    assert result == {\"a\": {\"b\": 1, \"c\": 2}, \"items\": [3]}\n\n\ndef test_simple_overrides_still_work():\n    assert merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3}\n    assert merge_config({}, {}) == {}\n"
+        }
+      ],
+      "contract_tests": [
+        "test_returns_all_keys_from_base_and_overrides: merge_config({\"a\": 1, \"b\": 2}, {\"b\": 3, \"c\": 4}) == {\"a\": 1, \"b\": 3, \"c\": 4} and isinstance(result, dict).",
+        "test_recursive_merge_of_nested_mappings: merge_config({\"db\": {\"host\": \"localhost\", \"port\": 5432}}, {\"db\": {\"port\": 6543, \"user\": \"admin\"}}) == {\"db\": {\"host\": \"localhost\", \"port\": 6543, \"user\": \"admin\"}} with nested dict type.",
+        "test_override_wins_at_leaf: merge_config({\"a\": {\"b\": 1}}, {\"a\": {\"b\": 2}})[\"a\"][\"b\"] == 2.",
+        "test_keys_only_in_overrides_included: merge_config({\"a\": 1}, {\"b\": 2}) == {\"a\": 1, \"b\": 2}.",
+        "test_keys_only_in_base_preserved: merge_config({\"a\": 1, \"b\": 2}, {\"c\": 3}) == {\"a\": 1, \"b\": 2, \"c\": 3}.",
+        "test_lists_are_replaced_not_concatenated: merge_config({\"items\": [1, 2, 3]}, {\"items\": [4, 5]})[\"items\"] == [4, 5] and isinstance(..., list).",
+        "test_lists_replaced_in_nested_mappings: merge_config({\"a\": {\"items\": [1, 2]}}, {\"a\": {\"items\": [3]}})[\"a\"][\"items\"] == [3].",
+        "test_does_not_mutate_base: base unchanged after merge_config(base, overrides).",
+        "test_does_not_mutate_overrides: overrides unchanged after merge_config(base, overrides).",
+        "test_result_shares_no_nested_objects_with_inputs: result[\"a\"] is not base[\"a\"], result[\"a\"] is not overrides[\"a\"], result[\"items\"] is not base[\"items\"], result[\"items\"] is not overrides[\"items\"].",
+        "test_mutating_result_does_not_affect_inputs: mutating result nested dict/list leaves base and overrides unchanged.",
+        "test_mutating_inputs_does_not_affect_result: mutating base/overrides after call leaves result == {\"a\": {\"b\": 1, \"c\": 2}, \"items\": [3]}.",
+        "test_simple_overrides_still_work: merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3} and merge_config({}, {}) == {}."
+      ],
+      "changed_files": [
+        "config.py",
+        "tests/test_merge_config_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "18fcb377-9ad1-46d7-9220-a6e7c6ae4bbd",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "..............                                                           [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n14 passed in 0.14s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "passed": 14,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.1212104999976873,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_returns_all_keys_from_base_and_overrides",
+          "classname": "tests.test_merge_config_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_recursive_merge_of_nested_mappings",
+          "classname": "tests.test_merge_config_regression",
+          "line": 10,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_override_wins_at_leaf",
+          "classname": "tests.test_merge_config_regression",
+          "line": 18,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_keys_only_in_overrides_included",
+          "classname": "tests.test_merge_config_regression",
+          "line": 23,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_keys_only_in_base_preserved",
+          "classname": "tests.test_merge_config_regression",
+          "line": 28,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_lists_are_replaced_not_concatenated",
+          "classname": "tests.test_merge_config_regression",
+          "line": 33,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_lists_replaced_in_nested_mappings",
+          "classname": "tests.test_merge_config_regression",
+          "line": 41,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_does_not_mutate_base",
+          "classname": "tests.test_merge_config_regression",
+          "line": 48,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_does_not_mutate_overrides",
+          "classname": "tests.test_merge_config_regression",
+          "line": 56,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_result_shares_no_nested_objects_with_inputs",
+          "classname": "tests.test_merge_config_regression",
+          "line": 64,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_mutating_result_does_not_affect_inputs",
+          "classname": "tests.test_merge_config_regression",
+          "line": 74,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_mutating_inputs_does_not_affect_result",
+          "classname": "tests.test_merge_config_regression",
+          "line": 84,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_simple_overrides_still_work",
+          "classname": "tests.test_merge_config_regression",
+          "line": 95,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "7fa9372647390cbc295eb686bf6d0f8ec0d52c1e9bc85054699de1251fe21cc7",
+      "candidate_id": "18fcb377-9ad1-46d7-9220-a6e7c6ae4bbd",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

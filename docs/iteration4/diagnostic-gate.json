@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-16T08:53:39.976324+00:00",
+  "status": "passed",
+  "runtime_code_commit": "2e6b0f2d5e7619be6bce91849ea741f82a7986d1",
+  "registered_runs": 9,
+  "independent_accepted": 9,
+  "ready_and_accepted": 9,
+  "real_docker_witnesses": 3,
+  "demonstrated_witnesses": 3,
+  "structured_feedback_records": 7,
+  "creation_failure_records": 0,
+  "runtime_or_prompt_changes_after_diagnostic": 0,
+  "diagnostic_excluded_from_90_comparison": true
+}

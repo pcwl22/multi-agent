@@ -1,0 +1,44 @@
+--- a/pricing.py
++++ b/pricing.py
+@@ -1,2 +1,2 @@
+ def discounted_total(amount, discount_percent):
+-    return round(amount * (1 - discount_percent), 2)
++    return round(amount * (1 - discount_percent / 100), 2)
+--- a/tests/test_pricing_regression.py
++++ b/tests/test_pricing_regression.py
+@@ -0,0 +1,35 @@
++from pricing import discounted_total
++
++
++def test_discounted_total_percentage_example():
++    # Issue contract: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, (int, float))
++
++
++def test_discounted_total_zero_amount_preserved():
++    # Zero amount preserved regardless of discount.
++    assert discounted_total(0, 20) == 0
++    assert discounted_total(0, 0) == 0
++    assert discounted_total(0, 100) == 0
++
++
++def test_discounted_total_no_discount_preserved():
++    # No discount preserved: amount returned unchanged.
++    assert discounted_total(100, 0) == 100
++    assert discounted_total(12.5, 0) == 12.5
++
++
++def test_discounted_total_percentage_boundaries():
++    # Discount values are percentages in the range 0 to 100.
++    assert discounted_total(100, 0) == 100
++    assert discounted_total(100, 100) == 0
++    assert discounted_total(100, 50) == 50
++    assert discounted_total(200, 25) == 150
++
++
++def test_discounted_total_returns_rounded_value():
++    # Return type/value semantics preserved (rounded to 2 decimals).
++    assert discounted_total(10, 33) == 6.7
++    assert discounted_total(99.99, 10) == 89.99

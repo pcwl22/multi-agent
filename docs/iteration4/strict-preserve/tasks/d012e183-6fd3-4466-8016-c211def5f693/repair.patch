@@ -1,0 +1,53 @@
+--- a/pagination.py
++++ b/pagination.py
+@@ -1,5 +1,5 @@
+ def paginate(items, page, page_size):
+     if page < 1 or page_size < 1:
+         return []
+-    start = page * page_size
+-    return items[start : start + page_size]
++    start = (page - 1) * page_size
++    return list(items[start : start + page_size])
+--- a/tests/test_pagination_regression.py
++++ b/tests/test_pagination_regression.py
+@@ -0,0 +1,40 @@
++from pagination import paginate
++
++
++def test_issue_literal_range_page_2_size_2():
++    # Literal issue input passed unchanged to the function under test.
++    assert paginate(range(1, 8), 2, 2) == [3, 4]
++
++
++def test_issue_literal_range_page_1_size_2():
++    assert paginate(range(1, 8), 1, 2) == [1, 2]
++
++
++def test_issue_literal_range_last_full_page():
++    assert paginate(range(1, 8), 3, 2) == [5, 6]
++
++
++def test_issue_literal_range_partial_last_page():
++    assert paginate(range(1, 8), 4, 2) == [7]
++
++
++def test_issue_literal_range_beyond_last_page():
++    assert paginate(range(1, 8), 5, 2) == []
++
++
++def test_empty_input_preserved():
++    assert paginate([], 1, 2) == []
++
++
++def test_invalid_page_preserved():
++    assert paginate([1, 2], 0, 2) == []
++
++
++def test_invalid_page_size_preserved():
++    assert paginate([1, 2], 1, 0) == []
++
++
++def test_result_type_is_list():
++    result = paginate(range(1, 8), 2, 2)
++    assert isinstance(result, list)
++    assert result == [3, 4]

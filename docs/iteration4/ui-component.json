@@ -1,0 +1,13 @@
+{
+  "validation": "Streamlit AppTest + local API + real Docker, documented auth demo Mock and controlled Windows denial",
+  "task_id": "dd572e31-c415-4a14-a54b-ec98860ec605",
+  "candidate_id": "2296fda2-a2ae-49b2-9a94-7b9b35d77295",
+  "creation_failure_queryable": true,
+  "bounded_activation_failures": 3,
+  "explicit_ui_resume_reused_identity": true,
+  "regression_witness": "demonstrated",
+  "approval_digest_and_candidate_forwarded": true,
+  "external_writes": 0,
+  "real_model_calls": 0,
+  "actual_browser_session": false
+}

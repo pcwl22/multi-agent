@@ -1,0 +1,150 @@
+{
+  "candidate_id": "d66bcefe-3a65-464f-b6b6-f76a53a1fec4",
+  "candidate_number": 1,
+  "diff": "--- a/events.py\n+++ b/events.py\n@@ -3,4 +3,6 @@\n \n def parse_event_time(value):\n     parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n-    return parsed.replace(tzinfo=timezone.utc)\n+    if parsed.tzinfo is None:\n+        return parsed.replace(tzinfo=timezone.utc)\n+    return parsed.astimezone(timezone.utc)\n--- a/tests/test_events_utc.py\n+++ b/tests/test_events_utc.py\n@@ -0,0 +1,45 @@\n+from datetime import datetime, timezone\n+\n+from events import parse_event_time\n+\n+\n+def test_positive_offset_converted_to_utc():\n+    result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n+    assert result == datetime(2026, 4, 1, 10, 0, 0, tzinfo=timezone.utc)\n+    assert result.isoformat() == \"2026-04-01T10:00:00+00:00\"\n+\n+\n+def test_z_suffix_preserved():\n+    result = parse_event_time(\"2026-04-01T12:00:00Z\")\n+    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n+    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n+\n+\n+def test_naive_treated_as_utc():\n+    result = parse_event_time(\"2026-04-01T12:00:00\")\n+    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n+    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n+\n+\n+def test_negative_offset_converted_to_utc():\n+    result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n+    assert result == datetime(2026, 4, 1, 17, 0, 0, tzinfo=timezone.utc)\n+    assert result.isoformat() == \"2026-04-01T17:00:00+00:00\"\n+\n+\n+def test_zero_offset_unchanged():\n+    result = parse_event_time(\"2026-04-01T12:00:00+00:00\")\n+    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n+    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n+\n+\n+def test_return_type_and_tzinfo_are_utc():\n+    result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n+    assert isinstance(result, datetime)\n+    assert result.tzinfo == timezone.utc\n+\n+\n+def test_date_only_input_preserved():\n+    result = parse_event_time(\"2026-04-01\")\n+    assert result == datetime(2026, 4, 1, 0, 0, 0, tzinfo=timezone.utc)\n+    assert result.isoformat() == \"2026-04-01T00:00:00+00:00\"\n",
+  "diff_digest": "2ec15dd758af3f4443ce1deecb3b0194e139a7912b2f47ba917ee35a79cc51ac",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "d66bcefe-3a65-464f-b6b6-f76a53a1fec4",
+      "candidate_number": 1,
+      "changed_files": [
+        "events.py",
+        "tests/test_events_utc.py"
+      ],
+      "contract_tests": [
+        "parse_event_time('2026-04-01T12:00:00+02:00') == datetime(2026,4,1,10,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T10:00:00+00:00' (test_positive_offset_converted_to_utc)",
+        "parse_event_time('2026-04-01T12:00:00Z') == datetime(2026,4,1,12,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T12:00:00+00:00' (test_z_suffix_preserved)",
+        "parse_event_time('2026-04-01T12:00:00') == datetime(2026,4,1,12,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T12:00:00+00:00' (test_naive_treated_as_utc)",
+        "parse_event_time('2026-04-01T12:00:00-05:00') == datetime(2026,4,1,17,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T17:00:00+00:00' (test_negative_offset_converted_to_utc)",
+        "parse_event_time('2026-04-01T12:00:00+00:00') == datetime(2026,4,1,12,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T12:00:00+00:00' (test_zero_offset_unchanged)",
+        "isinstance(parse_event_time('2026-04-01T12:00:00+02:00'), datetime) and result.tzinfo == timezone.utc (test_return_type_and_tzinfo_are_utc)",
+        "parse_event_time('2026-04-01') == datetime(2026,4,1,0,0,0,tzinfo=timezone.utc) and isoformat() == '2026-04-01T00:00:00+00:00' (test_date_only_input_preserved)"
+      ],
+      "edits": [
+        {
+          "new": "def parse_event_time(value):\n    parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n    if parsed.tzinfo is None:\n        return parsed.replace(tzinfo=timezone.utc)\n    return parsed.astimezone(timezone.utc)",
+          "old": "def parse_event_time(value):\n    parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n    return parsed.replace(tzinfo=timezone.utc)",
+          "path": "events.py"
+        },
+        {
+          "new": "from datetime import datetime, timezone\n\nfrom events import parse_event_time\n\n\ndef test_positive_offset_converted_to_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n    assert result == datetime(2026, 4, 1, 10, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T10:00:00+00:00\"\n\n\ndef test_z_suffix_preserved():\n    result = parse_event_time(\"2026-04-01T12:00:00Z\")\n    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n\n\ndef test_naive_treated_as_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00\")\n    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n\n\ndef test_negative_offset_converted_to_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n    assert result == datetime(2026, 4, 1, 17, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T17:00:00+00:00\"\n\n\ndef test_zero_offset_unchanged():\n    result = parse_event_time(\"2026-04-01T12:00:00+00:00\")\n    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T12:00:00+00:00\"\n\n\ndef test_return_type_and_tzinfo_are_utc():\n    result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n    assert isinstance(result, datetime)\n    assert result.tzinfo == timezone.utc\n\n\ndef test_date_only_input_preserved():\n    result = parse_event_time(\"2026-04-01\")\n    assert result == datetime(2026, 4, 1, 0, 0, 0, tzinfo=timezone.utc)\n    assert result.isoformat() == \"2026-04-01T00:00:00+00:00\"\n",
+          "old": "",
+          "path": "tests/test_events_utc.py"
+        }
+      ],
+      "rationale": "parse_event_time currently does `parsed.replace(tzinfo=timezone.utc)`, which overwrites any parsed offset with UTC without shifting the wall-clock time, discarding the offset. Fix: if the parsed datetime is naive, attach UTC; otherwise convert to UTC via astimezone(timezone.utc). This preserves Z support (already normalized to +00:00), treats naive as UTC, and correctly shifts offset timestamps. Add a new regression test file covering all acceptance contracts."
+    }
+  ],
+  "recorded_digest": "2ec15dd758af3f4443ce1deecb3b0194e139a7912b2f47ba917ee35a79cc51ac",
+  "regression_results": [],
+  "repair_feedback": [],
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "d66bcefe-3a65-464f-b6b6-f76a53a1fec4",
+      "candidate_number": 1,
+      "cases": [
+        {
+          "classname": "tests.test_contract",
+          "details": "",
+          "file": "tests/test_contract.py",
+          "line": 4,
+          "message": "",
+          "name": "test_existing_contract",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 6,
+          "message": "",
+          "name": "test_positive_offset_converted_to_utc",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 12,
+          "message": "",
+          "name": "test_z_suffix_preserved",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 18,
+          "message": "",
+          "name": "test_naive_treated_as_utc",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 24,
+          "message": "",
+          "name": "test_negative_offset_converted_to_utc",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 30,
+          "message": "",
+          "name": "test_zero_offset_unchanged",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 36,
+          "message": "",
+          "name": "test_return_type_and_tzinfo_are_utc",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_events_utc",
+          "details": "",
+          "file": "tests/test_events_utc.py",
+          "line": 42,
+          "message": "",
+          "name": "test_date_only_input_preserved",
+          "status": "passed"
+        }
+      ],
+      "cases_truncated": false,
+      "diff_digest": "2ec15dd758af3f4443ce1deecb3b0194e139a7912b2f47ba917ee35a79cc51ac",
+      "duration_seconds": 0.9829293000002508,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 8,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.09s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "events.py": "e8cdf3e1471840d2d420f0e47871fd1232134faefc56ae8a4909527f1c25a013",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_contract.py": "2c02c345bdbe0bcce55aec320219559c03ced208b1406666ed3fbc711379af6d",
+    "tests/test_events_utc.py": "ac0dd6cec017c700e215c13b1e85577daa9d4198065ef75f6b06165688b664ce"
+  }
+}
