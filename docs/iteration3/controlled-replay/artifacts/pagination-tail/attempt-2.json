@@ -1,0 +1,64 @@
+{
+  "candidate_id": "8a9b9c38-1495-4c63-8db0-2f924ad9a28d",
+  "candidate_number": 2,
+  "diff": "--- a/pagination.py\n+++ b/pagination.py\n@@ -1,5 +1,5 @@\n def paginate(items, page, page_size):\n     if page < 1 or page_size < 1:\n         return []\n-    start = page * page_size\n-    return items[start : start + page_size]\n+    start = (page - 1) * page_size\n+    return list(items[start : start + page_size])\n--- a/tests/test_pagination_regression.py\n+++ b/tests/test_pagination_regression.py\n@@ -0,0 +1,5 @@\n+from pagination import paginate\n+\n+def test_issue():\n+    assert paginate(range(1,8), 2, 2) == [3,4]\n+    assert paginate(range(1,8), 4, 2) == [7]\n",
+  "diff_digest": "ce955a524e81785d83c4424d29ce0a5b9871f4bb3cff307d58058dec88d33f69",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 0,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "8a9b9c38-1495-4c63-8db0-2f924ad9a28d",
+      "candidate_number": 2,
+      "changed_files": [
+        "pagination.py",
+        "tests/test_pagination_regression.py"
+      ],
+      "contract_tests": [],
+      "edits": [
+        {
+          "new": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = (page - 1) * page_size\n    return list(items[start : start + page_size])\n",
+          "old": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = page * page_size\n    return items[start : start + page_size]\n",
+          "path": "pagination.py"
+        },
+        {
+          "new": "from pagination import paginate\n\ndef test_issue():\n    assert paginate(range(1,8), 2, 2) == [3,4]\n    assert paginate(range(1,8), 4, 2) == [7]\n",
+          "old": "",
+          "path": "tests/test_pagination_regression.py"
+        }
+      ],
+      "rationale": "Evaluator-authored complete candidate with prior repaired source and corrected issue-only regression test; not an LLM result"
+    }
+  ],
+  "recorded_digest": "ce955a524e81785d83c4424d29ce0a5b9871f4bb3cff307d58058dec88d33f69",
+  "retry_count": 1,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 2,
+      "candidate_id": "8a9b9c38-1495-4c63-8db0-2f924ad9a28d",
+      "candidate_number": 2,
+      "duration_seconds": 0.9793059000003268,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 2,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "..                                                                       [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n2 passed in 0.08s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pagination.py": "21347470398b90f14d77890ee8f15cdd6a451f58945c08de5de3011398797331",
+    "tests/test_contract.py": "dd502c4f8354dd9bd8066e2988899c660201b5bc533784087bbcfa119dc7d4f3",
+    "tests/test_pagination_regression.py": "67e77f62b98425934e2392e59ee7390783cda6740b56f3959da3fe62fc4315cb"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "recorded_at": "2026-10-16T07:53:08.385439+00:00",
+  "runtime_code_commit": "3b4247f60dd36b031dbaa2c31f70940bc31fba9b",
+  "retry_workspace_policy": "isolated",
+  "model": "deepseek-v4.1-flash",
+  "endpoint": "https://muyuan.do/v1",
+  "max_retries": 2,
+  "model_min_interval": 7.5,
+  "model_timeout": 120,
+  "test_timeout": 120,
+  "no_remote_writes": true,
+  "keep_all_failures_in_denominator": true,
+  "jobs": [
+    {
+      "name": "strict",
+      "root": "app/evaluation/expanded/repos",
+      "dataset": "app/evaluation/expanded/dataset.strict.json",
+      "data": ".repopilot/isolated-strict-data",
+      "output": ".repopilot/evaluations/isolated-strict-20261016",
+      "repeats": 1,
+      "workers": 3,
+      "runs": 30,
+      "reference_accepted": 28,
+      "dataset_sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da"
+    },
+    {
+      "name": "pagination",
+      "root": "app/evaluation/expanded/repos",
+      "dataset": ".repopilot/guard-target/dataset.json",
+      "data": ".repopilot/isolated-pagination-data",
+      "output": ".repopilot/evaluations/isolated-pagination-20261016",
+      "repeats": 3,
+      "workers": 1,
+      "runs": 9,
+      "reference_accepted": 9,
+      "dataset_sha256": "7d00f1241601c25d5dce824fa74fac51631237482933d7d2e9545cdd6acc1c2d"
+    },
+    {
+      "name": "historical",
+      "root": ".repopilot/pilots/corpus/repos",
+      "dataset": ".repopilot/pilots/corpus/dataset.json",
+      "data": ".repopilot/isolated-historical-data",
+      "output": ".repopilot/evaluations/isolated-historical-20261016",
+      "repeats": 1,
+      "workers": 2,
+      "runs": 6,
+      "reference_accepted": 5,
+      "image": "repopilot-pilots:local",
+      "dataset_sha256": "b7e04741ba6d84c5e99f2da9ffc3a844e00fb3178051ca110083899462901466"
+    }
+  ]
+}
