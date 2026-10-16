@@ -2,6 +2,14 @@
 
 ## 0.1.0 — release candidate, unpublished
 
+- Original-issue acceptance contracts and reviewer source context; a conservative
+  AST coverage gate rejects constructor-input substitutions in new tests.
+- Provider cooldown/manual retry with a finite budget, safe error categories and
+  retained unknown usage; synchronous checkpoints and unrecorded-write detection.
+- Fixed historical jsonpointer/itsdangerous pilots with frozen external holdouts,
+  dependency wheel hashes and original upstream tests preserved.
+- Actual process-loss recovery tests, real SDK controlled-transport failures and
+  Streamlit recovery controls; full local suite now 129 passed, 1 skipped.
 - LangGraph planning, retrieval, coding, Docker testing, review and digest-bound
   human approval, with SQLite recovery and a finite shared retry budget.
 - Read-only MCP tools, FastAPI, Streamlit, and explicit draft PR publication with

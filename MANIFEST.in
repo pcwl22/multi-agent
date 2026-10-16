@@ -9,3 +9,4 @@ recursive-include tests *.py
 global-exclude *.py[cod]
 # Checksums are companion artifacts and must not include their own archive hash.
 exclude docs/next-stage/release-artifacts.json
+exclude docs/iteration2/release-artifacts.json

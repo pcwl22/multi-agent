@@ -1,0 +1,82 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_export_rows_csv.py
++++ b/tests/test_export_rows_csv.py
+@@ -0,0 +1,65 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def _round_trip(text):
++    return list(csv.reader(io.StringIO(text)))
++
++
++def test_empty_rows_preserved():
++    assert export_rows([]) == ""
++
++
++def test_simple_rows_preserved():
++    assert export_rows([["a", 1], ["b", 2]]) == "a,1\nb,2\n"
++
++
++def test_lf_line_endings():
++    result = export_rows([["a", "b"], ["c", "d"]])
++    assert result == "a,b\nc,d\n"
++    assert "\r" not in result
++
++
++def test_cell_with_comma_is_quoted_and_round_trips():
++    rows = [["a,b", "c"]]
++    result = export_rows(rows)
++    assert result == '"a,b",c\n'
++    assert _round_trip(result) == [['a,b', 'c']]
++
++
++def test_cell_with_quote_is_escaped_and_round_trips():
++    rows = [['he said "hi"', "x"]]
++    result = export_rows(rows)
++    assert result == '"he said ""hi""",x\n'
++    assert _round_trip(result) == [['he said "hi"', 'x']]
++
++
++def test_cell_with_newline_is_quoted_and_round_trips():
++    rows = [["line1\nline2", "z"]]
++    result = export_rows(rows)
++    assert result == '"line1\nline2",z\n'
++    assert _round_trip(result) == [["line1\nline2", "z"]]
++
++
++def test_unicode_preserved_and_round_trips():
++    rows = [["caf\u00e9", "\u4f60\u597d"], ["\U0001f600", "na\u00efve"]]
++    result = export_rows(rows)
++    assert "caf\u00e9" in result
++    assert "\u4f60\u597d" in result
++    assert "\U0001f600" in result
++    assert _round_trip(result) == [["caf\u00e9", "\u4f60\u597d"], ["\U0001f600", "na\u00efve"]]
++
++
++def test_mixed_types_are_stringified_and_round_trip():
++    rows = [[1, 2.5, None, True]]
++    result = export_rows(rows)
++    assert result == "1,2.5,None,True\n"
++    assert _round_trip(result) == [["1", "2.5", "None", "True"]]
++
++
++def test_combined_special_cells_round_trip():
++    rows = [["a,b", 'q"q', "n\nn"], ["plain", "", "end"]]
++    result = export_rows(rows)
++    assert _round_trip(result) == [["a,b", 'q"q', "n\nn"], ["plain", "", "end"]]

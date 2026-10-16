@@ -1,0 +1,62 @@
+--- a/pricing.py
++++ b/pricing.py
+@@ -1,2 +1,2 @@
+ def discounted_total(amount, discount_percent):
+-    return round(amount * (1 - discount_percent), 2)
++    return round(amount * (1 - discount_percent / 100), 2)
+--- a/tests/test_discounted_total_regression.py
++++ b/tests/test_discounted_total_regression.py
+@@ -0,0 +1,53 @@
++from pricing import discounted_total
++
++
++def test_issue_example_100_with_20_percent_discount():
++    # Literal example from the issue: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, float)
++
++
++def test_zero_amount_preserved():
++    # Zero amount stays zero regardless of discount.
++    assert discounted_total(0, 20) == 0
++    assert discounted_total(0, 0) == 0
++    assert discounted_total(0, 100) == 0
++
++
++def test_no_discount_preserved():
++    # No discount returns the original amount unchanged.
++    assert discounted_total(12.5, 0) == 12.5
++    assert discounted_total(100, 0) == 100
++    assert discounted_total(0, 0) == 0
++
++
++def test_percentage_boundaries():
++    # 0 percent is no discount; 100 percent is fully discounted.
++    assert discounted_total(100, 0) == 100
++    assert discounted_total(100, 100) == 0
++    assert discounted_total(50, 100) == 0
++
++
++def test_typical_percentage_values():
++    assert discounted_total(100, 20) == 80
++    assert discounted_total(200, 50) == 100
++    assert discounted_total(50, 10) == 45
++    assert discounted_total(19.99, 25) == 14.99
++
++
++def test_result_is_rounded_to_two_decimals():
++    result = discounted_total(10, 33)
++    assert result == 6.7
++    assert isinstance(result, float)
++
++
++def test_inputs_are_not_mutated():
++    # Numeric inputs are immutable; ensure repeated calls are stable.
++    amount = 100
++    discount = 20
++    first = discounted_total(amount, discount)
++    second = discounted_total(amount, discount)
++    assert first == second == 80
++    assert amount == 100
++    assert discount == 20

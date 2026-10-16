@@ -38,3 +38,6 @@ real-provider availability measurements and are excluded from live benchmarks.
 Not verified: machine power loss, filesystem corruption, distributed scheduling,
 multi-process model quota coordination, or host failures during GitHub publication.
 Uncertain external publication continues to require manual inspection.
+A process lost during a model request may leave provider billing/usage unrecorded;
+replaying that node can make another request. Synchronous checkpoints do not
+provide exactly-once provider execution or recover missing token accounting.

@@ -1,0 +1,77 @@
+{
+  "note": "Post-hoc independent source-only replay of tasks that failed repository tests. No patch/test edits or model calls. A passing diagnostic does not change benchmark failure or approval status.",
+  "records": [
+    {
+      "experiment": "strict-final",
+      "case_id": "one-based-page",
+      "mode": "multi_no_review",
+      "task_id": "ff1af86a-f7b6-4965-b757-38d489882020",
+      "task_status": "failed",
+      "task_error": "Test retry budget exhausted",
+      "oracle_sha256": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676",
+      "source_only_holdout": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "..........                                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n10 passed in 0.06s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 10,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.8491176999996242,
+        "evidence": "docker"
+      },
+      "counted_as_benchmark_success": false
+    },
+    {
+      "experiment": "strict-final",
+      "case_id": "percent-discount",
+      "mode": "multi_full",
+      "task_id": "7cb0e583-0f71-4838-afbc-879838e92232",
+      "task_status": "failed",
+      "task_error": "Test retry budget exhausted",
+      "oracle_sha256": "f729f55def2b1794225e80e7d83b0b264a1d279046143f4463749e90ec77e82a",
+      "source_only_holdout": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": ".....                                                                    [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n5 passed in 0.09s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 5,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9671940000007453,
+        "evidence": "docker"
+      },
+      "counted_as_benchmark_success": false
+    },
+    {
+      "experiment": "historical-pilots",
+      "case_id": "itsdangerous-date-overflow",
+      "mode": "multi_full",
+      "task_id": "5d4ce88c-d818-4f67-826a-7fd68d6ae24e",
+      "task_status": "failed",
+      "task_error": "Patch retry budget exhausted: Existing tests are immutable",
+      "oracle_sha256": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d",
+      "source_only_holdout": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "....                                                                     [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n4 passed in 0.24s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.1496760999980324,
+        "evidence": "docker"
+      },
+      "counted_as_benchmark_success": false
+    }
+  ]
+}

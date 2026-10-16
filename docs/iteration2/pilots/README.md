@@ -8,8 +8,10 @@ not claims about their current releases. No upstream or user GitHub writes occur
 | [python-json-pointer](https://github.com/stefankoegl/python-json-pointer) | `8c0bfdd3b9b3c42c1cfec7334ab6bcaf8cad1353` | [b8fbae3](https://github.com/stefankoegl/python-json-pointer/commit/b8fbae380c74795b42de3e5a569519ab2dc8e8a8) | Oversized integer indices must retain public exception/default contracts. |
 | [itsdangerous](https://github.com/pallets/itsdangerous) | `85b1e3b76e0e37473dc286450ada725cd02981b4` | [37f0997](https://github.com/pallets/itsdangerous/commit/37f09970fa32a330a6660ded3abdb264086531b5) | Invalid-signature timestamp overflow must retain the public signature-error contract. |
 
-The original files, including tests, remain byte-for-byte unchanged in the
-baseline. The jsonpointer project keeps its suite in `tests.py`; a new collection
+The controlled export preserves original Git files byte-for-byte. Task snapshots
+then follow the normal bounded-text policy (unsupported docs/binaries are omitted);
+all original Python tests remain present and unchanged. The jsonpointer project
+keeps its suite in `tests.py`; a new collection
 adapter exposes its existing unittest classes to our fixed `pytest tests` entry
 point. No original test is edited. The itsdangerous baseline already includes its
 upstream failing test. The source layout is `src/`; the Docker runner includes

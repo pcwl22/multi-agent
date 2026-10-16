@@ -6,4 +6,6 @@
 # Unified diff context lines intentionally contain one leading space, including blank lines.
 *.patch -whitespace
 # Historical pilot holdouts retain their frozen raw bytes across platforms.
-docs/iteration2/pilots/acceptance/*.py.txt -text
+docs/iteration2/pilots/acceptance/*.py.txt -text whitespace=cr-at-eol
+# Upstream license formatting is retained verbatim.
+docs/iteration2/pilots/*-LICENSE.txt -whitespace

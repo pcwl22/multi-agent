@@ -1,0 +1,50 @@
+--- a/slugs.py
++++ b/slugs.py
+@@ -1,5 +1,12 @@
+ import re
++import unicodedata
+ 
+ 
+ def slugify(value):
+-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
++    # Transliterate Unicode combining accents by decomposing to NFD and
++    # dropping combining marks, so precomposed and decomposed forms match.
++    decomposed = unicodedata.normalize("NFD", value)
++    without_marks = "".join(
++        ch for ch in decomposed if not unicodedata.combining(ch)
++    )
++    return re.sub(r"[^a-z0-9]+", "-", without_marks.lower()).strip("-")
+--- a/tests/test_slugify_unicode.py
++++ b/tests/test_slugify_unicode.py
+@@ -0,0 +1,31 @@
++from slugs import slugify
++
++
++def test_cafe_deja_vu_precomposed():
++    assert slugify("Caf\u00e9 d\u00e9j\u00e0 vu") == "cafe-deja-vu"
++
++
++def test_decomposed_matches_precomposed():
++    decomposed = "Cafe\u0301 de\u0301ja\u0300 vu"
++    precomposed = "Caf\u00e9 d\u00e9j\u00e0 vu"
++    assert slugify(decomposed) == slugify(precomposed)
++    assert slugify(decomposed) == "cafe-deja-vu"
++
++
++def test_ascii_word_separation_preserved():
++    assert slugify("Hello, World!") == "hello-world"
++    assert slugify("foo   bar") == "foo-bar"
++
++
++def test_dashes_trimmed():
++    assert slugify("  --Hello--  ") == "hello"
++    assert slugify("!!!") == ""
++
++
++def test_empty_string():
++    assert slugify("") == ""
++
++
++def test_return_type_is_str():
++    assert isinstance(slugify("Caf\u00e9"), str)
++    assert isinstance(slugify(""), str)

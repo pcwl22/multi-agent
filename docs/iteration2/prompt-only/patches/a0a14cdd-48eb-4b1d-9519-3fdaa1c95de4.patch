@@ -1,0 +1,73 @@
+--- a/events.py
++++ b/events.py
+@@ -3,4 +3,6 @@
+ 
+ def parse_event_time(value):
+     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+-    return parsed.replace(tzinfo=timezone.utc)
++    if parsed.tzinfo is None:
++        return parsed.replace(tzinfo=timezone.utc)
++    return parsed.astimezone(timezone.utc)
+--- a/tests/test_parse_event_time_utc.py
++++ b/tests/test_parse_event_time_utc.py
+@@ -0,0 +1,60 @@
++from datetime import datetime, timedelta, timezone
++
++from events import parse_event_time
++
++
++def test_positive_offset_converted_to_utc():
++    result = parse_event_time("2026-04-01T12:00:00+02:00")
++    assert isinstance(result, datetime)
++    assert result == datetime(2026, 4, 1, 10, 0, 0, tzinfo=timezone.utc)
++    assert result.hour == 10
++    assert result.utcoffset() == timedelta(0)
++
++
++def test_z_suffix_preserved():
++    result = parse_event_time("2026-04-01T12:00:00Z")
++    assert isinstance(result, datetime)
++    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)
++    assert result.utcoffset() == timedelta(0)
++
++
++def test_naive_treated_as_utc():
++    result = parse_event_time("2026-04-01T12:00:00")
++    assert isinstance(result, datetime)
++    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)
++    assert result.tzinfo is timezone.utc
++    assert result.utcoffset() == timedelta(0)
++
++
++def test_zero_offset():
++    result = parse_event_time("2026-04-01T12:00:00+00:00")
++    assert isinstance(result, datetime)
++    assert result == datetime(2026, 4, 1, 12, 0, 0, tzinfo=timezone.utc)
++    assert result.utcoffset() == timedelta(0)
++
++
++def test_negative_offset_converted_to_utc():
++    result = parse_event_time("2026-04-01T12:00:00-05:00")
++    assert isinstance(result, datetime)
++    assert result == datetime(2026, 4, 1, 17, 0, 0, tzinfo=timezone.utc)
++    assert result.hour == 17
++    assert result.utcoffset() == timedelta(0)
++
++
++def test_returned_datetime_is_aware_utc_for_all_inputs():
++    for value in (
++        "2026-04-01T12:00:00+02:00",
++        "2026-04-01T12:00:00Z",
++        "2026-04-01T12:00:00",
++        "2026-04-01T12:00:00+00:00",
++        "2026-04-01T12:00:00-05:00",
++    ):
++        result = parse_event_time(value)
++        assert isinstance(result, datetime)
++        assert result.tzinfo is not None
++        assert result.utcoffset() == timedelta(0)
++
++
++def test_existing_supported_formats_preserved():
++    assert parse_event_time("2026-04-01T12:00:00Z").isoformat() == "2026-04-01T12:00:00+00:00"
++    assert parse_event_time("2026-04-01T12:00:00").hour == 12

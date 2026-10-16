@@ -1,0 +1,73 @@
+--- a/cache.py
++++ b/cache.py
+@@ -1,2 +1,2 @@
+ def is_expired(inserted_at, ttl, now):
+-    return now > inserted_at + ttl
++    return now >= inserted_at + ttl
+--- a/tests/test_cache_expiry_regression.py
++++ b/tests/test_cache_expiry_regression.py
+@@ -0,0 +1,64 @@
++from cache import is_expired
++
++
++# Contract: strictly before expiry -> alive (False).
++def test_alive_strictly_before_expiry():
++    result = is_expired(10, 5, 14)
++    assert result is False
++    assert isinstance(result, bool)
++
++
++# Contract: exact boundary now == inserted_at + ttl -> expired (True).
++def test_expired_exactly_at_boundary():
++    result = is_expired(10, 5, 15)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++# Contract: strictly after expiry -> expired (True).
++def test_expired_strictly_after_expiry():
++    result = is_expired(10, 5, 16)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++# Contract: ttl == 0 expires exactly at inserted_at.
++def test_zero_ttl_expires_at_inserted_at():
++    result = is_expired(10, 0, 10)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++# Contract: ttl == 0 is expired for any now >= inserted_at.
++def test_zero_ttl_expired_after_inserted_at():
++    assert is_expired(10, 0, 11) is True
++    assert is_expired(10, 0, 100) is True
++
++
++# Contract: ttl == 0 is alive strictly before inserted_at.
++def test_zero_ttl_alive_before_inserted_at():
++    result = is_expired(10, 0, 9)
++    assert result is False
++    assert isinstance(result, bool)
++
++
++# Contract: negative TTL remains expired at and after inserted_at.
++def test_negative_ttl_expired():
++    assert is_expired(10, -1, 10) is True
++    assert is_expired(10, -1, 9) is True
++
++
++# Contract: is_expired does not mutate its arguments (ints are immutable,
++# but verify the function returns a bool and leaves inputs unchanged).
++def test_no_mutation_and_bool_return():
++    inserted_at, ttl, now = 10, 5, 15
++    result = is_expired(inserted_at, ttl, now)
++    assert result is True
++    assert isinstance(result, bool)
++    assert (inserted_at, ttl, now) == (10, 5, 15)
++
++
++# Contract: existing non-boundary behavior for positive TTLs is preserved.
++def test_positive_ttl_non_boundary_preserved():
++    assert is_expired(0, 10, 5) is False
++    assert is_expired(0, 10, 20) is True

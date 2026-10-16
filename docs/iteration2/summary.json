@@ -1,0 +1,514 @@
+{
+  "generated_at": "2026-10-16T07:15:39.908734+00:00",
+  "results": {
+    "prompt-only": {
+      "runs": 90,
+      "accepted": 84,
+      "workflow_completed": 85,
+      "ready_and_accepted": 82,
+      "tokens_reported": 496885,
+      "unknown_usage_runs": 1,
+      "logical_model_calls": 204,
+      "failures": [
+        {
+          "case_id": "one-based-page",
+          "mode": "single",
+          "repeat": 0,
+          "task_id": "a863448f-4cdc-4d35-88bd-e64e8682c3c8",
+          "execution_status": "awaiting_approval",
+          "error": null
+        },
+        {
+          "case_id": "percent-discount",
+          "mode": "single",
+          "repeat": 1,
+          "task_id": "b3546dd0-2de6-413f-a451-eeec0501d930",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Existing tests are immutable"
+        },
+        {
+          "case_id": "one-based-page",
+          "mode": "single",
+          "repeat": 1,
+          "task_id": "acaca700-3fb3-4fa2-bbc2-524307d87f68",
+          "execution_status": "awaiting_approval",
+          "error": null
+        },
+        {
+          "case_id": "percent-discount",
+          "mode": "single",
+          "repeat": 2,
+          "task_id": "ca8671f0-f52b-4bd8-b365-86e3bbf55555",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Existing tests are immutable"
+        },
+        {
+          "case_id": "one-based-page",
+          "mode": "single",
+          "repeat": 2,
+          "task_id": "97f634d0-3299-451c-99de-30de59542642",
+          "execution_status": "awaiting_approval",
+          "error": null
+        },
+        {
+          "case_id": "checkout-two-files",
+          "mode": "single",
+          "repeat": 2,
+          "task_id": "f488935f-abec-44f5-ac87-1d70bb7210a2",
+          "execution_status": "failed",
+          "error": "Model request failed: OpenAIAPIError"
+        }
+      ],
+      "workflow_failures": [
+        {
+          "case_id": "percent-discount",
+          "mode": "single",
+          "repeat": 1,
+          "task_id": "b3546dd0-2de6-413f-a451-eeec0501d930",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Existing tests are immutable"
+        },
+        {
+          "case_id": "percent-discount",
+          "mode": "single",
+          "repeat": 2,
+          "task_id": "ca8671f0-f52b-4bd8-b365-86e3bbf55555",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Existing tests are immutable"
+        },
+        {
+          "case_id": "checkout-two-files",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "e2196d58-bb36-4d43-8c08-4210bdaf1cb5",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Empty or no-op edit"
+        },
+        {
+          "case_id": "checkout-two-files",
+          "mode": "multi_full",
+          "repeat": 2,
+          "task_id": "68eee64c-5ffc-4bf4-96da-ff140457b0df",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Edit precondition must match exactly once"
+        },
+        {
+          "case_id": "checkout-two-files",
+          "mode": "single",
+          "repeat": 2,
+          "task_id": "f488935f-abec-44f5-ac87-1d70bb7210a2",
+          "execution_status": "failed",
+          "error": "Model request failed: OpenAIAPIError"
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 30,
+          "acceptance_evaluated": 27,
+          "repair_evaluated": 30,
+          "bug_fix_success_rate": 0.8,
+          "test_pass_rate": 0.9874476987447699,
+          "task_completion_rate": 0.9,
+          "average_execution_seconds": 27.730921536666695,
+          "average_model_calls": 1.2,
+          "average_tokens": 2133.448275862069,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 29,
+          "provider_error_runs": 1,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 2
+        },
+        "multi_no_review": {
+          "runs": 30,
+          "acceptance_evaluated": 30,
+          "repair_evaluated": 30,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 47.560114256666445,
+          "average_model_calls": 2.2333333333333334,
+          "average_tokens": 4562.133333333333,
+          "average_retries": 0.23333333333333334,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 30,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 4,
+          "retry_exhausted_runs": 0
+        },
+        "multi_full": {
+          "runs": 30,
+          "acceptance_evaluated": 30,
+          "repair_evaluated": 30,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 0.9333333333333333,
+          "average_execution_seconds": 70.36163524333364,
+          "average_model_calls": 3.3666666666666667,
+          "average_tokens": 9938.366666666667,
+          "average_retries": 0.36666666666666664,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 30,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 6,
+          "retry_exhausted_runs": 2
+        }
+      },
+      "dataset_sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+      "corpus_sha256": "b8df0406f1f49e1b9b5436098ddab2289241184b5352435a5430ad2bf90dc7cd"
+    },
+    "guard-initial": {
+      "runs": 30,
+      "accepted": 29,
+      "workflow_completed": 29,
+      "ready_and_accepted": 29,
+      "tokens_reported": 160959,
+      "unknown_usage_runs": 0,
+      "logical_model_calls": 66,
+      "failures": [
+        {
+          "case_id": "one-based-page",
+          "mode": "single",
+          "repeat": 0,
+          "task_id": "f87a6b38-7b59-4415-91a0-034f514ce148",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: New regression tests must pass each literal issue input unchanged to the function under test: range(1,8). Wrapping it in another constructor changes the input contract. Add a NEW test filename; existing tests are immutable."
+        }
+      ],
+      "workflow_failures": [
+        {
+          "case_id": "one-based-page",
+          "mode": "single",
+          "repeat": 0,
+          "task_id": "f87a6b38-7b59-4415-91a0-034f514ce148",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: New regression tests must pass each literal issue input unchanged to the function under test: range(1,8). Wrapping it in another constructor changes the input contract. Add a NEW test filename; existing tests are immutable."
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 10,
+          "acceptance_evaluated": 9,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 0.9,
+          "test_pass_rate": 0.8936170212765957,
+          "task_completion_rate": 0.9,
+          "average_execution_seconds": 23.66614396999976,
+          "average_model_calls": 1.2,
+          "average_tokens": 2224.7,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 0,
+          "retry_exhausted_runs": 1
+        },
+        "multi_no_review": {
+          "runs": 10,
+          "acceptance_evaluated": 10,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 48.93732658999979,
+          "average_model_calls": 2.2,
+          "average_tokens": 4524.7,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        },
+        "multi_full": {
+          "runs": 10,
+          "acceptance_evaluated": 10,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 67.57160417000014,
+          "average_model_calls": 3.2,
+          "average_tokens": 9346.5,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        }
+      },
+      "dataset_sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+      "corpus_sha256": "b8df0406f1f49e1b9b5436098ddab2289241184b5352435a5430ad2bf90dc7cd"
+    },
+    "strict-final": {
+      "runs": 30,
+      "accepted": 28,
+      "workflow_completed": 28,
+      "ready_and_accepted": 28,
+      "tokens_reported": 176519,
+      "unknown_usage_runs": 0,
+      "logical_model_calls": 71,
+      "failures": [
+        {
+          "case_id": "one-based-page",
+          "mode": "multi_no_review",
+          "repeat": 0,
+          "task_id": "ff1af86a-f7b6-4965-b757-38d489882020",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted"
+        },
+        {
+          "case_id": "percent-discount",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "7cb0e583-0f71-4838-afbc-879838e92232",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted"
+        }
+      ],
+      "workflow_failures": [
+        {
+          "case_id": "one-based-page",
+          "mode": "multi_no_review",
+          "repeat": 0,
+          "task_id": "ff1af86a-f7b6-4965-b757-38d489882020",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted"
+        },
+        {
+          "case_id": "percent-discount",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "7cb0e583-0f71-4838-afbc-879838e92232",
+          "execution_status": "failed",
+          "error": "Test retry budget exhausted"
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 10,
+          "acceptance_evaluated": 10,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 25.49670849999893,
+          "average_model_calls": 1.2,
+          "average_tokens": 2227.6,
+          "average_retries": 0.2,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        },
+        "multi_no_review": {
+          "runs": 10,
+          "acceptance_evaluated": 9,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 0.9,
+          "test_pass_rate": 0.9863013698630136,
+          "task_completion_rate": 0.9,
+          "average_execution_seconds": 55.45921304000039,
+          "average_model_calls": 2.5,
+          "average_tokens": 5696.8,
+          "average_retries": 0.5,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 2,
+          "retry_exhausted_runs": 1
+        },
+        "multi_full": {
+          "runs": 10,
+          "acceptance_evaluated": 9,
+          "repair_evaluated": 10,
+          "bug_fix_success_rate": 0.9,
+          "test_pass_rate": 0.9666666666666667,
+          "task_completion_rate": 0.9,
+          "average_execution_seconds": 71.17767951999994,
+          "average_model_calls": 3.4,
+          "average_tokens": 9727.5,
+          "average_retries": 0.4,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 10,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 2,
+          "retry_exhausted_runs": 1
+        }
+      },
+      "dataset_sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+      "corpus_sha256": "b8df0406f1f49e1b9b5436098ddab2289241184b5352435a5430ad2bf90dc7cd"
+    },
+    "pagination-target": {
+      "runs": 9,
+      "accepted": 9,
+      "workflow_completed": 9,
+      "ready_and_accepted": 9,
+      "tokens_reported": 77112,
+      "unknown_usage_runs": 0,
+      "logical_model_calls": 28,
+      "failures": [],
+      "workflow_failures": [],
+      "modes": {
+        "single": {
+          "runs": 3,
+          "acceptance_evaluated": 3,
+          "repair_evaluated": 3,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 25.45127386666718,
+          "average_model_calls": 2.3333333333333335,
+          "average_tokens": 6420,
+          "average_retries": 1.3333333333333333,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 3,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 3,
+          "retry_exhausted_runs": 0
+        },
+        "multi_no_review": {
+          "runs": 3,
+          "acceptance_evaluated": 3,
+          "repair_evaluated": 3,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 27.544290933332377,
+          "average_model_calls": 3,
+          "average_tokens": 7234,
+          "average_retries": 1,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 3,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 3,
+          "retry_exhausted_runs": 0
+        },
+        "multi_full": {
+          "runs": 3,
+          "acceptance_evaluated": 3,
+          "repair_evaluated": 3,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 48.761938999999984,
+          "average_model_calls": 4,
+          "average_tokens": 12050,
+          "average_retries": 1,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 3,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 3,
+          "retry_exhausted_runs": 0
+        }
+      },
+      "dataset_sha256": "7d00f1241601c25d5dce824fa74fac51631237482933d7d2e9545cdd6acc1c2d",
+      "corpus_sha256": "5a690067245fa3331e899a3eb022d7bc039758cff3804bca18008044648e2bb7"
+    },
+    "historical-pilots": {
+      "runs": 6,
+      "accepted": 5,
+      "workflow_completed": 5,
+      "ready_and_accepted": 5,
+      "tokens_reported": 114626,
+      "unknown_usage_runs": 0,
+      "logical_model_calls": 15,
+      "failures": [
+        {
+          "case_id": "itsdangerous-date-overflow",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "5d4ce88c-d818-4f67-826a-7fd68d6ae24e",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Existing tests are immutable"
+        }
+      ],
+      "workflow_failures": [
+        {
+          "case_id": "itsdangerous-date-overflow",
+          "mode": "multi_full",
+          "repeat": 0,
+          "task_id": "5d4ce88c-d818-4f67-826a-7fd68d6ae24e",
+          "execution_status": "failed",
+          "error": "Patch retry budget exhausted: Existing tests are immutable"
+        }
+      ],
+      "modes": {
+        "single": {
+          "runs": 2,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 2,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 23.095541500002582,
+          "average_model_calls": 1.5,
+          "average_tokens": 13113,
+          "average_retries": 0.5,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 2,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        },
+        "multi_no_review": {
+          "runs": 2,
+          "acceptance_evaluated": 2,
+          "repair_evaluated": 2,
+          "bug_fix_success_rate": 1.0,
+          "test_pass_rate": 1.0,
+          "task_completion_rate": 1.0,
+          "average_execution_seconds": 72.45826704999854,
+          "average_model_calls": 2.5,
+          "average_tokens": 16143,
+          "average_retries": 0.5,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 2,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 1,
+          "retry_exhausted_runs": 0
+        },
+        "multi_full": {
+          "runs": 2,
+          "acceptance_evaluated": 1,
+          "repair_evaluated": 2,
+          "bug_fix_success_rate": 0.5,
+          "test_pass_rate": 0.9971830985915493,
+          "task_completion_rate": 0.5,
+          "average_execution_seconds": 58.60051444999954,
+          "average_model_calls": 3.5,
+          "average_tokens": 28057,
+          "average_retries": 1,
+          "blocked_runs": 0,
+          "invalid_case_runs": 0,
+          "token_observed_runs": 2,
+          "provider_error_runs": 0,
+          "recovered_after_retry_runs": 0,
+          "retry_exhausted_runs": 1
+        }
+      },
+      "dataset_sha256": "b7e04741ba6d84c5e99f2da9ffc3a844e00fb3178051ca110083899462901466",
+      "corpus_sha256": "ecbb424702454c678136bef94ffc922290c009c3ea4abc161da2b4c90584031f"
+    }
+  },
+  "prompt_only_code_commit": "fa859fc",
+  "guard_initial_code_commit": "acb0b9a",
+  "final_runtime_code_commit": "7abd716",
+  "no_remote_writes": true
+}

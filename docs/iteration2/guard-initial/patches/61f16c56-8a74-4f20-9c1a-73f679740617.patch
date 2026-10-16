@@ -1,0 +1,25 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,20 @@
++def _copy(value):
++    if isinstance(value, dict):
++        return {key: _copy(item) for key, item in value.items()}
++    if isinstance(value, list):
++        return [_copy(item) for item in value]
++    return value
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {key: _copy(value) for key, value in defaults.items()}
++    for key, value in overrides.items():
++        if (
++            key in result
++            and isinstance(result[key], dict)
++            and isinstance(value, dict)
++        ):
++            result[key] = merge_config(result[key], value)
++        else:
++            result[key] = _copy(value)
+     return result

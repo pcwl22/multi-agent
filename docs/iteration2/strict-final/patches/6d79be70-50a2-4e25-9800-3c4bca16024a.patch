@@ -1,0 +1,58 @@
+--- a/checkout.py
++++ b/checkout.py
+@@ -3,4 +3,4 @@
+ 
+ def invoice_total(amount, discount_percent, tax_rate):
+     subtotal = discounted(amount, discount_percent)
+-    return round(subtotal + amount * tax_rate, 2)
++    return float(round(subtotal + subtotal * tax_rate, 2))
+--- a/money.py
++++ b/money.py
+@@ -1,2 +1,5 @@
+ def discounted(amount, percent):
+-    return amount * (1 - percent)
++    result = amount * (1 - percent / 100)
++    if isinstance(result, float) and result.is_integer():
++        return int(result)
++    return result
+--- a/tests/test_regression_checkout.py
++++ b/tests/test_regression_checkout.py
+@@ -0,0 +1,38 @@
++from checkout import invoice_total
++from money import discounted
++
++
++def test_discounted_interprets_percent_as_percentage():
++    result = discounted(100, 20)
++    assert result == 80
++    assert isinstance(result, int)
++
++
++def test_discounted_zero_percent_returns_original():
++    result = discounted(100, 0)
++    assert result == 100
++    assert isinstance(result, int)
++
++
++def test_invoice_total_applies_tax_to_discounted_subtotal():
++    result = invoice_total(100, 20, 0.1)
++    assert result == 88
++    assert isinstance(result, float)
++
++
++def test_invoice_total_zero_discount_zero_tax_returns_original():
++    result = invoice_total(100, 0, 0)
++    assert result == 100
++    assert isinstance(result, float)
++
++
++def test_invoice_total_zero_tax_returns_discounted_subtotal():
++    result = invoice_total(100, 20, 0)
++    assert result == 80
++    assert isinstance(result, float)
++
++
++def test_invoice_total_zero_amount_is_zero():
++    result = invoice_total(0, 20, 0.1)
++    assert result == 0
++    assert isinstance(result, float)

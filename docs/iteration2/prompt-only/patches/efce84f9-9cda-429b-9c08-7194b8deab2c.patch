@@ -1,0 +1,50 @@
+--- a/pricing.py
++++ b/pricing.py
+@@ -1,2 +1,2 @@
+ def discounted_total(amount, discount_percent):
+-    return round(amount * (1 - discount_percent), 2)
++    return round(amount * (1 - discount_percent / 100), 2)
+--- a/tests/test_pricing_regression.py
++++ b/tests/test_pricing_regression.py
+@@ -0,0 +1,41 @@
++from pricing import discounted_total
++
++
++def test_percentage_discount_example():
++    # Issue example: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, (int, float))
++
++
++def test_zero_amount_preserved():
++    # Zero amount stays zero regardless of percentage discount.
++    result = discounted_total(0, 20)
++    assert result == 0
++    assert isinstance(result, (int, float))
++
++
++def test_no_discount_preserved():
++    # 0% discount returns the original amount unchanged.
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, (int, float))
++
++
++def test_full_discount_boundary():
++    # 100% discount is the upper boundary of the 0-100 percentage range.
++    result = discounted_total(100, 100)
++    assert result == 0
++    assert isinstance(result, (int, float))
++
++
++def test_percentage_not_fraction():
++    # A discount of 20 means 20 percent, not a fraction of 20.
++    assert discounted_total(50, 20) == 40
++    assert discounted_total(200, 25) == 150
++
++
++def test_rounding_behavior_preserved():
++    # Result is rounded to two decimal places.
++    assert discounted_total(10, 33) == 6.7
++    assert discounted_total(12.5, 0) == 12.5

@@ -1,0 +1,137 @@
+--- a/jsonpointer.py
++++ b/jsonpointer.py
+@@ -239,7 +239,11 @@
+             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):
+                 raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+-            return int(part)
++            try:
++                return int(part)
++            except ValueError:
++                raise JsonPointerException(
++                    "'%s' is not a valid sequence index" % part)
+ 
+         elif hasattr(doc, '__getitem__'):
+             # Allow indexing via ducktyping
+--- a/tests/test_long_index_regression.py
++++ b/tests/test_long_index_regression.py
+@@ -0,0 +1,119 @@
++import sys
++
++import pytest
++
++from jsonpointer import (
++    JsonPointer,
++    JsonPointerException,
++    resolve_pointer,
++    set_pointer,
++)
++
++
++# A numeric string long enough to exceed CPython's int() digit-conversion
++# limit (default 4300 digits) so that int() raises ValueError.
++LONG_INDEX = '1' * 5000
++
++
++@pytest.fixture(autouse=True)
++def _ensure_digit_limit():
++    """Make sure the int digit-conversion limit is active for these tests."""
++    old = sys.get_int_max_str_digits()
++    if old == 0:
++        sys.set_int_max_str_digits(4300)
++    yield
++    sys.set_int_max_str_digits(old)
++
++
++def test_resolve_long_numeric_index_raises_jsonpointerexception():
++    doc = {'a': [1, 2, 3]}
++    ptr = JsonPointer('/a/' + LONG_INDEX)
++    with pytest.raises(JsonPointerException):
++        ptr.resolve(doc)
++
++
++def test_resolve_pointer_long_numeric_index_raises_jsonpointerexception():
++    doc = {'a': [1, 2, 3]}
++    with pytest.raises(JsonPointerException):
++        resolve_pointer(doc, '/a/' + LONG_INDEX)
++
++
++def test_to_last_long_numeric_index_raises_jsonpointerexception():
++    doc = {'a': [1, 2, 3]}
++    ptr = JsonPointer('/a/' + LONG_INDEX)
++    with pytest.raises(JsonPointerException):
++        ptr.to_last(doc)
++
++
++def test_set_long_numeric_index_raises_jsonpointerexception():
++    doc = {'a': [1, 2, 3]}
++    ptr = JsonPointer('/a/' + LONG_INDEX)
++    with pytest.raises(JsonPointerException):
++        ptr.set(doc, 'x')
++
++
++def test_set_pointer_long_numeric_index_raises_jsonpointerexception():
++    doc = {'a': [1, 2, 3]}
++    with pytest.raises(JsonPointerException):
++        set_pointer(doc, '/a/' + LONG_INDEX, 'x')
++
++
++def test_resolve_with_default_returns_exact_default_object():
++    doc = {'a': [1, 2, 3]}
++    default = object()
++    ptr = JsonPointer('/a/' + LONG_INDEX)
++    result = ptr.resolve(doc, default)
++    assert result is default
++
++
++def test_resolve_pointer_with_default_returns_exact_default_object():
++    doc = {'a': [1, 2, 3]}
++    default = object()
++    result = resolve_pointer(doc, '/a/' + LONG_INDEX, default)
++    assert result is default
++
++
++def test_long_numeric_object_member_key_remains_string():
++    doc = {LONG_INDEX: 'value'}
++    ptr = JsonPointer('/' + LONG_INDEX)
++    assert ptr.resolve(doc) == 'value'
++
++
++def test_long_numeric_object_member_key_set_remains_string():
++    doc = {LONG_INDEX: 'value'}
++    ptr = JsonPointer('/' + LONG_INDEX)
++    ptr.set(doc, 'new')
++    assert doc[LONG_INDEX] == 'new'
++
++
++def test_ordinary_array_index_still_resolves():
++    doc = {'a': [10, 20, 30]}
++    assert JsonPointer('/a/1').resolve(doc) == 20
++
++
++def test_ordinary_array_index_still_sets():
++    doc = {'a': [10, 20, 30]}
++    JsonPointer('/a/1').set(doc, 99)
++    assert doc['a'] == [10, 99, 30]
++
++
++def test_end_of_list_dash_resolves_to_end_of_list():
++    from jsonpointer import EndOfList
++
++    doc = {'a': [1, 2, 3]}
++    result = JsonPointer('/a/-').resolve(doc)
++    assert isinstance(result, EndOfList)
++    assert result.list_ is doc['a']
++
++
++def test_end_of_list_dash_appends_on_set():
++    doc = {'a': [1, 2, 3]}
++    JsonPointer('/a/-').set(doc, 4)
++    assert doc['a'] == [1, 2, 3, 4]
++
++
++def test_set_mutates_original_document_in_place():
++    doc = {'a': [1, 2, 3]}
++    result = JsonPointer('/a/0').set(doc, 99)
++    assert result is doc
++    assert doc['a'] == [99, 2, 3]

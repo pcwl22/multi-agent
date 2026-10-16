@@ -1,0 +1,282 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -124,7 +124,16 @@
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OverflowError, OSError):
++                    # The decoded timestamp is outside the range that
++                    # datetime can represent. Treat it as malformed and
++                    # report no date_signed rather than leaking the
++                    # underlying datetime error.
++                    raise BadTimeSignature(
++                        "Malformed timestamp", payload=value, date_signed=None
++                    )
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+--- a/tests/test_itsdangerous/test_timed_malformed_regression.py
++++ b/tests/test_itsdangerous/test_timed_malformed_regression.py
+@@ -0,0 +1,117 @@
++import sys
++
++import pytest
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++from itsdangerous.encoding import base64_decode
++from itsdangerous.encoding import base64_encode
++from itsdangerous.encoding import bytes_to_int
++from itsdangerous.encoding import int_to_bytes
++
++
++def _make_signer():
++    return TimestampSigner("secret-key")
++
++
++def _tamper_timestamp(signed, ts_int):
++    """Replace the timestamp portion of a signed value with ts_int.
++
++    The signature is left untouched so the result is an invalid
++    signature whose decoded timestamp is ts_int.
++    """
++    sep = b"."
++    value, ts_bytes, sig = signed.rsplit(sep, 2)
++    new_ts = base64_encode(int_to_bytes(ts_int))
++    return sep.join([value, new_ts, sig])
++
++
++def test_out_of_range_timestamp_raises_bad_time_signature():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    # A timestamp far beyond datetime's supported year range.
++    tampered = _tamper_timestamp(signed, 10**18)
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is None
++
++
++def test_out_of_range_timestamp_is_bad_signature_family():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    tampered = _tamper_timestamp(signed, 10**18)
++
++    with pytest.raises(BadSignature):
++        signer.unsign(tampered)
++
++
++def test_out_of_range_timestamp_does_not_leak_value_error():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    tampered = _tamper_timestamp(signed, 10**18)
++
++    try:
++        signer.unsign(tampered)
++    except BadTimeSignature:
++        pass
++    except ValueError as e:  # pragma: no cover
++        pytest.fail(f"raw ValueError leaked: {e!r}")
++    else:  # pragma: no cover
++        pytest.fail("expected BadTimeSignature")
++
++
++def test_valid_roundtrip_preserves_payload_and_timestamp():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    value, ts = signer.unsign(signed, return_timestamp=True)
++
++    assert value == b"value"
++    assert ts is not None
++
++
++def test_ordinary_invalid_signature_keeps_date_signed():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    # Flip the signature so it is invalid but the timestamp is in range.
++    tampered = signed[:-1] + (b"A" if signed[-1:] != b"A" else b"B")
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is not None
++
++
++def test_expired_signature_still_raises_signature_expired():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=-1)
++
++    assert exc_info.value.payload == b"value"
++
++
++def test_timed_serializer_raises_bad_signature_family():
++    serializer = TimedSerializer("secret-key")
++    signed = serializer.dumps({"a": 1})
++    tampered = signed[:-1] + ("A" if signed[-1:] != "A" else "B")
++
++    with pytest.raises(BadSignature):
++        serializer.loads(tampered)
++
++
++def test_timed_serializer_out_of_range_timestamp_raises_bad_signature_family():
++    serializer = TimedSerializer("secret-key")
++    signed = serializer.dumps({"a": 1})
++    signed_bytes = signed.encode("utf-8")
++    tampered = _tamper_timestamp(signed_bytes, 10**18)
++
++    with pytest.raises(BadSignature):
++        serializer.loads(tampered)
+--- a/tests/test_itsdangerous/test_timed_regression.py
++++ b/tests/test_itsdangerous/test_timed_regression.py
+@@ -0,0 +1,139 @@
++import time
++from datetime import datetime
++from datetime import timezone
++
++import pytest
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++from itsdangerous.encoding import base64_encode
++from itsdangerous.encoding import int_to_bytes
++
++
++def _make_signer():
++    return TimestampSigner("secret-key")
++
++
++def _tamper_timestamp(signed, ts_int):
++    """Rebuild a signed value with a replaced timestamp but the original
++    (now invalid) signature, so the invalid-signature path is exercised.
++    """
++    sep = b"."
++    value, _ts, sig = signed.rsplit(sep, 2)
++    new_ts = base64_encode(int_to_bytes(ts_int))
++    return value + sep + new_ts + sep + sig
++
++
++def test_out_of_range_timestamp_raises_bad_time_signature():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    # A timestamp far beyond datetime's supported year range.
++    tampered = _tamper_timestamp(signed, 10**18)
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    # Must be a BadSignature-family member, not a raw datetime error.
++    assert isinstance(exc_info.value, BadSignature)
++
++
++def test_out_of_range_timestamp_preserves_payload():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    tampered = _tamper_timestamp(signed, 10**18)
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    assert exc_info.value.payload == b"value"
++
++
++def test_out_of_range_timestamp_has_no_date_signed():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    tampered = _tamper_timestamp(signed, 10**18)
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    assert exc_info.value.date_signed is None
++
++
++def test_negative_out_of_range_timestamp_raises_bad_time_signature():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    tampered = _tamper_timestamp(signed, -(10**18))
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    assert isinstance(exc_info.value, BadSignature)
++    assert exc_info.value.payload == b"value"
++    assert exc_info.value.date_signed is None
++
++
++def test_valid_roundtrip_returns_payload_and_timestamp():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++
++    value, ts = signer.unsign(signed, return_timestamp=True)
++
++    assert value == b"value"
++    assert isinstance(ts, datetime)
++    assert ts.tzinfo is timezone.utc
++
++
++def test_valid_roundtrip_returns_bytes_payload():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++
++    result = signer.unsign(signed)
++
++    assert result == b"value"
++    assert isinstance(result, bytes)
++
++
++def test_ordinary_invalid_signature_keeps_date_signed():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++    # Corrupt the signature only; timestamp stays in range.
++    tampered = signed[:-1] + (b"A" if signed[-1:] != b"A" else b"B")
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    assert exc_info.value.payload == b"value"
++    assert isinstance(exc_info.value.date_signed, datetime)
++
++
++def test_expired_signature_raises_signature_expired():
++    signer = _make_signer()
++    signed = signer.sign(b"value")
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=-1)
++
++    assert exc_info.value.payload == b"value"
++    assert isinstance(exc_info.value.date_signed, datetime)
++
++
++def test_timed_serializer_raises_bad_signature_family():
++    serializer = TimedSerializer("secret-key")
++    signed = serializer.dumps({"a": 1})
++    tampered = signed[:-1] + ("A" if signed[-1:] != "A" else "B")
++
++    with pytest.raises(BadSignature):
++        serializer.loads(tampered)
++
++
++def test_timed_serializer_out_of_range_timestamp_raises_bad_signature_family():
++    serializer = TimedSerializer("secret-key")
++    signed = serializer.dumps({"a": 1})
++    signed_bytes = signed.encode("utf-8")
++    tampered = _tamper_timestamp(signed_bytes, 10**18).decode("utf-8")
++
++    with pytest.raises(BadSignature):
++        serializer.loads(tampered)

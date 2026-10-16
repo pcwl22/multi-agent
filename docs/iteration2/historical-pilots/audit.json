@@ -1,0 +1,348 @@
+[
+  {
+    "task_id": "20006708-860b-4d16-8ca3-cfc6c4841f7f",
+    "case_id": "jsonpointer-large-index",
+    "mode": "single",
+    "original_test_files_unchanged": 2,
+    "contract_tests": [
+      [
+        "tests/test_numeric_index_overflow.py::test_resolve_huge_numeric_index_raises_jsonpointerexception - resolve_pointer([1,2,3], '/' + '9'*5000) raises JsonPointerException (not ValueError)",
+        "tests/test_numeric_index_overflow.py::test_resolve_huge_numeric_index_with_default_returns_default - resolve_pointer([1,2,3], '/' + '9'*5000, 'DEFAULT') == 'DEFAULT' and type is str",
+        "tests/test_numeric_index_overflow.py::test_to_last_huge_numeric_index_raises_jsonpointerexception - JsonPointer('/' + '9'*5000).to_last([1,2,3]) raises JsonPointerException",
+        "tests/test_numeric_index_overflow.py::test_set_huge_numeric_index_raises_jsonpointerexception - set_pointer([1,2,3], '/' + '9'*5000, 'x') raises JsonPointerException",
+        "tests/test_numeric_index_overflow.py::test_numeric_object_member_key_remains_string - resolve_pointer({'9'*5000: 'v'}, '/' + '9'*5000) == 'v' (key stays a string, no int conversion)",
+        "tests/test_numeric_index_overflow.py::test_ordinary_array_index_preserved - resolve_pointer([10,20,30], '/1') == 20 and type is int",
+        "tests/test_numeric_index_overflow.py::test_end_of_list_preserved - isinstance(resolve_pointer([1,2], '/-'), EndOfList) is True",
+        "tests/test_numeric_index_overflow.py::test_set_inplace_mutation_preserved - doc=[1,2,3]; set_pointer(doc, '/0', 99) returns doc and doc == [99,2,3]",
+        "tests/test_numeric_index_overflow.py::test_set_not_inplace_does_not_mutate - doc=[1,2,3]; result=set_pointer(doc, '/0', 99, inplace=False); doc == [1,2,3] and result == [99,2,3]"
+      ]
+    ],
+    "contract_reviews": [],
+    "test_attempts": [
+      {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "..........................                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n26 passed in 0.15s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.0744788000010885,
+        "evidence": "docker",
+        "attempt": 1
+      }
+    ],
+    "patch_rejections": []
+  },
+  {
+    "task_id": "e6c5a02f-6adc-48c0-ba60-1dffd608f3f4",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "single",
+    "original_test_files_unchanged": 6,
+    "contract_tests": [
+      [
+        "tests/test_itsdangerous/test_timed_regression.py::test_invalid_signature_out_of_range_timestamp_raises_bad_time_signature: build a signed value with TimestampSigner, tamper the signature so it is invalid, and replace the timestamp segment with a base64-encoded integer far outside datetime's range (e.g. int_to_bytes(999999999999)); assert that unsign raises BadTimeSignature (not ValueError), that exc.payload == the original value bytes, and that exc.date_signed is None.",
+        "tests/test_itsdangerous/test_timed_regression.py::test_invalid_signature_ordinary_timestamp_keeps_date_signed: tamper the signature of a normally signed value; assert BadTimeSignature is raised, exc.payload == original value bytes, and exc.date_signed is a timezone-aware datetime equal to signer.timestamp_to_datetime(original_ts).",
+        "tests/test_itsdangerous/test_timed_regression.py::test_valid_roundtrip_returns_bytes_and_timestamp: sign a value, unsign with return_timestamp=True; assert result[0] == value bytes and isinstance(result[1], datetime) with tzinfo == timezone.utc; unsign without return_timestamp returns the value bytes.",
+        "tests/test_itsdangerous/test_timed_regression.py::test_expiry_behavior_preserved: sign a value, then unsign with max_age=-1 (or a past timestamp) and assert SignatureExpired is raised with payload == value bytes and date_signed == signer.timestamp_to_datetime(ts).",
+        "tests/test_itsdangerous/test_timed_regression.py::test_timed_serializer_loads_bad_signature_family: TimedSerializer(secret).dumps(obj) then tamper the signature; assert loads raises BadSignature (BadTimeSignature is a subclass) and that loads_unsafe returns (False, None) for an unloadable payload."
+      ],
+      [
+        "tests/test_itsdangerous/test_timed_regression.py::test_out_of_range_timestamp_invalid_signature_raises_bad_time_signature_with_malformed_message",
+        "tests/test_itsdangerous/test_timed_regression.py::test_out_of_range_timestamp_invalid_signature_payload_is_original_value",
+        "tests/test_itsdangerous/test_timed_regression.py::test_out_of_range_timestamp_invalid_signature_date_signed_is_none",
+        "tests/test_itsdangerous/test_timed_regression.py::test_ordinary_invalid_signature_still_reports_date_signed",
+        "tests/test_itsdangerous/test_timed_regression.py::test_valid_roundtrip_preserved",
+        "tests/test_itsdangerous/test_timed_regression.py::test_timed_serializer_loads_raises_bad_signature_family"
+      ]
+    ],
+    "contract_reviews": [],
+    "test_attempts": [
+      {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "........................................................................ [ 24%]\n......................................................................F. [ 48%]\n........................................................................ [ 72%]\n........................................................................ [ 96%]\n.........                                                                [100%]\n=================================== FAILURES ===================================\n_____________ TestTimestampSigner.test_malformed_future_timestamp ______________\n\nself = <test_itsdangerous.test_timed.TestTimestampSigner object at 0x7c82343c4e60>\nsigner = <itsdangerous.timed.TimestampSigner object at 0x7c82338875c0>\n\n    @pytest.mark.skipif(\n        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n    )\n    def test_malformed_future_timestamp(self, signer):\n        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n    \n        with pytest.raises(BadTimeSignature) as exc_info:\n            signer.unsign(signed)\n    \n>       assert \"Malformed\" in str(exc_info.value)\nE       assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\nE        +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\nE        +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value\n\ntests/test_itsdangerous/test_timed.py:79: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_itsdangerous/test_timed.py::TestTimestampSigner::test_malformed_future_timestamp\n1 failed, 296 passed in 1.77s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 296,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 2.757029699998384,
+        "evidence": "docker",
+        "attempt": 1
+      },
+      {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "........................................................................ [ 24%]\n........................................................................ [ 48%]\n........................................................................ [ 72%]\n........................................................................ [ 96%]\n.........                                                                [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n297 passed in 2.05s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 297,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 3.121092800000042,
+        "evidence": "docker",
+        "attempt": 2
+      }
+    ],
+    "patch_rejections": []
+  },
+  {
+    "task_id": "c48ac2e4-1ca4-44a7-9585-640e4c8a702a",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_no_review",
+    "original_test_files_unchanged": 2,
+    "contract_tests": [
+      [
+        "resolve on a list with a numeric index exceeding Python's int digit limit raises JsonPointerException, not ValueError. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_resolve_long_index_raises_jsonpointerexception and ::test_resolve_pointer_long_index_raises_jsonpointerexception assert JsonPointerException for JsonPointer('/'+LONG_INDEX).resolve(['a','b','c']) and resolve_pointer(['a','b','c'], '/'+LONG_INDEX).",
+        "to_last on a list with a numeric index exceeding Python's int digit limit raises JsonPointerException, not ValueError. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_to_last_long_index_raises_jsonpointerexception asserts JsonPointerException for JsonPointer('/'+LONG_INDEX).to_last(['a','b','c']).",
+        "set on a list with a numeric index exceeding Python's int digit limit raises JsonPointerException, not ValueError. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_set_long_index_raises_jsonpointerexception and ::test_set_pointer_long_index_raises_jsonpointerexception assert JsonPointerException for JsonPointer('/'+LONG_INDEX).set(['a','b','c'], 'x') and set_pointer(['a','b','c'], '/'+LONG_INDEX, 'x').",
+        "resolve with a default returns that exact default (identity/equality) when the sequence index is invalid. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_resolve_with_default_returns_exact_default asserts `assertIs(result, default)` for an object() default; ::test_resolve_pointer_with_default_returns_exact_default asserts `assertIs(result, default)` for a dict default.",
+        "A numeric object member key of any length remains a string key and resolves as a dict member. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_long_numeric_dict_key_remains_string asserts resolve of {'1'*5000: 'value'} via '/'+LONG_INDEX equals 'value' (str key, not int).",
+        "Ordinary valid array indices continue to resolve/set correctly. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_ordinary_array_index_still_resolves asserts '/0'->'a' and '/2'->'c'; ::test_ordinary_array_index_still_sets asserts set_pointer(['a','b','c'], '/1', 'B') == ['a','B','c'].",
+        "End-of-list handling (e.g. '-' or out-of-range semantics) is preserved. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_end_of_list_handling_preserved asserts JsonPointer('/-').resolve(['a','b']).list_ is the doc; ::test_out_of_range_index_raises_jsonpointerexception asserts JsonPointerException for '/5' on a 2-element list.",
+        "Input mutation behavior of set is preserved. -> tests/test_long_index_regression.py::LongNumericIndexRegressionTests::test_set_mutation_behavior_preserved asserts set_pointer returns the same object (assertIs) and mutates doc; ::test_set_not_inplace_does_not_mutate asserts inplace=False leaves doc unchanged and returns a new equal dict.",
+        "New regression tests are added without modifying existing tests. -> tests/test_long_index_regression.py is a NEW file; no existing test file (tests.py, tests/test_upstream_suite.py) is edited."
+      ]
+    ],
+    "contract_reviews": [],
+    "test_attempts": [
+      {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "........................................                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n40 passed in 0.20s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 40,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.0811796999987564,
+        "evidence": "docker",
+        "attempt": 1
+      }
+    ],
+    "patch_rejections": []
+  },
+  {
+    "task_id": "8c10337f-9412-4795-85e8-bda44bea0006",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "original_test_files_unchanged": 2,
+    "contract_tests": [
+      [
+        "resolve on a pointer with a numeric array index exceeding Python's int digit-conversion limit raises JsonPointerException (not ValueError): tests/test_long_index_regression.py::test_resolve_long_numeric_index_raises_jsonpointerexception and ::test_resolve_pointer_long_numeric_index_raises_jsonpointerexception",
+        "to_last on a pointer with such an invalid sequence index raises JsonPointerException: tests/test_long_index_regression.py::test_to_last_long_numeric_index_raises_jsonpointerexception",
+        "set on a pointer with such an invalid sequence index raises JsonPointerException: tests/test_long_index_regression.py::test_set_long_numeric_index_raises_jsonpointerexception and ::test_set_pointer_long_numeric_index_raises_jsonpointerexception",
+        "resolve with a default returns that exact default object (identity) when the sequence index is invalid: tests/test_long_index_regression.py::test_resolve_with_default_returns_exact_default_object and ::test_resolve_pointer_with_default_returns_exact_default_object",
+        "Numeric object member keys remain strings regardless of length and resolve to the corresponding member: tests/test_long_index_regression.py::test_long_numeric_object_member_key_remains_string and ::test_long_numeric_object_member_key_set_remains_string",
+        "Ordinary valid array indices continue to resolve/set correctly: tests/test_long_index_regression.py::test_ordinary_array_index_still_resolves and ::test_ordinary_array_index_still_sets",
+        "End-of-list handling ('-') is preserved: tests/test_long_index_regression.py::test_end_of_list_dash_resolves_to_end_of_list and ::test_end_of_list_dash_appends_on_set",
+        "Input mutation behavior of set is preserved (original document mutated in place): tests/test_long_index_regression.py::test_set_mutates_original_document_in_place",
+        "New regression tests are added covering the above contracts: tests/test_long_index_regression.py (new file)"
+      ]
+    ],
+    "contract_reviews": [
+      [
+        {
+          "requirement": "resolve on a pointer with a numeric array index exceeding Python's int digit-conversion limit raises JsonPointerException (not ValueError).",
+          "satisfied": true,
+          "evidence": "get_part now wraps int(part) in try/except ValueError and raises JsonPointerException. resolve() calls walk() -> get_part() for each part, so the exception propagates as JsonPointerException. Tests test_resolve_long_numeric_index_raises_jsonpointerexception and test_resolve_pointer_long_numeric_index_raises_jsonpointerexception use LONG_INDEX='1'*5000 and assert pytest.raises(JsonPointerException); suite passed."
+        },
+        {
+          "requirement": "to_last on a pointer with such an invalid sequence index raises JsonPointerException.",
+          "satisfied": true,
+          "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) for the final part, which now raises JsonPointerException on int() ValueError. Test test_to_last_long_numeric_index_raises_jsonpointerexception asserts this and passed."
+        },
+        {
+          "requirement": "set on a pointer with such an invalid sequence index raises JsonPointerException.",
+          "satisfied": true,
+          "evidence": "set() calls to_last(), which routes through get_part and raises JsonPointerException. Tests test_set_long_numeric_index_raises_jsonpointerexception and test_set_pointer_long_numeric_index_raises_jsonpointerexception passed."
+        },
+        {
+          "requirement": "resolve with a default returns that exact default object (identity) when the sequence index is invalid.",
+          "satisfied": true,
+          "evidence": "resolve() catches JsonPointerException and returns default when default is not _nothing. Tests test_resolve_with_default_returns_exact_default_object and test_resolve_pointer_with_default_returns_exact_default_object assert `result is default` using a sentinel object(); passed."
+        },
+        {
+          "requirement": "Numeric object member keys remain strings regardless of length and resolve to the corresponding member.",
+          "satisfied": true,
+          "evidence": "get_part returns part unchanged when doc is a Mapping, before any int() conversion. Tests test_long_numeric_object_member_key_remains_string and test_long_numeric_object_member_key_set_remains_string use a 5000-digit key and passed."
+        },
+        {
+          "requirement": "Ordinary valid array indices continue to resolve/set correctly.",
+          "satisfied": true,
+          "evidence": "int(part) still returns normally for valid indices; tests test_ordinary_array_index_still_resolves and test_ordinary_array_index_still_sets passed."
+        },
+        {
+          "requirement": "End-of-list handling ('-') is preserved.",
+          "satisfied": true,
+          "evidence": "get_part returns '-' before the regex/int path; walk returns EndOfList and set appends. Tests test_end_of_list_dash_resolves_to_end_of_list and test_end_of_list_dash_appends_on_set passed."
+        },
+        {
+          "requirement": "Input mutation behavior of set is preserved (original document mutated in place).",
+          "satisfied": true,
+          "evidence": "set() still mutates parent in place and returns doc; test_set_mutates_original_document_in_place asserts result is doc and doc['a']==[99,2,3]; passed."
+        },
+        {
+          "requirement": "New regression tests are added covering the above contracts.",
+          "satisfied": true,
+          "evidence": "New file tests/test_long_index_regression.py (119 lines) added with 14 tests covering all contracts; full suite reports 40 passed."
+        }
+      ]
+    ],
+    "test_attempts": [
+      {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "........................................                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n40 passed in 0.17s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 40,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.007166799998231,
+        "evidence": "docker",
+        "attempt": 1
+      }
+    ],
+    "patch_rejections": []
+  },
+  {
+    "task_id": "e7c1a6e5-bcca-489f-bc67-a8daa187fa52",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_no_review",
+    "original_test_files_unchanged": 6,
+    "contract_tests": [
+      [
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_invalid_signature_out_of_range_timestamp_raises_bad_time_signature",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_malformed_timestamp_payload_is_original_payload",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_malformed_timestamp_date_signed_is_none",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_valid_roundtrip_returns_payload_and_date_signed",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_ordinary_invalid_signature_has_date_signed_metadata",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_expired_signature_raises_signature_expired_with_date_signed",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_timed_serializer_loads_raises_bad_signature_family_for_malformed_timestamp"
+      ],
+      [
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_malformed_timestamp_raises_bad_time_signature",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_malformed_timestamp_payload_is_original",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_malformed_timestamp_date_signed_is_none",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_valid_roundtrip_preserved",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_ordinary_invalid_signature_date_signed_metadata",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_expiry_behavior_preserved",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py::test_timed_serializer_bad_signature_family"
+      ]
+    ],
+    "contract_reviews": [],
+    "test_attempts": [
+      {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "........................................................................ [ 24%]\n......................................................................F. [ 48%]\n........................................................................ [ 72%]\n........................................................................ [ 96%]\n.........                                                                [100%]\n=================================== FAILURES ===================================\n_____________ TestTimestampSigner.test_malformed_future_timestamp ______________\n\nself = <test_itsdangerous.test_timed.TestTimestampSigner object at 0x77dfbc8a8d40>\nsigner = <itsdangerous.timed.TimestampSigner object at 0x77dfbc8a9a60>\n\n    @pytest.mark.skipif(\n        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n    )\n    def test_malformed_future_timestamp(self, signer):\n        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n    \n        with pytest.raises(BadTimeSignature) as exc_info:\n            signer.unsign(signed)\n    \n>       assert \"Malformed\" in str(exc_info.value)\nE       assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\nE        +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\nE        +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value\n\ntests/test_itsdangerous/test_timed.py:79: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_itsdangerous/test_timed.py::TestTimestampSigner::test_malformed_future_timestamp\n1 failed, 296 passed in 1.77s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 296,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 2.7044845999989775,
+        "evidence": "docker",
+        "attempt": 1
+      },
+      {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "........................................................................ [ 24%]\n........................................................................ [ 48%]\n........................................................................ [ 72%]\n........................................................................ [ 96%]\n.........                                                                [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n297 passed in 1.54s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 297,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 2.4700930999970296,
+        "evidence": "docker",
+        "attempt": 2
+      }
+    ],
+    "patch_rejections": []
+  },
+  {
+    "task_id": "5d4ce88c-d818-4f67-826a-7fd68d6ae24e",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "original_test_files_unchanged": 6,
+    "contract_tests": [
+      [
+        "TimestampSigner.unsign raises BadTimeSignature (not a raw datetime ValueError) when an invalid signature contains a decoded timestamp outside datetime's supported year range. -> test_out_of_range_timestamp_raises_bad_time_signature asserts pytest.raises(BadTimeSignature) and isinstance(exc, BadSignature) for tampered timestamp 10**18.",
+        "The BadTimeSignature raised for a malformed out-of-range timestamp carries the original payload. -> test_out_of_range_timestamp_preserves_payload asserts exc_info.value.payload == b\"value\".",
+        "The BadTimeSignature raised for a malformed out-of-range timestamp has date_signed=None. -> test_out_of_range_timestamp_has_no_date_signed asserts exc_info.value.date_signed is None; test_negative_out_of_range_timestamp_raises_bad_time_signature also asserts date_signed is None for -(10**18).",
+        "Valid TimestampSigner roundtrips continue to return the original payload and correct date_signed metadata. -> test_valid_roundtrip_returns_payload_and_timestamp asserts value == b\"value\" and ts is a timezone-aware datetime in UTC; test_valid_roundtrip_returns_bytes_payload asserts result == b\"value\" and isinstance(result, bytes).",
+        "Ordinary invalid signatures with in-range timestamps continue to raise BadTimeSignature with the expected date_signed metadata. -> test_ordinary_invalid_signature_keeps_date_signed asserts payload == b\"value\" and isinstance(date_signed, datetime).",
+        "Expiry behavior for expired timestamps is preserved. -> test_expired_signature_raises_signature_expired asserts SignatureExpired with payload b\"value\" and datetime date_signed.",
+        "The public timed serializer continues to raise BadSignature-family errors as before. -> test_timed_serializer_raises_bad_signature_family and test_timed_serializer_out_of_range_timestamp_raises_bad_signature_family assert pytest.raises(BadSignature) from TimedSerializer.loads."
+      ],
+      [
+        "test_out_of_range_timestamp_raises_bad_time_signature: signer.unsign on an invalid signature with decoded timestamp 10**18 raises BadTimeSignature (not raw ValueError), payload == b'value', date_signed is None.",
+        "test_out_of_range_timestamp_is_bad_signature_family: the raised exception is a BadSignature-family member (BadTimeSignature subclasses BadSignature).",
+        "test_out_of_range_timestamp_does_not_leak_value_error: no raw ValueError escapes for the out-of-range decoded timestamp on the invalid-signature path.",
+        "test_valid_roundtrip_preserves_payload_and_timestamp: valid TimestampSigner roundtrip returns original payload b'value' and a non-None datetime timestamp.",
+        "test_ordinary_invalid_signature_keeps_date_signed: ordinary invalid signature with in-range timestamp raises BadTimeSignature with payload b'value' and non-None date_signed metadata.",
+        "test_expired_signature_still_raises_signature_expired: expired timestamp still raises SignatureExpired with payload b'value'.",
+        "test_timed_serializer_raises_bad_signature_family: public TimedSerializer.loads raises a BadSignature-family error for an invalid signature.",
+        "test_timed_serializer_out_of_range_timestamp_raises_bad_signature_family: public TimedSerializer.loads raises a BadSignature-family error for an out-of-range decoded timestamp."
+      ],
+      []
+    ],
+    "contract_reviews": [],
+    "test_attempts": [
+      {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "........................................................................ [ 23%]\n......................................................................F. [ 46%]\n..........................F............................................. [ 70%]\n........................................................................ [ 93%]\n...................                                                      [100%]\n=================================== FAILURES ===================================\n_____________ TestTimestampSigner.test_malformed_future_timestamp ______________\n\nself = <test_itsdangerous.test_timed.TestTimestampSigner object at 0x7905070e93d0>\nsigner = <itsdangerous.timed.TimestampSigner object at 0x7905065b3c20>\n\n    @pytest.mark.skipif(\n        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n    )\n    def test_malformed_future_timestamp(self, signer):\n        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n    \n        with pytest.raises(BadTimeSignature) as exc_info:\n            signer.unsign(signed)\n    \n>       assert \"Malformed\" in str(exc_info.value)\nE       assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\nE        +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\nE        +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value\n\ntests/test_itsdangerous/test_timed.py:79: AssertionError\n________ test_negative_out_of_range_timestamp_raises_bad_time_signature ________\n\n    def test_negative_out_of_range_timestamp_raises_bad_time_signature():\n        signer = _make_signer()\n        signed = signer.sign(b\"value\")\n>       tampered = _tamper_timestamp(signed, -(10**18))\n\ntests/test_itsdangerous/test_timed_regression.py:68: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_itsdangerous/test_timed_regression.py:26: in _tamper_timestamp\n    new_ts = base64_encode(int_to_bytes(ts_int))\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nnum = -1000000000000000000\n\n    def int_to_bytes(num: int) -> bytes:\n>       return _int_to_bytes(num).lstrip(b\"\\x00\")\nE       struct.error: 'Q' format requires 0 <= number <= 18446744073709551615\n\nsrc/itsdangerous/encoding.py:50: error\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_itsdangerous/test_timed.py::TestTimestampSigner::test_malformed_future_timestamp\nFAILED tests/test_itsdangerous/test_timed_regression.py::test_negative_out_of_range_timestamp_raises_bad_time_signature\n2 failed, 305 passed in 2.00s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 305,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 2.9686213999993925,
+        "evidence": "docker",
+        "attempt": 1
+      },
+      {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "........................................................................ [ 22%]\n........................................................................ [ 45%]\n..................................F..................................... [ 68%]\n........................................................................ [ 91%]\n...........................                                              [100%]\n=================================== FAILURES ===================================\n________ test_negative_out_of_range_timestamp_raises_bad_time_signature ________\n\n    def test_negative_out_of_range_timestamp_raises_bad_time_signature():\n        signer = _make_signer()\n        signed = signer.sign(b\"value\")\n>       tampered = _tamper_timestamp(signed, -(10**18))\n\ntests/test_itsdangerous/test_timed_regression.py:68: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_itsdangerous/test_timed_regression.py:26: in _tamper_timestamp\n    new_ts = base64_encode(int_to_bytes(ts_int))\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nnum = -1000000000000000000\n\n    def int_to_bytes(num: int) -> bytes:\n>       return _int_to_bytes(num).lstrip(b\"\\x00\")\nE       struct.error: 'Q' format requires 0 <= number <= 18446744073709551615\n\nsrc/itsdangerous/encoding.py:50: error\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_itsdangerous/test_timed_regression.py::test_negative_out_of_range_timestamp_raises_bad_time_signature\n1 failed, 314 passed in 1.76s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 314,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 2.7004001999994216,
+        "evidence": "docker",
+        "attempt": 2
+      }
+    ],
+    "patch_rejections": [
+      {
+        "attempt": 3,
+        "error": "Existing tests are immutable"
+      }
+    ]
+  }
+]

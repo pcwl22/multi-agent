@@ -1,0 +1,100 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,11 @@
++def _format_cell(cell):
++    text = str(cell)
++    if any(ch in text for ch in (",", '"', "\r", "\n")):
++        return '"' + text.replace('"', '""') + '"'
++    return text
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    return "".join(
++        ",".join(_format_cell(cell) for cell in row) + "\n" for row in rows
++    )
+--- a/tests/test_exporter_csv.py
++++ b/tests/test_exporter_csv.py
+@@ -0,0 +1,82 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def _roundtrip(rows):
++    output = export_rows(rows)
++    assert isinstance(output, str)
++    return list(csv.reader(io.StringIO(output)))
++
++
++def test_empty_input_preserved():
++    assert export_rows([]) == ""
++
++
++def test_simple_rows_preserved():
++    assert export_rows([["a", 1], ["b", 2]]) == "a,1\nb,2\n"
++
++
++def test_lf_only_line_endings():
++    output = export_rows([["a", "b"], ["c", "d"]])
++    assert "\r" not in output
++    assert output == "a,b\nc,d\n"
++
++
++def test_cell_with_comma_roundtrips():
++    rows = [["a,b", "c"]]
++    assert _roundtrip(rows) == [["a,b", "c"]]
++
++
++def test_cell_with_double_quote_roundtrips():
++    rows = [['say "hi"', "x"]]
++    assert _roundtrip(rows) == [['say "hi"', "x"]]
++
++
++def test_cell_with_newline_roundtrips():
++    rows = [["line1\nline2", "x"]]
++    assert _roundtrip(rows) == [["line1\nline2", "x"]]
++
++
++def test_cell_with_carriage_return_roundtrips():
++    rows = [["a\rb", "x"]]
++    assert _roundtrip(rows) == [["a\rb", "x"]]
++
++
++def test_cell_with_crlf_roundtrips():
++    rows = [["a\r\nb", "x"]]
++    assert _roundtrip(rows) == [["a\r\nb", "x"]]
++
++
++def test_mixed_special_cells_roundtrip():
++    rows = [
++        ["plain", "with,comma", 'with"quote'],
++        ["with\nnewline", "a\r\nb", "end"],
++    ]
++    assert _roundtrip(rows) == rows
++
++
++def test_unicode_preserved_and_roundtrips():
++    rows = [["caf\u00e9", "\u65e5\u672c\u8a9e"], ["\U0001f600", "na\u00efve"]]
++    output = export_rows(rows)
++    assert "caf\u00e9" in output
++    assert "\u65e5\u672c\u8a9e" in output
++    assert "\U0001f600" in output
++    assert _roundtrip(rows) == rows
++
++
++def test_unicode_with_special_chars_roundtrips():
++    rows = [["caf\u00e9, au lait", 'il a dit "bonjour"'], ["\u65e5\u672c\u8a9e\n\u884c", "ok"]]
++    assert _roundtrip(rows) == rows
++
++
++def test_return_type_is_str():
++    assert isinstance(export_rows([]), str)
++    assert isinstance(export_rows([["a"]]), str)
++
++
++def test_legacy_examples_not_required():
++    import exporter
++
++    assert not hasattr(exporter, "legacy_examples")

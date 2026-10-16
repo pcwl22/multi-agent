@@ -1,0 +1,60 @@
+--- a/cache.py
++++ b/cache.py
+@@ -1,2 +1,2 @@
+ def is_expired(inserted_at, ttl, now):
+-    return now > inserted_at + ttl
++    return now >= inserted_at + ttl
+--- a/tests/test_expiry_boundary_regression.py
++++ b/tests/test_expiry_boundary_regression.py
+@@ -0,0 +1,51 @@
++from cache import is_expired
++
++
++def test_alive_strictly_before_expiry():
++    # inserted_at=0, ttl=5, now=4 -> still alive
++    result = is_expired(0, 5, 4)
++    assert result is False
++    assert isinstance(result, bool)
++
++
++def test_expired_exactly_at_boundary():
++    # inserted_at=0, ttl=5, now=5 -> expires exactly at inserted_at + ttl
++    result = is_expired(0, 5, 5)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_expired_strictly_after_boundary():
++    # inserted_at=0, ttl=5, now=6 -> expired
++    result = is_expired(0, 5, 6)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_zero_ttl_expired_at_insertion_time():
++    # ttl == 0, now == inserted_at -> expired immediately
++    result = is_expired(0, 0, 0)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_zero_ttl_not_expired_before_insertion_time():
++    # ttl == 0, now < inserted_at -> not expired
++    result = is_expired(10, 0, 9)
++    assert result is False
++    assert isinstance(result, bool)
++
++
++def test_boundary_with_nonzero_inserted_at():
++    # inserted_at=10, ttl=5: now=14 alive, now=15 expired, now=16 expired
++    assert is_expired(10, 5, 14) is False
++    assert is_expired(10, 5, 15) is True
++    assert is_expired(10, 5, 16) is True
++
++
++def test_uses_ge_semantics_not_gt():
++    # Distinguishes >= from >: at the exact boundary the entry must be expired.
++    inserted_at, ttl = 100, 7
++    boundary = inserted_at + ttl
++    assert is_expired(inserted_at, ttl, boundary) is True
++    assert is_expired(inserted_at, ttl, boundary - 1) is False

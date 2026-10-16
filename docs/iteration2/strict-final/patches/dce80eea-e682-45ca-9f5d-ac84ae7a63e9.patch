@@ -1,0 +1,79 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_exporter.py
++++ b/tests/test_exporter.py
+@@ -0,0 +1,62 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def _round_trip(text):
++    return list(csv.reader(io.StringIO(text)))
++
++
++def test_empty_input_unchanged():
++    assert export_rows([]) == ""
++
++
++def test_simple_rows_unchanged():
++    assert export_rows([["a", 1], ["b", 2]]) == "a,1\nb,2\n"
++
++
++def test_comma_cell_is_quoted_and_round_trips():
++    rows = [["a,b", "c"]]
++    out = export_rows(rows)
++    assert out == '"a,b",c\n'
++    assert _round_trip(out) == [["a,b", "c"]]
++
++
++def test_quote_cell_is_doubled_and_round_trips():
++    rows = [['he said "hi"', "x"]]
++    out = export_rows(rows)
++    assert out == '"he said ""hi""",x\n'
++    assert _round_trip(out) == [['he said "hi"', "x"]]
++
++
++def test_newline_cell_is_quoted_and_round_trips():
++    rows = [["line1\nline2", "z"]]
++    out = export_rows(rows)
++    assert out == '"line1\nline2",z\n'
++    assert _round_trip(out) == [["line1\nline2", "z"]]
++
++
++def test_unicode_preserved():
++    rows = [["caf\u00e9", "\u4f60\u597d", "\U0001f600"]]
++    out = export_rows(rows)
++    assert "caf\u00e9" in out
++    assert "\u4f60\u597d" in out
++    assert "\U0001f600" in out
++    assert _round_trip(out) == [["caf\u00e9", "\u4f60\u597d", "\U0001f600"]]
++
++
++def test_lf_only_line_endings():
++    out = export_rows([["a", "b"], ["c", "d"]])
++    assert "\r" not in out
++    assert out == "a,b\nc,d\n"
++
++
++def test_combined_special_cells_round_trip():
++    rows = [["a,b", 'q"q', "n\nn"], ["plain", "", "\u00e9"]]
++    out = export_rows(rows)
++    assert _round_trip(out) == rows
++
++
++def test_returns_str_type():
++    assert isinstance(export_rows([["a"]]), str)

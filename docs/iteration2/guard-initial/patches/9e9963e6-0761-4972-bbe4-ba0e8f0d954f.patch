@@ -1,0 +1,96 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_exporter_csv.py
++++ b/tests/test_exporter_csv.py
+@@ -0,0 +1,79 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def _round_trip(text):
++    return list(csv.reader(io.StringIO(text)))
++
++
++def test_empty_input_unchanged():
++    result = export_rows([])
++    assert result == ""
++    assert isinstance(result, str)
++
++
++def test_simple_rows_unchanged():
++    assert export_rows([["a", 1], ["b", 2]]) == "a,1\nb,2\n"
++
++
++def test_simple_row_round_trips():
++    rows = [["a", "1"], ["b", "2"]]
++    assert _round_trip(export_rows(rows)) == rows
++
++
++def test_comma_in_cell_is_quoted():
++    rows = [["a,b", "c"]]
++    out = export_rows(rows)
++    assert '"a,b",c\n' == out
++    assert _round_trip(out) == rows
++
++
++def test_double_quote_in_cell_is_escaped():
++    rows = [["he said " + chr(34) + "hi" + chr(34), "x"]]
++    out = export_rows(rows)
++    assert _round_trip(out) == rows
++    assert chr(34) + chr(34) in out
++
++
++def test_newline_in_cell_is_quoted():
++    rows = [["line1\nline2", "z"]]
++    out = export_rows(rows)
++    assert _round_trip(out) == rows
++
++
++def test_carriage_return_in_cell_round_trips():
++    rows = [["a\rb", "c"]]
++    out = export_rows(rows)
++    assert _round_trip(out) == rows
++
++
++def test_mixed_special_characters_round_trip():
++    rows = [["a,b", 'q"q', "n\nn", "plain"]]
++    out = export_rows(rows)
++    assert _round_trip(out) == rows
++
++
++def test_unicode_preserved_verbatim():
++    rows = [["caf\u00e9", "\u65e5\u672c\u8a9e", "\U0001f600"]]
++    out = export_rows(rows)
++    assert "caf\u00e9" in out
++    assert "\u65e5\u672c\u8a9e" in out
++    assert "\U0001f600" in out
++    assert _round_trip(out) == rows
++
++
++def test_output_uses_lf_only():
++    rows = [["a", "b"], ["c", "d"]]
++    out = export_rows(rows)
++    assert "\r" not in out
++    assert out.endswith("\n")
++
++
++def test_arbitrary_cells_round_trip():
++    rows = [
++        ["", "a", "a,b", 'a"b', "a\nb", "a\rb", "\u00e9\u00e8"],
++        ["1", "2", "3", "4", "5", "6", "7"],
++    ]
++    assert _round_trip(export_rows(rows)) == rows

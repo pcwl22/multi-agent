@@ -1,0 +1,39 @@
+--- a/pricing.py
++++ b/pricing.py
+@@ -1,2 +1,2 @@
+ def discounted_total(amount, discount_percent):
+-    return round(amount * (1 - discount_percent), 2)
++    return round(amount * (1 - discount_percent / 100), 2)
+--- a/tests/test_pricing_regression.py
++++ b/tests/test_pricing_regression.py
+@@ -0,0 +1,30 @@
++from pricing import discounted_total
++
++
++def test_discounted_total_percentage_semantics():
++    # discount is a percentage in [0, 100]; 100 with 20% off is 80
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, (int, float))
++
++
++def test_discounted_total_zero_amount_preserved():
++    # zero amount stays zero regardless of discount
++    result = discounted_total(0, 20)
++    assert result == 0
++    assert isinstance(result, (int, float))
++
++
++def test_discounted_total_no_discount_preserves_total():
++    # no discount returns the original total unchanged
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, (int, float))
++
++
++def test_discounted_total_full_percentage_range():
++    # discount values across the full 0 to 100 percentage range
++    assert discounted_total(100, 0) == 100
++    assert discounted_total(100, 50) == 50
++    assert discounted_total(100, 100) == 0
++    assert discounted_total(200, 25) == 150
