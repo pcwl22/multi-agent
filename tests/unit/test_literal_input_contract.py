@@ -31,3 +31,17 @@ def test_repository_code_is_never_executed_or_evaluated():
     assert literal_input_examples("range(1, 8); then bytes([1,2])") == [
         "range(1, 8)", "bytes([1,2])"]
     validate_literal_inputs("A normal prose issue", patch("invalid syntax is handled by apply"))
+
+
+def test_source_only_retry_reuses_existing_literal_coverage_without_editing_tests():
+    existing = {"tests/test_previous_attempt.py":
+                "def test_example():\n    assert paginate(range(1, 8), 2, 2) == [3, 4]\n"}
+    source_patch = Patch(rationale="source correction after a real failure", edits=[
+        Edit(path="pagination.py", old="return items[start:end]", new="return list(items[start:end])")
+    ])
+    validate_literal_inputs("For range(1,8), return [3,4]", source_patch, existing)
+    with pytest.raises(ValueError, match="unchanged"):
+        validate_literal_inputs("For range(1,8), return [3,4]", source_patch, {
+            "tests/test_previous_attempt.py":
+                "def test_example():\n    assert paginate(list(range(1,8)), 2, 2) == [3,4]\n"
+        })

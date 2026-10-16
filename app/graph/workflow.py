@@ -197,7 +197,14 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         # Refresh selected files after each edit so retry preconditions use current content.
         repo = Repository(state["workspace_path"])
         context = ""
-        for path in state["located_files"]:
+        paths = list(dict.fromkeys([
+            *state["located_files"],
+            *(p for patch in state["patches"] for p in patch.get("changed_files", [])),
+        ]))
+        existing_tests = [p for p in repo.list_files() if p.endswith(".py") and (
+            "tests" in Path(p).parts or Path(p).name.startswith("test_")
+        )]
+        for path in paths:
             budget = settings.context_chars - len(context) - len(path) - 30
             if budget <= 0:
                 break
@@ -213,11 +220,16 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "reviews": state["review_results"][-1:],
                 "patch_feedback": state.get("patch_feedback", [])[-1:],
                 "literal_input_examples": literal_input_examples(state["issue_description"]),
+                "existing_test_paths": existing_tests,
             },
             state,
         )
         try:
-            validate_literal_inputs(state["issue_description"], patch)
+            validate_literal_inputs(
+                state["issue_description"], patch,
+                {p: repo.read_file(p, 100000) for p in existing_tests}
+                if literal_input_examples(state["issue_description"]) else None,
+            )
             changed = repo.apply(patch)
         except (ValueError, SyntaxError) as exc:
             # Validation is completed before any file is written; rejected edits are safe to retry.

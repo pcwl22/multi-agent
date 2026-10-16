@@ -38,18 +38,23 @@ def literal_input_examples(issue: str) -> list[str]:
     return list(dict.fromkeys(examples))[:16]
 
 
-def validate_literal_inputs(issue: str, patch: Patch) -> None:
+def validate_literal_inputs(
+    issue: str, patch: Patch, existing_tests: dict[str, str] | None = None,
+) -> None:
     examples = literal_input_examples(issue)
     if not examples:
         return
     observed = set()
+    sources = list((existing_tests or {}).values())
     for edit in patch.edits:
         if edit.old or not (
             "tests" in edit.path.replace("\\", "/").split("/")
             or edit.path.rsplit("/", 1)[-1].startswith("test_")
         ):
             continue
-        tree = ast.parse(edit.new)
+        sources.append(edit.new)
+    for source in sources:
+        tree = ast.parse(source)
         for function in ast.walk(tree):
             if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
@@ -72,7 +77,7 @@ def validate_literal_inputs(issue: str, patch: Patch) -> None:
                if ast.dump(ast.parse(example, mode="eval").body) not in observed]
     if missing:
         raise ValueError(
-            "New regression tests must pass each literal issue input unchanged to the "
+            "Regression tests must pass each literal issue input unchanged to the "
             "function under test: " + ", ".join(missing)
             + ". Wrapping it in another constructor changes the input contract. "
             "Add a NEW test filename; existing tests are immutable."
