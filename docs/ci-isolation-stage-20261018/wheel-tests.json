@@ -1,0 +1,11 @@
+{
+  "tests": 168,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 1,
+  "passed": 167,
+  "docker_opt_in": true,
+  "editable_demo_already_repaired": true,
+  "application_origin": "E:/multi-agent/.repopilot/ci-isolation-venv/Lib/site-packages/app/__init__.py",
+  "python": "3.13.5"
+}
