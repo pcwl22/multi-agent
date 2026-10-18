@@ -6,7 +6,11 @@
 
 ## 快速开始
 
-最新版本补充结构化 Docker 失败反馈、重复候选识别、Reviewer 基线回归证据及 Windows 创建失败恢复。本地完整回归 **159 passed、1 skipped**，原有 52 个测试文件未改动。默认继续使用 `preserve`；独立副本保持可选。见 [第四轮验收](docs/iteration4/validation.md) 和 [实现与恢复边界](docs/iteration4/implementation.md)。
+本轮完整版本已将 CI 故障输入隔离到固定 fixture，并提供正式流式、usage 和工作区路径范围配置。源码及新 wheel 的发布前验证各为 **167 passed、1 skipped**；Python 3.11/3.13 和 Docker 的实际 GitHub CI 已通过，见 [CI 隔离验收](docs/ci-isolation-stage-20261018/validation.md)。以下各轮数字和“测试未改动”说明是对应历史版本记录；后来 20 项样本引用/UI 输入调整经过单独批准，既有断言保留。
+
+完整差异审查后的本地修复：嵌套构造输入按最外层表达式检查，CLI 在任务副本创建失败时返回非零状态。`app.evaluation.feedback` 是单独的故障注入诊断，固定使用 `preserve` 工作区策略，并在报告中记录有效策略与传入配置；它不作为独立副本策略对比试验。见 [审查后验证](docs/pr5-review-20261018/validation.md)。
+
+此前第四轮版本补充结构化 Docker 失败反馈、重复候选识别、Reviewer 基线回归证据及 Windows 创建失败恢复。本地完整回归 **159 passed、1 skipped**，原有 52 个测试文件未改动。默认继续使用 `preserve`；独立副本保持可选。见 [第四轮验收](docs/iteration4/validation.md) 和 [实现与恢复边界](docs/iteration4/implementation.md)。
 
 上一轮增加可选的独立尝试副本：每轮从原始基线生成完整候选，旧错误测试和补丁保留在原目录；审批同时绑定候选身份与 Diff 摘要。默认沿用原策略，旧任务保持兼容。本地完整回归 **143 passed、1 skipped**，原有测试不改动。见 [本轮阶段验收](docs/iteration3/validation.md) 和 [独立尝试使用说明](docs/iteration3/isolated-attempts.md)。
 

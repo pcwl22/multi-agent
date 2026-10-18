@@ -38,6 +38,8 @@ def main():
             parser.exit(2, "Docker testing unavailable; task saved for resume.\n")
         if result["execution_status"] == "retryable":
             parser.exit(2, "Provider temporarily unavailable; inspect failure.retry_at, then resume.\n")
+        if result["execution_status"] == "creation_failed":
+            parser.exit(1, "Task creation failed; inspect saved creation failures before resume.\n")
         if result["execution_status"] == "failed":
             parser.exit(1, "Repair failed; inspect task error.\n")
     finally:

@@ -98,6 +98,8 @@ def run_feedback_experiments(settings: Settings, output: Path) -> dict:
                 "repository_root": repository,
                 "data_dir": output / policy / "state",
                 "max_retries": 1,
+                # Hold workspace policy constant: injection reads the current edited file.
+                "retry_workspace_policy": "preserve",
             }
         )
         adapter = FaultInjectionModel(create_model(config), policy)
@@ -166,7 +168,10 @@ def run_feedback_experiments(settings: Settings, output: Path) -> dict:
             service.close()
     report = {
         "experiment_type": "controlled_fault_injection_with_live_llm",
+        "retry_workspace_policy": "preserve",
+        "configured_retry_workspace_policy": settings.retry_workspace_policy,
         "note": (
+            "Workspace policy is fixed to preserve for this feedback-only experiment. "
             "These are deliberately corrupted candidates, not naturally failed model repairs. "
             "Every request uses the live provider; recovery candidates are unmodified. "
             "The always policy replaces every candidate to verify finite termination. "

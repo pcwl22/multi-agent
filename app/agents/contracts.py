@@ -18,7 +18,11 @@ CONSTRUCTORS = {"range", "list", "tuple", "dict", "set", "frozenset", "bytes", "
 
 def literal_input_examples(issue: str) -> list[str]:
     examples = []
+    covered_until = 0
     for match in re.finditer(r"\b(" + "|".join(sorted(CONSTRUCTORS)) + r")\s*\(", issue):
+        # A nested constructor belongs to its accepted outer input expression.
+        if match.start() < covered_until:
+            continue
         fragment = issue[match.start():match.start() + 512]
         for end, character in enumerate(fragment):
             if character != ")":
@@ -35,6 +39,7 @@ def literal_input_examples(issue: str) -> list[str]:
                 for item in ast.walk(node)
             ):
                 examples.append(text)
+                covered_until = match.start() + end + 1
             break
     return list(dict.fromkeys(examples))[:16]
 
