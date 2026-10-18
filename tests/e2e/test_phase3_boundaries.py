@@ -34,7 +34,7 @@ class PublicationDouble:
 
 @pytest.fixture
 def approved_task(tmp_path: Path):
-    root = Path(__file__).parents[2] / "demo_repository"
+    root = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
     settings = Settings(repository_root=root, data_dir=tmp_path / "data")
     service = TaskService(settings)
     task = service.create(

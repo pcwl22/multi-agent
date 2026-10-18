@@ -12,3 +12,7 @@ exclude docs/next-stage/release-artifacts.json
 exclude docs/iteration2/release-artifacts.json
 exclude docs/iteration3/release-artifacts.json
 exclude docs/iteration4/release-artifacts.json
+
+recursive-include test_fixtures *.py *.txt *.json *.md
+
+exclude docs/ci-isolation-stage-20261018/release-artifacts.json

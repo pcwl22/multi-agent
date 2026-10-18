@@ -15,7 +15,7 @@ def test_already_passing_baseline_is_not_counted_as_a_repair(tmp_path: Path, mon
             return TestResult(status="passed", passed=1, evidence="test_double")
 
     monkeypatch.setattr("app.evaluation.runner.DockerRunner", PassingBaselineDouble)
-    source = Path(__file__).parents[2] / "demo_repository"
+    source = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
     report = run_evaluation(
         Settings(repository_root=source, data_dir=tmp_path / "data"), source, tmp_path / "report"
     )

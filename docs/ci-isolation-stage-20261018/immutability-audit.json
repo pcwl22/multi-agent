@@ -1,0 +1,14 @@
+{
+  "approved_changed_test_files": 20,
+  "existing_test_assertions_unchanged": true,
+  "unapproved_existing_test_changes": 0,
+  "fixture_files_match_git_blob_bytes": true,
+  "fixture_hashes": {
+    "auth.py": "c904c668f95ff36bae8c43fc4db15663b4cab00660cbd2555bde1b2949bd399e",
+    "pagination.py": "ca800cad456c680ac0a7f51e09f494a3413243041b41d7a8bbb1564658b42e91",
+    "pricing.py": "909734f35e839dbc7d9eed420f44d0e988cd6e24a18c4ad2f8bbcbe286f2ed3c",
+    "requirements.txt": "348e6a5d5ad61cc876b06c5346f4bc12cf79f284c8c155d2dceb5b01b532cf04",
+    "tests/test_auth.py": "422889de79c78c3cc2f3badb7dc2d6a65cd8011e86fe13b16f033379f399728f",
+    "tests/test_other_contracts.py": "ecb54aaecdc45c1fcd5e68f00065b2ac4632b6946826fd3ccb714ce057481306"
+  }
+}

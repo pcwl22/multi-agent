@@ -25,7 +25,7 @@ pytestmark = [
 @pytest.mark.parametrize("case", DATASET, ids=lambda case: case["id"])
 def test_each_distinct_bug_fails_before_and_passes_after(case, tmp_path: Path):
     root = Path(__file__).parents[2]
-    settings = Settings(repository_root=root / "demo_repository", data_dir=tmp_path / "data")
+    settings = Settings(repository_root=root / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
     acceptance = root / "app/evaluation/acceptance" / case["acceptance"]
     holdout_workspace(settings.repository_root, tmp_path / "before", acceptance)
     runner = DockerRunner(settings)

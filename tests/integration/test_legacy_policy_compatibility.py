@@ -9,7 +9,7 @@ from tests.integration.test_mvp import EvidenceDouble
 
 
 def test_task_without_new_fields_keeps_legacy_workspace_after_default_changes(tmp_path):
-    settings = Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
+    settings = Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
                         data_dir=tmp_path / "data")
     service = TaskService(settings, model=MockModel(), runner=EvidenceDouble())
     task = service.create(TaskRequest(repository_path=str(settings.repository_root),

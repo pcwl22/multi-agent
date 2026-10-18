@@ -31,10 +31,10 @@ class WitnessReviewer(MockModel):
 def test_reviewer_gets_same_test_baseline_failure_and_candidate_pass_with_actual_docker(tmp_path):
     root = Path(__file__).parents[2]
     model = WitnessReviewer()
-    service = TaskService(Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data',
+    service = TaskService(Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data',
                                    retry_workspace_policy='isolated'), model=model)
     try:
-        task = service.create(TaskRequest(repository_path=str(root / 'demo_repository'),
+        task = service.create(TaskRequest(repository_path=str(root / 'test_fixtures' / 'repair_repository'),
                                           issue_description='expired returns 500 expected 401'))
         state = service.run(task['task_id'])
         assert state['execution_status'] == 'awaiting_approval' and model.witness

@@ -41,7 +41,7 @@ def test_real_records_aggregate():
 
 
 def test_holdout_excludes_model_tests(tmp_path):
-    source = Path(__file__).parents[2] / "demo_repository"
+    source = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
     acceptance = Path(__file__).parents[2] / "app/evaluation/acceptance/test_auth_acceptance.py"
     holdout_workspace(source, tmp_path / "holdout", acceptance)
     assert list((tmp_path / "holdout/tests").iterdir()) == [

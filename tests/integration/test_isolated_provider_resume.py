@@ -9,7 +9,7 @@ from tests.integration.test_provider_recovery import TemporaryFailure, expire_co
 
 
 def test_transient_coder_failure_resumes_same_candidate_after_reopen(tmp_path):
-    settings = Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
+    settings = Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
                         data_dir=tmp_path / "data", retry_workspace_policy="isolated")
     service = TaskService(settings, model=TemporaryFailure(Patch), runner=EvidenceDouble())
     task = service.create(TaskRequest(repository_path=str(settings.repository_root),

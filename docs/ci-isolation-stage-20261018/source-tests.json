@@ -1,0 +1,12 @@
+{
+  "tests": 168,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 1,
+  "passed": 167,
+  "docker_opt_in": true,
+  "editable_demo_already_repaired": true,
+  "application_origin": "C:\\Users\\14659\\.codex\\worktrees\\ci-fixtures-model-scope\\multi-agent\\app\\__init__.py",
+  "python": "3.13.5",
+  "assertions_unchanged": true
+}

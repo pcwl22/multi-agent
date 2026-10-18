@@ -18,7 +18,7 @@ class EvidenceDouble:
 
 
 def initial(tmp_path, mode="multi_full"):
-    repo = Repository(Path(__file__).parents[2] / "demo_repository")
+    repo = Repository(Path(__file__).parents[2] / "test_fixtures" / "repair_repository")
     snapshot(repo, tmp_path / "baseline")
     snapshot(repo, tmp_path / "workspace")
     return dict(

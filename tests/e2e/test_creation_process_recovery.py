@@ -18,7 +18,7 @@ from app.services.tasks import TaskService
 def test_real_process_loss_before_creation_commit_keeps_intent_and_identity(tmp_path, point, code):
     root = Path(__file__).parents[2]
     data = tmp_path / 'data'
-    source = root / 'demo_repository'
+    source = root / 'test_fixtures' / 'repair_repository'
     env = dict(os.environ)
     env.pop('OPENAI_API_KEY', None)
     env.pop('GITHUB_TOKEN', None)

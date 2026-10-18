@@ -6,7 +6,7 @@ from app.mcp_server.server import create_server
 
 def test_mcp_schemas_calls_and_scope():
     async def scenario():
-        server = create_server(Path(__file__).parents[2] / "demo_repository")
+        server = create_server(Path(__file__).parents[2] / "test_fixtures" / "repair_repository")
         tools = await server.list_tools()
         assert {t.name for t in tools} == {
             "list_files",
@@ -37,7 +37,7 @@ def test_mcp_stdio_transport():
             command=sys.executable,
             args=["-m", "app.mcp_server.server"],
             cwd=str(root),
-            env={"REPOPILOT_REPOSITORY_ROOT": str(root / "demo_repository")},
+            env={"REPOPILOT_REPOSITORY_ROOT": str(root / "test_fixtures" / "repair_repository")},
         )
         async with stdio_client(params) as (read, write):
             async with ClientSession(read, write) as session:

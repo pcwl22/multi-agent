@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     retry_workspace_policy: Literal["preserve", "isolated"] = "preserve"
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)
+    model_streaming: bool = False
+    model_stream_usage: bool = True
+    model_path_scope: bool = True
     model_min_interval: float = Field(default=0, ge=0, le=60)
     sandbox_image: str = "repopilot-sandbox:local"
     github_repository: str | None = None

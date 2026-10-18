@@ -73,6 +73,13 @@ OPENAI_API_KEY=your-key
 
 有限流的服务可设置 `REPOPILOT_MODEL_MIN_INTERVAL=7.5`。同一进程、同一端点的模型实例共享请求间隔；不同进程不会自动协调。
 
+兼容服务在等待完整响应时发生网关超时，可显式设置 REPOPILOT_MODEL_STREAMING=true，由正式 LiveModel 聚合流式结构化输出。默认仍为非流式。REPOPILOT_MODEL_STREAM_USAGE=true 请求流中的 usage；不支持该参数的服务可设为 false，未返回 usage 时仍标记统计不完整。流式传输不能保证消除上游故障；SDK 网络超时约束读写等待，并非整次生成的绝对耗时上限。
+
+默认 REPOPILOT_MODEL_PATH_SCOPE=true，工作流向 Planner、Coder、Reviewer 提供最多 80 个受控工作区相对路径，以及配置的远端子目录映射；清单过长会标明截断。模型仍需自行返回正确的 Edit.path，系统不剥离前缀、不重写补丁，也不放宽精确编辑或原有测试保护。设为 false 可禁用这项附加上下文。
+
+CI 的故障样本固定在 test_fixtures/repair_repository，其字节摘要见 test_fixtures/manifest.json。演示目录被实际修复后，测试仍使用独立缺陷输入。已有测试仅按人工批准调整样本引用及一项 UI 输入，断言和收集规则不变。显式重放内置故障评测时，应同时把 REPOPILOT_REPOSITORY_ROOT 和评测 --repo 指向该 fixture；对已修复的普通仓库仍执行原有失败基线检查，不把已通过样本计为修复成功。
+
+
 模型限流、超时和临时连接/服务错误会保留为 `retryable`，冷却后由操作者明确重试失败节点；凭据错误、无效请求和预算耗尽直接终止。进程中断后可继续已保存节点；未记录的文件写入会阻止重放并保留现场。详见 [恢复行为与验证范围](docs/iteration2/recovery.md)。
 
 ## 已实现

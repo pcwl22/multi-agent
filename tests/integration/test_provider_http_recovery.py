@@ -49,7 +49,7 @@ def test_actual_sdk_error_reaches_persistent_recovery_state(tmp_path, monkeypatc
             "usage": {"prompt_tokens": 8, "completion_tokens": 3, "total_tokens": 11},
         })
 
-    settings = Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
+    settings = Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
                         data_dir=tmp_path / "data")
     model = LiveModel(settings)
     client = httpx.Client(transport=httpx.MockTransport(handler))

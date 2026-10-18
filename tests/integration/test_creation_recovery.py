@@ -71,7 +71,7 @@ def test_failed_initial_activation_is_queryable_and_manual_resume_reuses_staging
         raise windows_denied()
 
     monkeypatch.setattr(Path, 'rename', denied)
-    settings = Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data',
+    settings = Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data',
                         retry_workspace_policy='isolated')
     service = TaskService(settings, model=CountedFixture(), runner=EvidenceDouble())
     try:
@@ -112,10 +112,10 @@ def test_partial_baseline_is_retained_and_never_silently_recopied(tmp_path, monk
         raise OSError('Controlled interruption during initial copy')
 
     monkeypatch.setattr(module, 'snapshot', partial)
-    service = TaskService(Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data'),
+    service = TaskService(Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data'),
                           runner=EvidenceDouble())
     try:
-        task = service.create(TaskRequest(repository_path=str(root / 'demo_repository'),
+        task = service.create(TaskRequest(repository_path=str(root / 'test_fixtures' / 'repair_repository'),
                                           issue_description='expired returns 500 expected 401'))
         assert task['execution_status'] == 'creation_failed'
         orphan = Path(task['task_path']) / 'baseline/partial.txt'
@@ -136,7 +136,7 @@ def test_creation_retry_budget_remains_finite_and_staging_tamper_is_refused(tmp_
         raise windows_denied()
 
     monkeypatch.setattr(Path, 'rename', denied)
-    settings = Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data',
+    settings = Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data',
                         retry_workspace_policy='isolated', max_retries=1)
     service = TaskService(settings, runner=EvidenceDouble())
     try:

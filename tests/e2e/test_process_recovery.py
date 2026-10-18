@@ -20,7 +20,7 @@ ROOT = Path(__file__).parents[2]
 
 @pytest.mark.parametrize("point,exit_code", [("before-test", 77), ("after-write", 78)])
 def test_process_loss_resumes_recorded_patch_or_refuses_unrecorded_write(tmp_path, point, exit_code):
-    settings = Settings(repository_root=ROOT / "demo_repository", data_dir=tmp_path / "data")
+    settings = Settings(repository_root=ROOT / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
     service = TaskService(settings)
     task = service.create(TaskRequest(
         repository_path=str(settings.repository_root),

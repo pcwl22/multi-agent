@@ -17,7 +17,7 @@ from app.services.tasks import TaskService
 )
 def test_real_container_repair_and_holdout(tmp_path):
     root = Path(__file__).parents[2]
-    settings = Settings(repository_root=root / "demo_repository", data_dir=tmp_path / "data")
+    settings = Settings(repository_root=root / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
     runner = DockerRunner(settings)
     baseline = tmp_path / "baseline_holdout"
     acceptance = root / "app/evaluation/acceptance/test_auth_acceptance.py"
@@ -58,7 +58,7 @@ def test_streamlit_api_docker_roundtrip(tmp_path, monkeypatch):
     from app.api.main import create_app
 
     root = Path(__file__).parents[2]
-    settings = Settings(repository_root=root / "demo_repository", data_dir=tmp_path / "data")
+    settings = Settings(repository_root=root / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
     service = TaskService(settings)
     try:
         with TestClient(create_app(service=service)) as api:
@@ -66,6 +66,7 @@ def test_streamlit_api_docker_roundtrip(tmp_path, monkeypatch):
                 httpx, "request", lambda method, url, **kwargs: api.request(method, url, **kwargs)
             )
             demo = AppTest.from_file(str(root / "frontend/demo.py")).run(timeout=15)
+            demo.text_input[1].set_value(str(settings.repository_root)).run(timeout=15)
             demo.button[0].click().run(timeout=30)
             assert not demo.exception
             task_id = demo.session_state["task_id"]

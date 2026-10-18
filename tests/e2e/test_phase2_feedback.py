@@ -36,7 +36,7 @@ class FeedbackModel(RetryModel):
 
 
 def test_real_failed_test_feedback_and_approval_restart(tmp_path: Path):
-    root = Path(__file__).parents[2] / "demo_repository"
+    root = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
     settings = Settings(repository_root=root, data_dir=tmp_path / "data")
     model = FeedbackModel()
     service = TaskService(settings, model=model)
@@ -67,7 +67,7 @@ def test_real_failed_test_feedback_and_approval_restart(tmp_path: Path):
 
 def test_real_persistent_test_failure_exhausts_budget(tmp_path: Path):
     source = tmp_path / "source"
-    snapshot(Repository(Path(__file__).parents[2] / "demo_repository"), source)
+    snapshot(Repository(Path(__file__).parents[2] / "test_fixtures" / "repair_repository"), source)
     (source / "tests/test_unsatisfied_contract.py").write_text(
         'def test_unsatisfied_contract():\n    assert False, "Unrelated contract needs repair"\n',
         encoding="utf-8",

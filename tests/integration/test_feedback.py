@@ -100,7 +100,7 @@ def test_human_reject(tmp_path):
 
 def settings(tmp_path):
     return Settings(
-        repository_root=Path(__file__).parents[2] / "demo_repository", data_dir=tmp_path / "data"
+        repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data"
     )
 
 

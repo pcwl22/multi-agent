@@ -1,0 +1,14 @@
+{
+  "application": "C:\\Users\\14659\\.codex\\worktrees\\ci-fixtures-model-scope\\multi-agent\\app\\__init__.py",
+  "standard_TaskService_and_LiveModel": true,
+  "injected_model_wrapper": false,
+  "streaming": true,
+  "stream_usage": true,
+  "path_scope": true,
+  "approval_and_publication_called": false,
+  "task_id": "0d0355af-6df7-42ab-a0c2-998521e4fdd4",
+  "candidate_id": "d047d446-6b17-4659-b4ad-79b70fe8a4ec",
+  "execution_status": "awaiting_approval",
+  "diff_sha256": "0b9648f8b053430d34d94a33b569320a16a4c99ae1e71e5c1852e343ef5bc924",
+  "patch_sha256": "0b9648f8b053430d34d94a33b569320a16a4c99ae1e71e5c1852e343ef5bc924"
+}

@@ -15,6 +15,7 @@ from app.agents.feedback import (
     failure_feedback,
 )
 from app.agents.model import Model, ModelFailure
+from app.agents.scope import repository_path_scope
 from app.config.settings import Settings
 from app.models.schemas import AgentState, Patch, Plan, Review
 from app.services.attempts import (
@@ -93,6 +94,10 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         }
 
     def generate(schema, payload, state):
+        if settings.model_path_scope:
+            payload = {**payload, "repository_path_scope": repository_path_scope(
+                Repository(state["workspace_path"]), settings.github_repository_subdirectory,
+            )}
         value, stats = model.generate(schema, payload)
         return value, {
             **counters(state, stats),

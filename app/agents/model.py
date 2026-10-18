@@ -90,11 +90,14 @@ class LiveModel:
         from langchain_openai import ChatOpenAI
 
         self.model_name = settings.model_name
+        self.streaming = settings.model_streaming
         self.pacer = endpoint_pacer(settings.model_base_url)
         self.min_interval = settings.model_min_interval
         self.client = ChatOpenAI(
             model=settings.model_name,
             temperature=0,
+            streaming=settings.model_streaming,
+            stream_usage=settings.model_stream_usage if settings.model_streaming else None,
             timeout=settings.model_timeout,
             max_retries=1,
             base_url=settings.model_base_url,
@@ -110,6 +113,7 @@ class LiveModel:
             "adapter": "live",
             "usage_complete": True,
             "model_requested": self.model_name,
+            "streaming": self.streaming,
             "rate_limit_wait_seconds": 0.0,
         }
         messages = [

@@ -11,7 +11,7 @@ from app.evaluation.runner import run_evaluation
 @pytest.mark.docker
 @pytest.mark.skipif(os.environ.get("REPOPILOT_RUN_DOCKER_TESTS") != "1", reason="Docker opt-in")
 def test_parallel_cases_keep_unique_tasks_and_complete_jsonl(tmp_path):
-    source = Path(__file__).parents[2] / "demo_repository"
+    source = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
     output = tmp_path / "report"
     report = run_evaluation(
         Settings(repository_root=source, data_dir=tmp_path / "data"),
