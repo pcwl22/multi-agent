@@ -25,6 +25,7 @@ from app.services.attempts import (
     validate_isolated,
 )
 from app.services.regressions import regression_witness
+from app.services.transactions import apply_transaction
 from app.tools.repository import Repository, diff_repositories, digest, is_test_file, keywords
 
 logger = logging.getLogger("repopilot.graph")
@@ -261,6 +262,8 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 {p: repo.read_file(p, 100000) for p in existing_tests}
                 if literal_input_examples(state["issue_description"]) else None,
             )
+            if state.get("patch_transaction_version") == 1:
+                return apply_transaction(state, patch, usage, context)
             changed = repo.apply(patch)
         except (ValueError, SyntaxError) as exc:
             # Validation is completed before any file is written; rejected edits are safe to retry.

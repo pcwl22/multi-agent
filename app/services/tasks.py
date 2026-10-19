@@ -14,6 +14,7 @@ from app.config.settings import Settings
 from app.graph.workflow import build_graph
 from app.models.schemas import TaskRequest
 from app.sandbox.runner import DockerRunner
+from app.services import transactions
 from app.services.attempts import (
     controlled_path,
     file_manifest,
@@ -22,6 +23,7 @@ from app.services.attempts import (
     validate_isolated,
 )
 from app.services.github import GitHubPublisher, read_issue
+from app.services.publication import PublicationPlan, PublicationTarget
 from app.tools.repository import Repository, diff_repositories, digest, snapshot
 
 
@@ -40,6 +42,9 @@ class TaskService:
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS publications (task_id TEXT PRIMARY KEY, result TEXT)"
         )
+        self.conn.commit()
+        self.conn.execute("CREATE TABLE IF NOT EXISTS publication_requests "
+                          "(task_id TEXT PRIMARY KEY, digest TEXT, plan TEXT, approved INTEGER)")
         self.conn.commit()
         self.lock = threading.RLock()
         self.checkpoint_conn = sqlite3.connect(
@@ -98,6 +103,8 @@ class TaskService:
             repository_path=str(source),
             **candidate,
             task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest={},
+            patch_transaction_version=1 if self.settings.patch_transactions else None,
+            publication_contract_version=1,
             creation_manifest=creation_manifest, creation_attempts=0, creation_failures=[],
             attempt_history=[], previous_candidate_diff="", approved_candidate_id=None,
             mode=request.mode,
@@ -207,6 +214,9 @@ class TaskService:
                 if state["execution_status"] == "creation_failed":
                     return state
             validate_isolated(state, self.data / "tasks" / task_id)
+            transactions.acknowledge(state)
+            if transactions.pending(state):
+                raise ValueError("Pending patch transaction; inspect and explicitly recover before resume")
             config = self._config(state["thread_id"])
             if state["execution_status"] in {"approved", "rejected", "failed", "awaiting_approval"}:
                 raise ValueError("Task cannot be resumed from this status")
@@ -236,6 +246,7 @@ class TaskService:
                 )
             self.graph.invoke(state if not checkpoint.values else None, config, durability="sync")
             result = self.get(task_id)
+            transactions.acknowledge(result)
             if result.get("retry_workspace_policy") == "isolated":
                 save_candidate(result)
             return result
@@ -246,6 +257,8 @@ class TaskService:
             self._check_creation(state)
             return
         validate_isolated(state, self.data / "tasks" / task_id)
+        if transactions.pending(state):
+            raise ValueError("Pending patch transaction; inspect and explicitly recover before resume")
         if state["execution_status"] not in {"queued", "running", "blocked", "retryable"}:
             raise ValueError("Task is not resumable; use approve/reject at human interrupt")
         if state["execution_status"] == "retryable":
@@ -261,6 +274,23 @@ class TaskService:
         expected = state["diff_digest"] or digest("")
         if actual["diff_digest"] != expected:
             raise ValueError("Workspace changed outside the recorded repair; create a new task")
+
+    def patch_recovery(self, task_id: str) -> dict:
+        with self._task_lock(task_id):
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            transactions.acknowledge(state)
+            return transactions.inspect(state)
+
+    def recover_patch(self, task_id: str, journal_digest: str) -> dict:
+        with self._task_lock(task_id):
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            _, _, result = transactions.recover(state, journal_digest)
+            self.graph.update_state(self._config(state["thread_id"]), result, as_node="coder")
+            recovered = self.get(task_id)
+            transactions.acknowledge(recovered)
+            return recovered
 
     def decide(self, task_id: str, approved: bool, expected_digest: str,
                *, candidate_id: str | None = None) -> dict:
@@ -307,8 +337,76 @@ class TaskService:
             "candidate_id": state.get("candidate_id"),
         }
 
+    def _publisher(self) -> GitHubPublisher:
+        if not self.settings.github_repository:
+            raise ValueError("Configure REPOPILOT_GITHUB_REPOSITORY before publication")
+        return GitHubPublisher(self.settings.github_repository,
+            self.settings.github_token.get_secret_value() if self.settings.github_token else "",
+            subdirectory=self.settings.github_repository_subdirectory,
+            base_branch=self.settings.github_base_branch)
+
+    def publication_request(self, task_id: str) -> dict:
+        self._initial(task_id)
+        with self.lock:
+            row = self.conn.execute("SELECT digest,plan,approved FROM publication_requests "
+                                    "WHERE task_id=?", (task_id,)).fetchone()
+        if row is None:
+            raise ValueError("Preview a publication request first")
+        plan = PublicationPlan.model_validate_json(row[1])
+        if plan.digest() != row[0]:
+            raise ValueError("Stored publication request changed")
+        return {"request_digest": row[0], "plan": plan.model_dump(),
+                "approval_status": "approved" if row[2] else "pending"}
+
+    def _validate_publication_target(self, plan: PublicationPlan) -> None:
+        current = PublicationTarget(repository=self.settings.github_repository or "",
+            configured_base_branch=self.settings.github_base_branch,
+            subdirectory=self.settings.github_repository_subdirectory)
+        if current != plan.target:
+            raise ValueError("Publication target configuration changed; preview and approve again")
+
+    def preview_publication(self, task_id: str, *, title: str | None = None,
+                            body: str | None = None, publisher=None) -> dict:
+        with self._task_lock(task_id):
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            with self.lock:
+                if self.conn.execute("SELECT 1 FROM publications WHERE task_id=?", (task_id,)).fetchone():
+                    raise ValueError("Publication already attempted; inspect its recorded result")
+            owns = publisher is None
+            client = publisher or self._publisher()
+            try:
+                plan = client.preview(state, title=title, body=body)
+                self._validate_publication_target(plan)
+            finally:
+                if owns:
+                    client.close()
+            with self.lock:
+                self.conn.execute("INSERT INTO publication_requests VALUES (?,?,?,0) "
+                    "ON CONFLICT(task_id) DO UPDATE SET digest=excluded.digest, "
+                    "plan=excluded.plan,approved=0", (task_id, plan.digest(), plan.model_dump_json()))
+                self.conn.commit()
+            return self.publication_request(task_id)
+
+    def approve_publication(self, task_id: str, request_digest: str) -> dict:
+        with self._task_lock(task_id):
+            request = self.publication_request(task_id)
+            plan = PublicationPlan.model_validate(request["plan"])
+            self._validate_publication_target(plan)
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            if state["execution_status"] != "approved" or not self.diff(task_id)["matches_recorded"]:
+                raise ValueError("Repair approval or actual content changed")
+            if request_digest != request["request_digest"]:
+                raise ValueError("Publication approval does not match current request")
+            with self.lock:
+                self.conn.execute("UPDATE publication_requests SET approved=1 "
+                                  "WHERE task_id=? AND digest=?", (task_id, request_digest))
+                self.conn.commit()
+            return self.publication_request(task_id)
+
     def publish(self, task_id: str, expected_digest: str, *, publisher=None,
-                candidate_id: str | None = None) -> dict:
+                candidate_id: str | None = None, publication_digest: str | None = None) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
             if state["execution_status"] != "approved" or state["approval_status"] != "approved":
@@ -335,17 +433,24 @@ class TaskService:
                     return result
                 raise ValueError("Prior publication has uncertain outcome; inspect GitHub manually")
             owns_publisher = publisher is None
+            bound_plan = None
+            # An explicitly injected custom adapter is trusted application code and
+            # owns its contract; public API callers cannot provide one.
+            if owns_publisher or isinstance(publisher, GitHubPublisher):
+                request = self.publication_request(task_id)
+                bound_plan = PublicationPlan.model_validate(request["plan"])
+                self._validate_publication_target(bound_plan)
+                if request["approval_status"] != "approved" or publication_digest != request["request_digest"]:
+                    raise ValueError("Separate human publication approval is required")
             if publisher is None:
-                if not self.settings.github_repository:
-                    raise ValueError("Configure REPOPILOT_GITHUB_REPOSITORY before publication")
-                publisher = GitHubPublisher(
-                    self.settings.github_repository,
-                    self.settings.github_token.get_secret_value()
-                    if self.settings.github_token
-                    else "",
-                    subdirectory=self.settings.github_repository_subdirectory,
-                    base_branch=self.settings.github_base_branch,
-                )
+                publisher = self._publisher()
+            if bound_plan is not None:
+                try:
+                    publisher.validate_plan(state, bound_plan, publication_digest)
+                except Exception:
+                    if owns_publisher:
+                        publisher.close()
+                    raise
             with self.lock:
                 self.conn.execute(
                     "INSERT INTO publications VALUES (?, ?)",
@@ -353,7 +458,8 @@ class TaskService:
                 )
                 self.conn.commit()
             try:
-                url = publisher.publish(state)
+                url = (publisher.publish(state, plan=bound_plan, approval_digest=publication_digest)
+                       if bound_plan is not None else publisher.publish(state))
                 result = {"status": "created", "url": url}
             except Exception as exc:
                 with self.lock:

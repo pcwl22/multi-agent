@@ -85,6 +85,21 @@ try:
             )
         with st.expander("Agent 日志和检索历史"):
             st.json(api("GET", f"/api/tasks/{task_id}/events"))
+        if state.get("patch_transaction_version") == 1:
+            recovery_key = "patch-recovery:" + task_id
+            if st.button("检查补丁事务恢复"):
+                st.session_state[recovery_key] = api("GET", f"/api/tasks/{task_id}/recovery/patch")
+            recovery = st.session_state.get(recovery_key)
+            if recovery and recovery["required"]:
+                st.warning("存在未完成写入的补丁。核对文件摘要后显式恢复，再继续 Docker 验证。")
+                st.json(recovery)
+                if len(recovery["transactions"]) == 1:
+                    item = recovery["transactions"][0]
+                    if st.button("确认恢复这份补丁事务", disabled=not item["recoverable"]):
+                        api("POST", f"/api/tasks/{task_id}/recovery/patch",
+                            json={"journal_digest": item["journal_digest"]})
+                        st.session_state.pop(recovery_key, None)
+                        st.rerun()
         if state["execution_status"] == "awaiting_approval":
             left, right = st.columns(2)
             for column, action, label in [
@@ -100,13 +115,32 @@ try:
                     )
                     st.rerun()
         elif state["execution_status"] == "approved":
-            st.caption("可选：后端需配置固定 GitHub 仓库与 GITHUB_TOKEN；此操作会创建草稿 PR。")
-            if st.button("明确确认：将已批准 Diff 创建为 GitHub 草稿 PR"):
-                published = api(
-                    "POST", f"/api/tasks/{task_id}/pr", json={"diff_digest": diff["diff_digest"],
-                                                             "candidate_id": diff.get("candidate_id")}
-                )
-                st.link_button("查看草稿 PR", published["url"])
+            st.caption("发布分为预览、批准完整请求和创建草稿 PR；批准 Diff 不等于批准发布。")
+            publication_key = "publication:" + task_id
+            if st.button("预览或刷新草稿 PR 发布请求"):
+                st.session_state[publication_key] = api(
+                    "POST", f"/api/tasks/{task_id}/publication/preview", json={})
+            publication = st.session_state.get(publication_key)
+            if publication:
+                plan = publication["plan"]
+                st.write({"仓库": plan["target"]["repository"], "基分支": plan["base_branch"],
+                          "基线提交": plan["base_sha"], "目录": plan["target"]["subdirectory"],
+                          "新分支": plan["branch"], "标题": plan["title"]})
+                st.text(plan["body"])
+                st.caption("发布请求 SHA-256：" + publication["request_digest"])
+                with st.expander("完整发布请求（含将要写入的文件）"):
+                    st.json(plan)
+                if st.button("批准这份完整发布请求"):
+                    st.session_state[publication_key] = api(
+                        "POST", f"/api/tasks/{task_id}/publication/approve",
+                        json={"request_digest": publication["request_digest"]})
+                    st.rerun()
+                if st.button("创建已批准的 GitHub 草稿 PR",
+                             disabled=publication["approval_status"] != "approved"):
+                    published = api("POST", f"/api/tasks/{task_id}/pr", json={
+                        "diff_digest": diff["diff_digest"], "candidate_id": diff.get("candidate_id"),
+                        "publication_digest": publication["request_digest"]})
+                    st.link_button("查看草稿 PR", published["url"])
         elif state["execution_status"] == "blocked":
             if st.button("Docker 就绪后继续测试"):
                 api("POST", f"/api/tasks/{task_id}/resume")

@@ -6,7 +6,9 @@ from filelock import Timeout
 
 from app.config.settings import Settings
 from app.models.schemas import Approval, TaskRequest
+from app.services.publication import PublicationDecision, PublicationOptions
 from app.services.tasks import TaskService
+from app.services.transactions import PatchRecoveryDecision
 
 
 def create_app(settings: Settings | None = None, service: TaskService | None = None) -> FastAPI:
@@ -84,12 +86,53 @@ def create_app(settings: Settings | None = None, service: TaskService | None = N
     def reject(task_id: str, body: Approval, request: Request):
         return decide(task_id, request, False, body)
 
+    @api.get("/api/tasks/{task_id}/publication")
+    def publication_request(task_id: str, request: Request):
+        get(request, task_id)
+        try:
+            return tasks(request).publication_request(task_id)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @api.post("/api/tasks/{task_id}/publication/preview")
+    def preview_publication(task_id: str, body: PublicationOptions, request: Request):
+        get(request, task_id)
+        try:
+            return tasks(request).preview_publication(task_id, title=body.title, body=body.body)
+        except (ValueError, Timeout, httpx.HTTPError) as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @api.post("/api/tasks/{task_id}/publication/approve")
+    def approve_publication(task_id: str, body: PublicationDecision, request: Request):
+        get(request, task_id)
+        try:
+            return tasks(request).approve_publication(task_id, body.request_digest)
+        except (ValueError, Timeout) as exc:
+            raise HTTPException(409, str(exc)) from exc
+
     @api.post("/api/tasks/{task_id}/pr")
     def publish_pr(task_id: str, body: Approval, request: Request):
         get(request, task_id)
         try:
-            return tasks(request).publish(task_id, body.diff_digest, candidate_id=body.candidate_id)
+            return tasks(request).publish(task_id, body.diff_digest, candidate_id=body.candidate_id,
+                                          publication_digest=body.publication_digest)
         except (ValueError, Timeout) as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @api.get("/api/tasks/{task_id}/recovery/patch")
+    def patch_recovery(task_id: str, request: Request):
+        get(request, task_id)
+        try:
+            return tasks(request).patch_recovery(task_id)
+        except (ValueError, OSError, Timeout) as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @api.post("/api/tasks/{task_id}/recovery/patch")
+    def recover_patch(task_id: str, body: PatchRecoveryDecision, request: Request):
+        get(request, task_id)
+        try:
+            return tasks(request).recover_patch(task_id, body.journal_digest)
+        except (ValueError, OSError, Timeout) as exc:
             raise HTTPException(409, str(exc)) from exc
 
     @api.post("/api/tasks/{task_id}/resume", status_code=202)

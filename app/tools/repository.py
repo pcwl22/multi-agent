@@ -157,7 +157,7 @@ class Repository:
             if p in {"pyproject.toml", "requirements.txt", "package.json"}
         }
 
-    def apply(self, patch: Patch) -> list[str]:
+    def stage(self, patch: Patch) -> dict[Path, str]:
         staged: dict[Path, str] = {}
         for edit in patch.edits:
             p = self.path(edit.path, existing=False)
@@ -187,6 +187,10 @@ class Repository:
                 raise ValueError("Updated file exceeds 100000-byte edit limit")
             ast.parse(updated)
             staged[p] = updated
+        return staged
+
+    def apply(self, patch: Patch) -> list[str]:
+        staged = self.stage(patch)
         for p, updated in staged.items():
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(updated, encoding="utf-8", newline="\n")

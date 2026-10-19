@@ -6,6 +6,8 @@
 
 ## 快速开始
 
+本地优化阶段增加两项 P0 能力：生产发布需要对包含目标仓库、基分支/提交、目录映射、标题/正文和文件内容的完整请求单独审批；可选补丁事务可在进程中断后按日志摘要显式恢复，保留候选和模型响应。使用与边界见 [发布与事务优化](docs/optimization-p0-20261019/validation.md)。该阶段尚未更新远端 PR。
+
 本轮完整版本已将 CI 故障输入隔离到固定 fixture，并提供正式流式、usage 和工作区路径范围配置。源码及新 wheel 的发布前验证各为 **167 passed、1 skipped**；Python 3.11/3.13 和 Docker 的实际 GitHub CI 已通过，见 [CI 隔离验收](docs/ci-isolation-stage-20261018/validation.md)。以下各轮数字和“测试未改动”说明是对应历史版本记录；后来 20 项样本引用/UI 输入调整经过单独批准，既有断言保留。
 
 完整差异审查后的本地修复：嵌套构造输入按最外层表达式检查，CLI 在任务副本创建失败时返回非零状态。`app.evaluation.feedback` 是单独的故障注入诊断，固定使用 `preserve` 工作区策略，并在报告中记录有效策略与传入配置；它不作为独立副本策略对比试验。见 [审查后验证](docs/pr5-review-20261018/validation.md)。
@@ -227,7 +229,7 @@ python -m app.cli --repo <本地仓库根目录> --issue-url https://github.com/
 - SQLite/临时目录权限：设置可写的 `REPOPILOT_DATA_DIR`。测试临时目录默认放在 `.repopilot/test-temp`，规避部分 Windows 系统临时目录 ACL 问题。
 - MCP 客户端的工具 deadline 为 15 秒；底层 Git 另有 10 秒超时。线程超时停止等待，不会强杀 Python 线程；文件扫描有数量/大小上限。
 - Docker 提供基础隔离，不等于面对内核漏洞的强多租户边界。源码及镜像依赖须符合你的运行策略；可写目录仅为临时测试结果目录。stdout/stderr 使用管道持续排空，各保留前 20000 字节并标记截断，Docker 日志驱动关闭。测试结果目录目前没有独立的宿主磁盘配额，生产版仍需限制结果写入量。
-- checkpoint 可恢复已完成节点、人工审批和 Docker 阻塞；文件编辑与 checkpoint 不是跨文件原子事务。编辑中途被强制杀进程可能需要新建任务，不承诺 exactly-once 文件写入。
+- checkpoint 可恢复已完成节点、人工审批和 Docker 阻塞。新任务可设置 `REPOPILOT_PATCH_TRANSACTIONS=true`：先保存意图、逐文件原子替换，中断后检查并确认日志摘要再恢复；不会重新调用编码模型。默认关闭以保留旧任务的拒绝恢复契约。日志与 checkpoint 仍不是同一存储事务，不保证任意断电、文件系统损坏或恶意本地并发下的恢复。
 
 ## 后续规划
 

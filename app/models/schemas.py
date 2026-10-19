@@ -88,6 +88,7 @@ class TaskRequest(StrictModel):
 
 
 class Approval(StrictModel):
+    publication_digest: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     diff_digest: str = Field(min_length=64, max_length=64)
     candidate_id: str | None = Field(default=None, pattern=r"^[a-f0-9-]{36}$")
 
@@ -99,6 +100,8 @@ class AgentState(TypedDict):
     repository_path: str
     workspace_path: str
     task_path: str
+    patch_transaction_version: int | None
+    publication_contract_version: int
     retry_workspace_policy: Literal["preserve", "isolated"]
     baseline_manifest: dict[str, str]
     creation_manifest: dict[str, str]
