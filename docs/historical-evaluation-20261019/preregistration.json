@@ -1,0 +1,501 @@
+{
+  "version": 1,
+  "registered_at": "2026-10-19T08:30:27.925827+00:00",
+  "runtime_commit": "9369b9fe55893ce9ab4a4539a009da152965e0c3",
+  "model_name": "deepseek-v4.1-flash",
+  "model_base_url": "https://muyuan.do/v1",
+  "corpus": "E:\\multi-agent\\.repopilot\\history-20261019\\corpus-v2",
+  "lock_sha256": "a02823542d0d9722d193349f28d37b148830820075fac99d94f13094fd2fc004",
+  "image": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d",
+  "controls_sha256": "a2dc53107baa3002d6975064b0494daea610083e137c26f3751cd93afa2fa72d",
+  "output": "E:\\multi-agent\\.repopilot\\history-20261019\\results-02",
+  "data_dir": "E:\\multi-agent\\.repopilot\\history-20261019\\formal-data",
+  "repeats": 2,
+  "workers": 2,
+  "planned_runs": 24,
+  "modes": [
+    "single",
+    "multi_no_review",
+    "multi_full"
+  ],
+  "cases": [
+    "jsonpointer-large-index",
+    "itsdangerous-date-overflow",
+    "dotenv-empty-comment",
+    "slugify-uppercase-translations"
+  ],
+  "budget_limits": {
+    "wall_seconds": 900,
+    "model_requests": 8,
+    "observed_tokens": 100000,
+    "sandbox_runs": 6,
+    "artifact_bytes": 268435456,
+    "result_bytes": 8388608
+  },
+  "profile": {
+    "max_retries": 1,
+    "retry_workspace_policy": "isolated",
+    "patch_transactions": true,
+    "task_budgets": true,
+    "model_timeout": 120,
+    "test_timeout": 120,
+    "model_min_interval": 7.5,
+    "temperature": 0,
+    "streaming": true,
+    "stream_usage": true
+  },
+  "wheel_sha256": "d62d972d22a414b2fcc730ca3145d5e9fcf9a9584055ba7b4a0284163ce1176f",
+  "app_files": [
+    {
+      "path": "app/__init__.py",
+      "sha256": "1e51dc2d7b84f85c537e1bcd05f3c548404380e6a35ac7b6b52929ceac2b2b57"
+    },
+    {
+      "path": "app/cli.py",
+      "sha256": "d883915fed427db617732f81569a4db87e913a13c814d291526a7de90c78fea9"
+    },
+    {
+      "path": "app/agents/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/agents/contracts.py",
+      "sha256": "2ac5f10e06cd07166b5873ec6cd2c2b61d895e70ce6996413dc138daf288adc0"
+    },
+    {
+      "path": "app/agents/demo_fixtures.py",
+      "sha256": "43c7489067a36501037ec3333eb589212c051af6e9020f0aca131057bc42c451"
+    },
+    {
+      "path": "app/agents/failures.py",
+      "sha256": "3e3eec90704f18458946f9dd07de48fdc4ebb5e2087526ff37f0eae60c1d5b55"
+    },
+    {
+      "path": "app/agents/feedback.py",
+      "sha256": "d9eb063c9c52cc834901599fce579c03782b337a2aa11ef3afb64d8de7d17fe2"
+    },
+    {
+      "path": "app/agents/instructions.py",
+      "sha256": "2bbe616ebcf27591385e16e98a3d1d602530e62e55d198c8bd686d73cf8b6041"
+    },
+    {
+      "path": "app/agents/model.py",
+      "sha256": "00df43457739c40b71a72bbc85e7685983c7a91a39d80d1d4e5ac681f61ae485"
+    },
+    {
+      "path": "app/agents/pacing.py",
+      "sha256": "a743472c488e864c5bc807f9ae6cecd6da4561b26a231cd350577a9c10b9e007"
+    },
+    {
+      "path": "app/agents/scope.py",
+      "sha256": "87a9ae23a67ac52836cd4540dda1a94045404e3fc824c906f3be9395712bc3db"
+    },
+    {
+      "path": "app/api/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/api/main.py",
+      "sha256": "1953a9c4cda5b7acdf6206e1f2e5a06d2ea7244b90e4e72e05eac8bb5c1a22f8"
+    },
+    {
+      "path": "app/config/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/config/settings.py",
+      "sha256": "f9cc2371a716c45f57ce47ee428194993c3ae904ea4d2c62dbdf7bdace325299"
+    },
+    {
+      "path": "app/evaluation/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/evaluation/dataset.json",
+      "sha256": "8470dd1023e1bb2e4f4de13ee57d2576a2a564a86d8f3dadf5d5c847b90b051e"
+    },
+    {
+      "path": "app/evaluation/feedback.py",
+      "sha256": "7f244fbc91fc6612175e5d7c58044e50cb6e17cf2cdb4c2af8f1d33c6f0dbfb9"
+    },
+    {
+      "path": "app/evaluation/historical.py",
+      "sha256": "df4993710bf1225b900c3020f8346f3a3e002380ab481525b0f279b75331bee0"
+    },
+    {
+      "path": "app/evaluation/runner.py",
+      "sha256": "a834755ac4074b47d207cf464129ed64323f0c3f3ac4e515e0630200c74e0478"
+    },
+    {
+      "path": "app/evaluation/acceptance/test_auth_acceptance.py",
+      "sha256": "d28fd4de720ea84988f18f120636de76f6466b5c168203f6170cbaf5c4468ceb"
+    },
+    {
+      "path": "app/evaluation/acceptance/test_discount_acceptance.py",
+      "sha256": "7be9fb200c68768834edc750288c080608d549bccd597bb837c47756053a5339"
+    },
+    {
+      "path": "app/evaluation/acceptance/test_pagination_acceptance.py",
+      "sha256": "c41992b39a7625c68a2a6f3dfc225482f03ec6540fefc2d769764f1c0f20a73a"
+    },
+    {
+      "path": "app/evaluation/expanded/README.md",
+      "sha256": "a8bd1af6ab96eb74d4e3d7cfe7bafa03e44770666be0314ebba6d23fb7073843"
+    },
+    {
+      "path": "app/evaluation/expanded/__init__.py",
+      "sha256": "eb0148737b2cbfaa829090d58d45ed04714644a7da74f912d72ec600d2355625"
+    },
+    {
+      "path": "app/evaluation/expanded/dataset.json",
+      "sha256": "2738892ac890891282a48d419f397a9eda0c93553b4daca9c73e2595f52263c9"
+    },
+    {
+      "path": "app/evaluation/expanded/dataset.strict.json",
+      "sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da"
+    },
+    {
+      "path": "app/evaluation/expanded/references.json",
+      "sha256": "ce6977c89ed616d3bfb845dac723c79b208f7852ffed6d7675e46385447f064a"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_accent_slug.py",
+      "sha256": "5e50fb1536c469b0fc2e66b50971721e2072c0b6370db4656f5b32f53884266e"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_checkout_two_files.py",
+      "sha256": "e52f74cd006971dc6555199d43a2513efb47008c6e9ea8c6d434aba69e5ec024"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_csv_roundtrip.py",
+      "sha256": "df63c61310f8a4e13a1907f9f3eda53bfbc30e2032b86dd00a38d9e17a423b8b"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_expired_status.py",
+      "sha256": "8545b32e4e0cfc63c40282600be013b713cf327987a0fe3b975eb685797bd762"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_offset_to_utc.py",
+      "sha256": "7a1923463b46148ad1ac94992a71e2d1e7972efafb39f20e3da7794affc0b790"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_one_based_page.py",
+      "sha256": "81945ac38348eb15eb3d318bcd0f4a55dfa5577e62eac10c1cb0ccf5e4a9accb"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_pagination_sequence_acceptance.py",
+      "sha256": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_percent_discount.py",
+      "sha256": "f729f55def2b1794225e80e7d83b0b264a1d279046143f4463749e90ec77e82a"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_recursive_config.py",
+      "sha256": "5d61ceb5fc01100e365bdb8c323249cfbecd54afbb5f483c041e7afc8a969181"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_reservation_sum.py",
+      "sha256": "0803d222b73c055df67fd931de646a69239523d29e9fef90f6e49941c40acbff"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_ttl_equality.py",
+      "sha256": "12036fc4defe1794d8d4de1473e31f0a6a8f886594ab6f2b89f68474106f83d0"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/slugs.py",
+      "sha256": "415f7df4aa2192774b883282f8678cb8798ea0a47ae469192e69cf67b1597240"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/tests/test_contract.py",
+      "sha256": "ffaecbe031e2ca0c41ec925639733aa5a21ebcfebc96c1444472bd490d8325b6"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/checkout.py",
+      "sha256": "defada81679ee393581280da32d0d7d31f1bdb8a21d83730643df184deddb072"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/money.py",
+      "sha256": "0ac2b5764f82a7db2bd13c7517f9110f37521bfb086d56294b7ee3863f0d5a13"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/tests/test_contract.py",
+      "sha256": "41495a7950bfe22b7ddc6d297338d90e63b85128b56fb6bed697e4f1c35335a3"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/exporter.py",
+      "sha256": "04c1b1c11bf0b922e66a5ce796baabb12be7ca8c99e01c18f50adb70aebf1905"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/tests/test_contract.py",
+      "sha256": "294b53192e67ea04369f2cedd2641f1200113c94607aa0084d6b17354c52ff93"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/auth.py",
+      "sha256": "bb6f006a89c40254c4142d4ca3ae08e1e0cc79f3c925d05f798a440c990d45fd"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/tests/test_contract.py",
+      "sha256": "e7f3e59742e01974c718730bba285228c02c73e6de4cef2a8ac8044ca30fa824"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/events.py",
+      "sha256": "f8d566a40203041909622ebb308a281972d1ef61f71714ec52be4dfd2bc76ed8"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/tests/test_contract.py",
+      "sha256": "2c02c345bdbe0bcce55aec320219559c03ced208b1406666ed3fbc711379af6d"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/pagination.py",
+      "sha256": "03cbe00df8241c68ceab601fa12256c051b68922fded4e4d9a233adcb3cbfe8f"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/tests/test_contract.py",
+      "sha256": "dd502c4f8354dd9bd8066e2988899c660201b5bc533784087bbcfa119dc7d4f3"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/pricing.py",
+      "sha256": "3bb72062a838a16a9c0277e8d26f5740a5ef6a83c14e623f39edf9d0535792c4"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/tests/test_contract.py",
+      "sha256": "f33ad1562355afcb3a406dda0dbaa8c4ff17f180df46420db307558d6c22ffa8"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/config.py",
+      "sha256": "6d316f33c380dfc1449209a972e1e842d6498862ce385d0168b9a2b58a0187ab"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/tests/test_contract.py",
+      "sha256": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/inventory.py",
+      "sha256": "65d49042236c9e256663732056066ea302476fb89a4f6bbe1e95b7754732848b"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/tests/test_contract.py",
+      "sha256": "2812be59506e03ae09050eb3bcc486c4fa43a7650fbd86c6f203bdde61a6cd41"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/cache.py",
+      "sha256": "8f7a3adaea52a6bc0bd10ac13ae648bcbb1cca5fc3c51956c6c36a7cc7fbb73c"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/tests/test_contract.py",
+      "sha256": "cdb9dfe18c755cd72b92c4789ca7967e8c5ddafaafcfa443087e66eea344d5ec"
+    },
+    {
+      "path": "app/evaluation/historical_cases/__init__.py",
+      "sha256": "96cf9c6f0c2f4d7d56bdcccce337a1e318ef7ae30eda5f8d8fd68257181e3ded"
+    },
+    {
+      "path": "app/evaluation/historical_cases/spec.json",
+      "sha256": "2f2731e5e3d55c1ddb1a4bca6b1d5a23106bbae462c43b1afb263aee01bcb696"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_dotenv_empty_comment.py.txt",
+      "sha256": "7dfe00621f6bb7f6fa8ccda77158bcdc93e3faead020a5fb1177f800a07daa05"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_itsdangerous_overflow.py.txt",
+      "sha256": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_jsonpointer_large.py.txt",
+      "sha256": "3ec0d2b162d9f464cf9ea715b66e0ad04e6e646bfa0dade71e4da7b2b30971e2"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_slugify_uppercase.py.txt",
+      "sha256": "5940adefa85161dbb4eadaf9e7ad9b28a5698e960b306f88803ccd26ff4f15c3"
+    },
+    {
+      "path": "app/graph/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/graph/workflow.py",
+      "sha256": "ab53039501d2426938d34391175c21b911393efa69d992ae646623a568dac527"
+    },
+    {
+      "path": "app/mcp_server/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/mcp_server/server.py",
+      "sha256": "f67f7022e502fc92e955391e45f90d783247e9fc7343f41cba82342383265c67"
+    },
+    {
+      "path": "app/models/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/models/budgets.py",
+      "sha256": "20f058a49d86346818b1172a184e3db1337640613d83310f98a9411209854876"
+    },
+    {
+      "path": "app/models/schemas.py",
+      "sha256": "a0004ba0ebb66842b3a93398e336318de1cfcf0a84d792b8a86249e28a396f03"
+    },
+    {
+      "path": "app/sandbox/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/sandbox/output.py",
+      "sha256": "cd84eb9d67c9ea4d6f2892992ee124549ff36d775e1c0a37e0f81a9903e60e6f"
+    },
+    {
+      "path": "app/sandbox/reports.py",
+      "sha256": "33bd2fe13eb282ffe65b0da2ea5fc1dacca3a862d8cf7a24c63843a1bdd94bf0"
+    },
+    {
+      "path": "app/sandbox/runner.py",
+      "sha256": "b15bf74fb50a342c8afa4d439db621c66de12aeaacbe849fadff9afa903c902a"
+    },
+    {
+      "path": "app/services/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/services/attempts.py",
+      "sha256": "0955b7401f14b6fd27514f524c280d9d1c36bbfd7cba5a5df5785a382665cd82"
+    },
+    {
+      "path": "app/services/budgets.py",
+      "sha256": "9d8b3cb15188d7838b7ff8aac60d49c1c5f0c8fd72ef6ad18bf9b0b90eba5df7"
+    },
+    {
+      "path": "app/services/github.py",
+      "sha256": "512d01ad670091152e5aa03e13d423bf79a4d87d6834dd4cc16542c617c0110d"
+    },
+    {
+      "path": "app/services/publication.py",
+      "sha256": "f35379ebaa8f9702f8efb4a7b7f8ccd58f74f5dc50a4dcdbad2f61be6313e56c"
+    },
+    {
+      "path": "app/services/regressions.py",
+      "sha256": "7312e6b8cf103a297439305236a82125d062aab58ed0f551878d32f5c17ff9e6"
+    },
+    {
+      "path": "app/services/tasks.py",
+      "sha256": "832d00fc0c92d207ed2b92d3c81b6c33b294ec0b99e828928f9068ecaf247e15"
+    },
+    {
+      "path": "app/services/transactions.py",
+      "sha256": "8dac34019b9964993282678f1d3bf54c60d7e7e0506fc93b682fa9a339a1a408"
+    },
+    {
+      "path": "app/tools/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/tools/repository.py",
+      "sha256": "8858adc36d144e36a517a5322fa1f91f44123d434ce2a90e3c26810cd15388a0"
+    }
+  ],
+  "spec_sha256": "2f2731e5e3d55c1ddb1a4bca6b1d5a23106bbae462c43b1afb263aee01bcb696",
+  "dataset_sha256": "656319e884c803ac95156a6e6b3ec5e45b3a18c0d65721c756e470678ffb1c4d",
+  "acceptance_sha256": {
+    "jsonpointer-large-index": "3ec0d2b162d9f464cf9ea715b66e0ad04e6e646bfa0dade71e4da7b2b30971e2",
+    "itsdangerous-date-overflow": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d",
+    "dotenv-empty-comment": "7dfe00621f6bb7f6fa8ccda77158bcdc93e3faead020a5fb1177f800a07daa05",
+    "slugify-uppercase-translations": "5940adefa85161dbb4eadaf9e7ad9b28a5698e960b306f88803ccd26ff4f15c3"
+  },
+  "primary_success": "Unmodified original tests, reproduced failing baseline, awaiting_approval, task tests passed and independent holdout passed; denominator includes all 24 planned runs.",
+  "failure_policy": "No post-hoc model retry, prompt/runtime/oracle editing, replacement or exclusion of failed cells. Reference fixes are controls only.",
+  "excluded_diagnostic": {
+    "calls": 1,
+    "observed_tokens": 1685,
+    "status": "passed"
+  },
+  "limitations": [
+    "Four small public Python bugs; training overlap unknown.",
+    "Repeats are correlated, not independent bugs.",
+    "Proxy requested/reported model alias does not establish underlying model weights.",
+    "Four Markdown documentation symlinks omitted; original Python files/tests retained.",
+    "Original optional IPython test skipped because dependency absent.",
+    "Different retry/budget profile from prior two-case pilots; no causal comparison."
+  ]
+}
