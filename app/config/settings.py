@@ -4,6 +4,8 @@ from typing import Literal
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.models.budgets import BudgetLimits
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -19,6 +21,8 @@ class Settings(BaseSettings):
     max_retries: int = Field(default=2, ge=0, le=5)
     retry_workspace_policy: Literal["preserve", "isolated"] = "preserve"
     patch_transactions: bool = False
+    task_budgets: bool = False
+    budget_limits: BudgetLimits = Field(default_factory=BudgetLimits)
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)
     model_streaming: bool = False

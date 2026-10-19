@@ -22,6 +22,7 @@ from app.services.attempts import (
     save_candidate,
     validate_isolated,
 )
+from app.services.budgets import BudgetExceeded, TaskBudget, for_state, stopped
 from app.services.github import GitHubPublisher, read_issue
 from app.services.publication import PublicationPlan, PublicationTarget
 from app.tools.repository import Repository, diff_repositories, digest, snapshot
@@ -76,6 +77,7 @@ class TaskService:
         return json.loads(row[0])
 
     def create(self, request: TaskRequest) -> dict:
+        created_at = time.time()
         allowed = self.settings.repository_root.resolve(strict=True)
         source = Path(request.repository_path).resolve(strict=True)
         if not source.is_relative_to(allowed):
@@ -105,6 +107,11 @@ class TaskService:
             task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest={},
             patch_transaction_version=1 if self.settings.patch_transactions else None,
             publication_contract_version=1,
+            budget_version=1 if self.settings.task_budgets else None,
+            budget_limits=self.settings.budget_limits.model_dump(),
+            budget_deadline=created_at + self.settings.budget_limits.wall_seconds,
+            budget_failure=None,
+            budget_initialized=False,
             creation_manifest=creation_manifest, creation_attempts=0, creation_failures=[],
             attempt_history=[], previous_candidate_diff="", approved_candidate_id=None,
             mode=request.mode,
@@ -170,6 +177,12 @@ class TaskService:
             self._store_initial(state)
             root = controlled_path(self.data, f"tasks/{state['task_id']}", directory=True)
             root.mkdir(parents=True, exist_ok=True)
+            if state.get("budget_version") == 1:
+                initialize_budget = not state.get("budget_initialized", False)
+                if initialize_budget:
+                    state["budget_initialized"] = True
+                    self._store_initial(state)
+                TaskBudget(state, create=initialize_budget).check()
             baseline = controlled_path(root, "baseline", directory=True)
             if not baseline.exists():
                 snapshot(Repository(state["repository_path"]), baseline)
@@ -185,7 +198,11 @@ class TaskService:
                 if file_manifest(workspace) != state["creation_manifest"]:
                     raise ValueError("Unrecorded initial workspace writes; preserved without reset")
                 state["workspace_path"] = str(workspace)
+            if (budget := for_state(state)) is not None:
+                budget.check()
             state.update(execution_status="queued", error=None)
+        except BudgetExceeded as exc:
+            state.update(stopped(exc))
         except (ValueError, OSError) as exc:
             failure = {"type": type(exc).__name__, "winerror": getattr(exc, "winerror", None),
                        "message": str(exc)[:1000], "timestamp": time.time(),
@@ -199,6 +216,11 @@ class TaskService:
         initial = self._initial(task_id)
         values = self.graph.get_state(self._config(initial["thread_id"])).values
         return dict(values) if values else initial
+
+    def budget(self, task_id: str) -> dict:
+        state = self.get(task_id)
+        budget = for_state(state)
+        return budget.view() if budget else {"enabled": False}
 
     def _task_lock(self, task_id):
         self._initial(task_id)
@@ -218,7 +240,7 @@ class TaskService:
             if transactions.pending(state):
                 raise ValueError("Pending patch transaction; inspect and explicitly recover before resume")
             config = self._config(state["thread_id"])
-            if state["execution_status"] in {"approved", "rejected", "failed", "awaiting_approval"}:
+            if state["execution_status"] in {"approved", "rejected", "failed", "budget_exhausted", "awaiting_approval"}:
                 raise ValueError("Task cannot be resumed from this status")
             current_diff = diff_repositories(
                 Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])

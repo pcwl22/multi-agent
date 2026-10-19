@@ -100,6 +100,11 @@ class AgentState(TypedDict):
     repository_path: str
     workspace_path: str
     task_path: str
+    budget_initialized: bool
+    budget_version: int | None
+    budget_limits: dict
+    budget_deadline: float
+    budget_failure: dict | None
     patch_transaction_version: int | None
     publication_contract_version: int
     retry_workspace_policy: Literal["preserve", "isolated"]

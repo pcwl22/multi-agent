@@ -6,9 +6,11 @@ from types import TracebackType
 
 
 class CappedOutput:
-    def __init__(self, limit: int = 20000):
+    def __init__(self, limit: int = 20000, *, tail_limit: int = 0):
         if limit < 1:
             raise ValueError("Output budget must be positive")
+        self.tail_limit = tail_limit
+        self.tail = bytearray()
         self.limit = limit
         self.total_bytes = 0
         self._buffer = bytearray()
@@ -21,6 +23,9 @@ class CappedOutput:
         try:
             while chunk := os.read(self._read_fd, 8192):
                 self.total_bytes += len(chunk)
+                if self.tail_limit:
+                    self.tail.extend(chunk)
+                    del self.tail[:-self.tail_limit]
                 remaining = self.limit - len(self._buffer)
                 if remaining > 0:
                     self._buffer.extend(chunk[:remaining])

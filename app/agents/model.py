@@ -10,6 +10,7 @@ from app.agents.instructions import system_instructions
 from app.agents.pacing import endpoint_pacer
 from app.config.settings import Settings
 from app.models.schemas import Edit, Patch, Plan, Review
+from app.services.budgets import BudgetExceeded, current_budget
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -86,9 +87,12 @@ class MockModel:
 
 
 class LiveModel:
+    manages_task_budget = True
+
     def __init__(self, settings: Settings):
         from langchain_openai import ChatOpenAI
 
+        self.timeout = settings.model_timeout
         self.model_name = settings.model_name
         self.streaming = settings.model_streaming
         self.pacer = endpoint_pacer(settings.model_base_url)
@@ -124,18 +128,43 @@ class LiveModel:
             ("human", json.dumps(payload, ensure_ascii=False)),
         ]
         for attempt in range(2):
-            stats["rate_limit_wait_seconds"] += self.pacer.wait(self.min_interval)
-            stats["calls"] += 1
+            budget = current_budget()
+            reservation = None
             try:
-                response = self.client.with_structured_output(
+                if budget:
+                    budget.check()
+                stats["rate_limit_wait_seconds"] += self.pacer.wait(
+                    self.min_interval, deadline=time.monotonic() + budget.remaining()
+                    if budget else None)
+                if budget:
+                    reservation = budget.reserve("model_requests")
+                client = self.client
+                if budget:
+                    timeout = min(self.timeout, budget.remaining())
+                    root = self.client.root_client.with_options(max_retries=0, timeout=timeout)
+                    client = self.client.model_copy(update={
+                        "root_client": root, "client": root.chat.completions,
+                        "request_timeout": timeout, "max_retries": 0,
+                        "max_tokens": min(4096, budget.limits.observed_tokens -
+                                          budget.view()["observed_tokens"])})
+                stats["calls"] += 1
+                response = client.with_structured_output(
                     schema, method="function_calling", include_raw=True
                 ).invoke(messages)
+            except BudgetExceeded as exc:
+                exc.stats = stats
+                raise
             except Exception as exc:
+                if reservation is not None:
+                    budget.complete(reservation, {"usage_complete": False})
                 stats["usage_complete"] = False
                 stats["duration_seconds"] = time.monotonic() - started
                 stats["failure"] = provider_failure(exc)
                 raise ModelFailure(f"Model request failed: {type(exc).__name__}", stats) from exc
             usage = response["raw"].usage_metadata or {}
+            if reservation is not None:
+                budget.complete(reservation, {"input_tokens": usage.get("input_tokens", 0),
+                    "output_tokens": usage.get("output_tokens", 0), "usage_complete": bool(usage)})
             metadata = getattr(response["raw"], "response_metadata", {}) or {}
             stats["model_reported"] = metadata.get("model_name") or metadata.get("model")
             stats["provider_response_id"] = metadata.get("id")

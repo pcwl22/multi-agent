@@ -64,6 +64,9 @@ try:
             e.get("duration_seconds", 0) for e in state["execution_history"] if e["node"] != "model"
         )
         cols[3].metric("节点执行耗时", f"{duration:.2f}s")
+        if state.get("budget_version") == 1:
+            with st.expander("任务资源与时间预算"):
+                st.json(api("GET", f"/api/tasks/{task_id}/budget"))
         if state["error"]:
             st.error(state["error"])
         diff = api("GET", f"/api/tasks/{task_id}/diff")
@@ -166,6 +169,9 @@ try:
             if st.button("继续准备任务副本"):
                 api("POST", f"/api/tasks/{task_id}/resume")
                 st.rerun()
+        elif state["execution_status"] == "budget_exhausted":
+            st.warning("任务预算已耗尽，现场与 Diff 已保留。核对诊断后创建新任务；此任务不再发起模型或 Docker 执行。")
+            st.json(state.get("budget_failure"))
         elif state["execution_status"] == "failed":
             st.info("任务已终止。检查错误、日志与补丁后创建新任务；此任务不会自动重试或发布。")
 except (httpx.HTTPError, ValueError) as exc:

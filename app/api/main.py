@@ -60,6 +60,14 @@ def create_app(settings: Settings | None = None, service: TaskService | None = N
     def get_task(task_id: str, request: Request):
         return get(request, task_id)
 
+    @api.get("/api/tasks/{task_id}/budget")
+    def task_budget(task_id: str, request: Request):
+        get(request, task_id)
+        try:
+            return tasks(request).budget(task_id)
+        except (ValueError, OSError) as exc:
+            raise HTTPException(409, str(exc)) from exc
+
     @api.get("/api/tasks/{task_id}/events")
     def events(task_id: str, request: Request):
         state = get(request, task_id)

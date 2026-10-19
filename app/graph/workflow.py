@@ -24,6 +24,7 @@ from app.services.attempts import (
     save_candidate,
     validate_isolated,
 )
+from app.services.budgets import BudgetExceeded, budget_scope, current_budget, for_state, stopped
 from app.services.regressions import regression_witness
 from app.services.transactions import apply_transaction
 from app.tools.repository import Repository, diff_repositories, digest, is_test_file, keywords
@@ -40,49 +41,46 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             @wraps(fn)
             def call(state: AgentState):
                 started = time.monotonic()
+                result = {}
+                budget = None
                 try:
-                    result = fn(state)
+                    budget = for_state(state)
+                    with budget_scope(budget):
+                        if budget:
+                            budget.check()
+                        result = fn(state)
+                        if budget:
+                            budget.check()
                     result.setdefault("execution_history", []).append(
-                        event(name, duration_seconds=time.monotonic() - started)
-                    )
-                    logger.info("node_complete", extra={"task_id": state["task_id"], "node": name})
+                        event(name, duration_seconds=time.monotonic() - started))
                     return result
                 except Exception as exc:
-                    logger.exception(
-                        "node_failed", extra={"task_id": state["task_id"], "node": name}
-                    )
-                    failed = {
-                        "execution_status": "failed",
-                        "error": str(exc)[:2000],
-                        "execution_history": [
-                            event(
-                                name,
-                                error=str(exc)[:2000],
-                                duration_seconds=time.monotonic() - started,
-                            )
-                        ],
-                    }
-                    if isinstance(exc, ModelFailure):
+                    failed = {**result, "execution_status": "failed", "error": str(exc)[:2000]}
+                    history = [*result.get("execution_history", []), event(
+                        name, error=str(exc)[:2000], duration_seconds=time.monotonic() - started)]
+                    if isinstance(exc, (ModelFailure, BudgetExceeded)) and hasattr(exc, "stats"):
                         failed.update(counters(state, exc.stats))
-                        failed["execution_history"].append(event("model", **exc.stats))
+                        history.append(event("model", **exc.stats))
                         failure = exc.stats.get("failure")
                         if failure:
                             retryable = failure["retryable"] and (
-                                state.get("provider_retry_count", 0) < settings.max_retries
-                            )
-                            failed["failure"] = {
-                                **failure,
-                                "node": name,
-                                "retryable": retryable,
+                                state.get("provider_retry_count", 0) < settings.max_retries)
+                            failed["failure"] = {**failure, "node": name, "retryable": retryable,
                                 "retry_at": time.time() + failure["retry_after_seconds"],
-                                "budget_exhausted": failure["retryable"] and not retryable,
-                            }
+                                "budget_exhausted": failure["retryable"] and not retryable}
                             if retryable:
                                 failed["execution_status"] = "retryable"
+                    if not isinstance(exc, BudgetExceeded) and budget:
+                        try:
+                            budget.check()
+                        except BudgetExceeded as exhausted:
+                            exc = exhausted
+                    if isinstance(exc, BudgetExceeded):
+                        failed.update(stopped(exc))
+                    failed["execution_history"] = history
+                    logger.info("node_stopped", extra={"task_id": state["task_id"], "node": name})
                     return failed
-
             return call
-
         return decorate
 
     def counters(state, stats):
@@ -99,13 +97,38 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             payload = {**payload, "repository_path_scope": repository_path_scope(
                 Repository(state["workspace_path"]), settings.github_repository_subdirectory,
             )}
-        value, stats = model.generate(schema, payload)
+        budget = current_budget()
+        reservation = None
+        if budget and not getattr(model, "manages_task_budget", False):
+            reservation = budget.reserve("model_requests")
+        try:
+            value, stats = model.generate(schema, payload)
+        except Exception as exc:
+            if reservation is not None:
+                budget.complete(reservation, getattr(exc, "stats", {"usage_complete": False}))
+            raise
+        if reservation is not None:
+            budget.complete(reservation, stats)
+        if budget:
+            try:
+                budget.check()
+            except BudgetExceeded as exc:
+                exc.stats = stats
+                raise
         return value, {
             **counters(state, stats),
             "execution_history": [event("model", schema=schema.__name__, **stats)],
         }
 
     def supervisor(state: AgentState):
+        if state["execution_status"] == "budget_exhausted":
+            return {"next_node": END}
+        if state["execution_status"] not in {"approved", "rejected", "failed"}:
+            try:
+                if (budget := for_state(state)) is not None:
+                    budget.check()
+            except BudgetExceeded as exc:
+                return stopped(exc)
         retry_node = "prepare_attempt" if state.get("retry_workspace_policy") == "isolated" else "coder"
         if state["execution_status"] in {"failed", "retryable", "blocked", "approved", "rejected"}:
             return {"next_node": END}
@@ -298,10 +321,23 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             **usage,
         }
 
+    def run_sandbox(workspace):
+        budget = current_budget()
+        reservation = budget.reserve("sandbox_runs") if budget else None
+        try:
+            result = runner.run(workspace)
+        finally:
+            if reservation is not None:
+                budget.complete(reservation)
+        return result
+
+    class BudgetRunner:
+        run = staticmethod(run_sandbox)
+
     @guarded("test")
     def test(state):
         validate_isolated(state)
-        result = runner.run(Path(state["workspace_path"]))
+        result = run_sandbox(Path(state["workspace_path"]))
         value = result.model_dump()
         feedback = []
         if result.status == "failed":
@@ -328,7 +364,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
     @guarded("regression")
     def regression(state):
         validate_isolated(state)
-        return {"regression_results": [{**regression_witness(state, runner),
+        return {"regression_results": [{**regression_witness(state, BudgetRunner()),
                  "attempt": state["attempts"], "diff_digest": state["diff_digest"],
                  **candidate_tags(state)}]}
 
