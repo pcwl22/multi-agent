@@ -18,3 +18,5 @@ recursive-include test_fixtures *.py *.txt *.json *.md
 exclude docs/ci-isolation-stage-20261018/release-artifacts.json
 
 include sandbox/Dockerfile.historical sandbox/historical_dotenv.py
+
+include docs/historical-evaluation-20261019/reproduction.env.example

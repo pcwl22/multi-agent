@@ -13,3 +13,6 @@ docs/iteration2/pilots/*-LICENSE.txt -whitespace
 # Preserve preregistered historical case and hidden-oracle bytes across checkouts.
 app/evaluation/historical_cases/*.json -text whitespace=cr-at-eol
 app/evaluation/historical_cases/acceptance/*.txt -text whitespace=cr-at-eol
+
+# Keep frozen historical evaluation evidence JSON byte-identical in Git.
+docs/historical-evaluation-20261019/*.json -text whitespace=cr-at-eol

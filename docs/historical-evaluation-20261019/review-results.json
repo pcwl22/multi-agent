@@ -1,0 +1,521 @@
+[
+  {
+    "task_id": "2f9d749e-7b34-4ccb-b3b9-13ccdf727e2a",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": false,
+        "summary": "The source fix in jsonpointer.py correctly wraps int(part) in try/except ValueError and raises JsonPointerException, which addresses the core leak for resolve, to_last, and set (all funnel through get_part). However, the issue explicitly requires NEW regression tests, and the diff contains no test additions. The regression_evidence reports status 'no_new_tests' with zero fail_to_pass tests, so there is no witnessed evidence that the bug is fixed. The contract_tests listed are not present in the diff/workspace. This fails the 'Add NEW regression tests' contract and leaves the fix unverified.",
+        "concerns": [
+          "No new regression tests were added; the diff only modifies jsonpointer.py.",
+          "regression_evidence shows 'no_new_tests' with fail_to_pass_count 0, so the fix is unverified against the original bug.",
+          "The contract_tests referenced (tests/test_oversized_index_regression.py) do not exist in the workspace/diff.",
+          "Without tests, the oversized-index ValueError leak is not demonstrated to be fixed."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "resolve with a numeric array index exceeding Python's integer digit conversion limit raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "get_part now wraps int(part) in try/except ValueError and raises JsonPointerException; resolve calls walk->get_part, so the ValueError is converted. Source-level check passes, but no test witnesses it."
+          },
+          {
+            "requirement": "to_last with a numeric array index exceeding Python's integer digit conversion limit raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) which now raises JsonPointerException on oversized index. Source-level check passes; no test evidence."
+          },
+          {
+            "requirement": "set with a numeric array index exceeding Python's integer digit conversion limit raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "set calls to_last -> get_part, so oversized index raises JsonPointerException. Source-level check passes; no test evidence."
+          },
+          {
+            "requirement": "resolve with a default returns that exact default object when the pointer is invalid due to an oversized numeric sequence index.",
+            "satisfied": true,
+            "evidence": "resolve catches JsonPointerException and returns default; since get_part now raises JsonPointerException (not ValueError), the default path is reached. Source-level check passes; no test evidence."
+          },
+          {
+            "requirement": "Numeric object member keys remain strings, however long, and are not converted to integers.",
+            "satisfied": true,
+            "evidence": "get_part returns part unchanged for Mapping before any int conversion, so long numeric keys stay strings. Unchanged behavior; no test evidence."
+          },
+          {
+            "requirement": "Ordinary array indices continue to resolve, to_last, and set correctly.",
+            "satisfied": true,
+            "evidence": "int(part) still succeeds for ordinary indices; existing tests (26 passed) cover ordinary index resolution and set."
+          },
+          {
+            "requirement": "End-of-list handling (e.g., '-' token) is preserved.",
+            "satisfied": true,
+            "evidence": "The '-' branch in get_part is untouched; existing test_eol and SetTests cover it (26 passed)."
+          },
+          {
+            "requirement": "Input mutation behavior of set is preserved.",
+            "satisfied": true,
+            "evidence": "set logic unchanged; existing SetTests cover inplace/non-inplace mutation (26 passed)."
+          },
+          {
+            "requirement": "New regression tests are added without modifying existing tests.",
+            "satisfied": false,
+            "evidence": "The diff contains only jsonpointer.py changes; no new test file or test functions were added. regression_evidence status is 'no_new_tests' with fail_to_pass_count 0. The referenced tests/test_oversized_index_regression.py does not exist in the workspace."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "f83e3ba0-da2a-4819-95ce-c12845acf466",
+        "candidate_number": 1
+      },
+      {
+        "approved": true,
+        "summary": "The fix wraps the int() conversion in JsonPointer.get_part with a try/except ValueError that re-raises JsonPointerException, which is the single shared index-parsing path used by resolve (via walk), to_last, and set (via to_last). This directly addresses the leaked ValueError from Python's integer string conversion digit limit. Regression evidence is solid: the 11 added tests fail on the original source with the exact ValueError and pass on the candidate (48 passed). Object member keys are handled by the Mapping branch before any int conversion, so long numeric keys remain strings. Ordinary indices, '-' end-of-list handling, and mutation semantics are unchanged by the diff.",
+        "concerns": [
+          "The new test file is placed at tests/test_oversized_index_regression.py, which is consistent with the workspace path scope; no existing tests were modified.",
+          "The except clause catches ValueError broadly, but int() on a regex-validated digit string can only raise ValueError for the digit-limit case, so this is safe and does not mask other errors."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "resolve with a numeric array index exceeding Python's integer digit conversion limit raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "get_part now wraps int(part) in try/except ValueError raising JsonPointerException (jsonpointer.py diff). resolve -> walk -> get_part. Baseline evidence shows ValueError leaked at jsonpointer.py:242; candidate passes test_resolve_oversized_index_raises_jsonpointerexception and test_resolve_oversized_index_does_not_leak_valueerror."
+          },
+          {
+            "requirement": "to_last with a numeric array index exceeding Python's integer digit conversion limit raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) which now raises JsonPointerException. Baseline shows ValueError at jsonpointer.py:242 via to_last; candidate passes test_to_last_oversized_index_raises_jsonpointerexception and test_to_last_oversized_index_does_not_leak_valueerror."
+          },
+          {
+            "requirement": "set with a numeric array index exceeding Python's integer digit conversion limit raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "set calls to_last -> get_part, now raising JsonPointerException. Baseline shows ValueError via set_pointer -> set -> to_last; candidate passes test_set_oversized_index_raises_jsonpointerexception, test_set_pointer_oversized_index_raises_jsonpointerexception, and test_set_oversized_index_does_not_leak_valueerror."
+          },
+          {
+            "requirement": "resolve with a default returns that exact default object when the pointer is invalid due to an oversized numeric sequence index.",
+            "satisfied": true,
+            "evidence": "resolve catches JsonPointerException and returns default when default is not _nothing. Since get_part now raises JsonPointerException, the default path is reached. Candidate passes test_resolve_oversized_index_with_default_returns_exact_default (assertIs sentinel), test_resolve_oversized_index_with_default_none_returns_none (assertIsNone), and test_resolve_oversized_index_nested_with_default (assertIs sentinel)."
+          },
+          {
+            "requirement": "Numeric object member keys remain strings, however long, and are not converted to integers.",
+            "satisfied": true,
+            "evidence": "get_part returns part unchanged for Mapping before any int conversion. Candidate passes test_long_numeric_key_resolves_as_string (assertIsInstance str), test_long_numeric_key_is_not_converted_to_int (get_part returns str), test_long_numeric_key_set_as_string, and test_long_numeric_key_to_last_returns_string."
+          },
+          {
+            "requirement": "Ordinary array indices continue to resolve, to_last, and set correctly.",
+            "satisfied": true,
+            "evidence": "The diff only adds a try/except around int(part); successful conversion path is unchanged. Candidate passes test_resolve_ordinary_index, test_to_last_ordinary_index, and test_set_ordinary_index, plus the full existing suite (48 passed)."
+          },
+          {
+            "requirement": "End-of-list handling (e.g., '-' token) is preserved.",
+            "satisfied": true,
+            "evidence": "The '-' branch in get_part is untouched by the diff. Candidate passes test_resolve_dash_returns_end_of_list (assertIsInstance EndOfList) and test_set_dash_appends, and existing test_eol still passes."
+          },
+          {
+            "requirement": "Input mutation behavior of set is preserved.",
+            "satisfied": true,
+            "evidence": "set's inplace/deepcopy logic is unchanged. Candidate passes test_set_inplace_mutates (assertIs result doc), test_set_not_inplace_does_not_mutate (assertIsNot newdoc doc, original unchanged), and test_set_oversized_index_does_not_mutate_doc."
+          },
+          {
+            "requirement": "New regression tests are added without modifying existing tests.",
+            "satisfied": true,
+            "evidence": "Diff adds only tests/test_oversized_index_regression.py; tests.py and tests/test_original_collection.py are untouched. Full suite reports 48 passed with no collection errors."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "39828803-d042-4f65-abab-510636e84290",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "d569e545-a1c5-460d-a45c-78064934b390",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The candidate patch wraps the timestamp-to-datetime conversion in TimestampSigner.unsign's invalid-signature path with a try/except catching ValueError, OverflowError, and OSError, raising BadTimeSignature(\"Malformed timestamp\", payload=value, date_signed=None) from the original signature error. This directly addresses the issue: an invalid signature whose decoded timestamp is outside datetime's supported range now yields BadTimeSignature with the original payload and date_signed=None instead of leaking a raw datetime error. The valid-signature path, expiry behavior, and ordinary invalid-signature date_signed metadata are untouched. New regression tests were added in a separate file (tests/test_itsdangerous/test_timed_regression.py) without modifying existing tests. Regression evidence shows the four fail_to_pass tests failed on the original source (with OSError/ValueError leaking) and pass on the candidate, and the full suite passes (306 passed).",
+        "concerns": [
+          "The new tests use OUT_OF_RANGE_TS = 999999999999999999, which on this platform raises OSError rather than ValueError; the except clause covers both, so the contract is satisfied, but the ValueError-specific scenario (e.g., a timestamp that produces 'year out of range' under freezegun) is only exercised by the pre-existing test_malformed_future_timestamp, which also passes on the candidate.",
+          "The message string \"Malformed timestamp\" is asserted only loosely (substring \"Malformed\"); this matches the existing codebase convention for malformed timestamps, so it is acceptable."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "TimestampSigner.unsign raises BadTimeSignature (not datetime ValueError) when an invalid signature decodes to a timestamp outside datetime's supported year range.",
+            "satisfied": true,
+            "evidence": "timed.py now wraps self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature. test_out_of_range_timestamp_raises_bad_time_signature asserts pytest.raises(BadTimeSignature) and not isinstance(exc, ValueError); it failed on baseline (OSError leaked) and passes on candidate."
+          },
+          {
+            "requirement": "The raised BadTimeSignature carries the original payload.",
+            "satisfied": true,
+            "evidence": "The except branch raises BadTimeSignature(\"Malformed timestamp\", payload=value, date_signed=None), where value is the split payload. test_out_of_range_timestamp_preserves_payload_and_none_date_signed asserts err.payload == b\"value\"; failed on baseline, passes on candidate."
+          },
+          {
+            "requirement": "The raised BadTimeSignature has date_signed=None for malformed/out-of-range timestamps.",
+            "satisfied": true,
+            "evidence": "date_signed=None is passed explicitly in the new raise. test_out_of_range_timestamp_preserves_payload_and_none_date_signed asserts err.date_signed is None; failed on baseline, passes on candidate."
+          },
+          {
+            "requirement": "Valid roundtrip sign/unsign returns the original payload unchanged.",
+            "satisfied": true,
+            "evidence": "The valid-signature path is unchanged. test_valid_roundtrip_returns_original_payload asserts signer.unsign(signer.sign(b\"hello world\")) == b\"hello world\"; passes on candidate."
+          },
+          {
+            "requirement": "Ordinary invalid signatures with in-range timestamps still raise BadTimeSignature with date_signed metadata populated.",
+            "satisfied": true,
+            "evidence": "The final raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt) is preserved for in-range timestamps. test_ordinary_invalid_signature_keeps_date_signed_metadata asserts date_signed == datetime.fromtimestamp(1000000000, tz=timezone.utc); passes on candidate."
+          },
+          {
+            "requirement": "Expired valid signatures still raise SignatureExpired.",
+            "satisfied": true,
+            "evidence": "The max_age expiry branch is untouched. test_expired_valid_signature_raises_signature_expired asserts SignatureExpired with payload preserved and datetime date_signed; passes on candidate."
+          },
+          {
+            "requirement": "The public timed serializer (TimedSerializer.loads) retains its BadSignature-family error contract for malformed timestamps.",
+            "satisfied": true,
+            "evidence": "TimedSerializer.loads catches BadSignature and re-raises the last exception; since the new error is a BadTimeSignature (BadSignature subclass), the contract holds. test_timed_serializer_out_of_range_timestamp_raises_bad_signature_family asserts BadSignature/BadTimeSignature and not ValueError; failed on baseline, passes on candidate."
+          },
+          {
+            "requirement": "Existing tests are not modified; new regression tests are added.",
+            "satisfied": true,
+            "evidence": "The diff adds only tests/test_itsdangerous/test_timed_regression.py; no existing test file is modified. Full suite reports 306 passed with the new tests included."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "1ed8017e-73c9-44b6-a381-d39e6d5c303d",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "8b4e7037-6378-463c-84dd-b63dea2a017f",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "repeat": 1,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The fix wraps the int() conversion in JsonPointer.get_part with a try/except ValueError that raises JsonPointerException, which is the single shared index-parsing path used by resolve (via walk), to_last, and set. This directly addresses the leaked ValueError from Python's integer digit conversion limit. Regression evidence is strong: 13 added tests failed on the original source with the exact leaked ValueError and pass on the candidate (56 passed). All acceptance contracts are covered by concrete tests, and existing tests (tests.py, tests/test_original_collection.py) are untouched.",
+        "concerns": [
+          "The except ValueError re-raise does not use 'from None'/'from e', so the JsonPointerException will chain the original ValueError as __context__. This is cosmetic and does not violate any stated contract (the raised exception type is JsonPointerException).",
+          "The oversized-index tests rely on sys.get_int_max_str_digits() default (4300); if a runner disables the limit, the oversized token would instead be a valid huge index and raise JsonPointerException via IndexError/out-of-bounds anyway, so the contract still holds."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "resolve with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "get_part now catches ValueError from int(part) and raises JsonPointerException. Tests test_resolve_raises_jsonpointerexception, test_resolve_pointer_raises_jsonpointerexception, test_resolve_does_not_leak_valueerror are in fail_to_pass_tests and failed on baseline with the leaked ValueError, passing on candidate."
+          },
+          {
+            "requirement": "to_last with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) which now raises JsonPointerException. Tests test_to_last_raises_jsonpointerexception, test_to_last_does_not_leak_valueerror, test_to_last_nested_raises_jsonpointerexception are in fail_to_pass_tests with baseline ValueError evidence."
+          },
+          {
+            "requirement": "set with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "set calls to_last -> get_part, so the guarded conversion applies. Tests test_set_raises_jsonpointerexception, test_set_pointer_raises_jsonpointerexception, test_set_does_not_leak_valueerror, test_set_nested_raises_jsonpointerexception are in fail_to_pass_tests with baseline ValueError evidence."
+          },
+          {
+            "requirement": "resolve with a default returns that exact default object for an oversized numeric sequence index.",
+            "satisfied": true,
+            "evidence": "resolve catches JsonPointerException and returns default; since get_part now raises JsonPointerException, the default path is reached. Tests test_resolve_with_default_returns_exact_default (assertIs), test_resolve_with_default_returns_exact_default_nested (assertIs), test_resolve_with_default_none (assertIsNone) are in fail_to_pass_tests and failed on baseline."
+          },
+          {
+            "requirement": "Numeric object member keys remain strings, however long.",
+            "satisfied": true,
+            "evidence": "get_part returns part unchanged for Mapping before any int conversion. LongNumericObjectKeyTests assert string resolution, str type, set-as-string, and to_last returning str; these pass on candidate."
+          },
+          {
+            "requirement": "Ordinary array indices continue to resolve, to_last, and set correctly.",
+            "satisfied": true,
+            "evidence": "int(part) still returns int for valid indices; OrdinaryIndexPreservedTests cover resolve /0 /2, to_last returning int 1, set /1, plus out-of-bounds, invalid index, and leading-zero still raising JsonPointerException. All pass."
+          },
+          {
+            "requirement": "End-of-list handling ('-' token) is preserved.",
+            "satisfied": true,
+            "evidence": "get_part returns '-' before the int conversion; EndOfListPreservedTests verify resolve returns EndOfList, '/foo/-/1' raises, and set appends. All pass."
+          },
+          {
+            "requirement": "Input mutation behavior of set is preserved.",
+            "satisfied": true,
+            "evidence": "No change to set's inplace/deepcopy logic. MutationBehaviorPreservedTests verify inplace identity mutation, non-inplace non-mutation, root inplace raise, and root non-inplace return. All pass."
+          },
+          {
+            "requirement": "New regression tests are added without modifying existing tests.",
+            "satisfied": true,
+            "evidence": "New file tests/test_oversized_index_regression.py added; diff shows no changes to tests.py or tests/test_original_collection.py. Full suite reports 56 passed."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "70cd8e7e-f815-4b82-b234-3456273ef289",
+        "candidate_number": 1
+      }
+    ]
+  },
+  {
+    "task_id": "7a9a768a-341d-44c4-b07d-2dcbd0299875",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "repeat": 1,
+    "reviews": [
+      {
+        "approved": false,
+        "summary": "The diff correctly wraps timestamp_to_datetime in a try/except on the invalid-signature path and raises BadTimeSignature with payload=value and date_signed=None, which matches the core issue requirement. However, the issue explicitly requires NEW regression tests, and the regression_evidence shows status 'no_new_tests' with an empty generated_tests list and no baseline replay. The contract_tests reference a file tests/test_itsdangerous/test_timed_regression.py that is not present in the workspace paths and was not added by the diff. The 297 passing tests are the pre-existing suite, which does not exercise the new out-of-range behavior. Therefore the 'add new regression tests' contract is unsatisfied and the fix is unverified against the specific bug.",
+        "concerns": [
+          "No new regression tests were added; regression_evidence reports 'no_new_tests' with empty generated_tests and no baseline_result/fail_to_pass_tests.",
+          "The contract_tests reference tests/test_itsdangerous/test_timed_regression.py, which does not exist in the workspace and is not created by the diff.",
+          "The 297 passing tests are the existing suite and do not demonstrate the out-of-range timestamp path is fixed; no fail_to_pass evidence exists.",
+          "The diff only catches ValueError/OverflowError/OSError around timestamp_to_datetime; the valid-signature path (ts_int is None) and expiry path are unchanged, which is fine, but the malformed-timestamp-on-valid-signature path still raises BadTimeSignature without date_signed=None explicitly (defaults to None), acceptable but untested."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "TimestampSigner.unsign with an invalid signature whose decoded timestamp is outside datetime's supported year range raises BadTimeSignature instead of leaking datetime ValueError.",
+            "satisfied": true,
+            "evidence": "Diff wraps self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature('Malformed timestamp', payload=value, date_signed=None) from sig_error. This converts the leaked datetime error into BadTimeSignature on the invalid-signature path."
+          },
+          {
+            "requirement": "The raised BadTimeSignature has date_signed=None for malformed timestamps on the invalid-signature path.",
+            "satisfied": true,
+            "evidence": "The new raise explicitly passes date_signed=None."
+          },
+          {
+            "requirement": "The raised BadTimeSignature carries the original payload.",
+            "satisfied": true,
+            "evidence": "The new raise passes payload=value, where value is the split original payload (result.rsplit(sep, 1)[0])."
+          },
+          {
+            "requirement": "Valid signature roundtrips still return the original payload.",
+            "satisfied": true,
+            "evidence": "The valid-signature path (sig_error is None) is untouched; ts_int is decoded and value returned. No change to that branch in the diff."
+          },
+          {
+            "requirement": "Ordinary invalid signatures (valid-range timestamp) still raise BadTimeSignature with date_signed metadata preserved.",
+            "satisfied": true,
+            "evidence": "When timestamp_to_datetime succeeds, ts_dt is set and the existing raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt) executes unchanged."
+          },
+          {
+            "requirement": "Expired timestamps still raise BadTimeSignature with the expected date_signed and expiry behavior.",
+            "satisfied": true,
+            "evidence": "The max_age branch raising SignatureExpired with date_signed=self.timestamp_to_datetime(ts_int) is unchanged by the diff."
+          },
+          {
+            "requirement": "TimedSerializer retains its BadSignature-family error contract for malformed timestamps.",
+            "satisfied": true,
+            "evidence": "BadTimeSignature subclasses BadSignature (exc.py), and TimedSerializer.loads catches BadSignature; the new raise uses BadTimeSignature, so the family contract is preserved."
+          },
+          {
+            "requirement": "New regression tests are added without modifying existing tests.",
+            "satisfied": false,
+            "evidence": "regression_evidence status is 'no_new_tests' with generated_tests=[] and no baseline_result/fail_to_pass_tests. The diff contains only src/itsdangerous/timed.py changes. The referenced tests/test_itsdangerous/test_timed_regression.py is absent from workspace_paths and not created by the diff. The 297 passing tests are the pre-existing suite and do not exercise the out-of-range timestamp path."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "73e18774-ba55-493a-ad55-3916e286e3b3",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "9c5d87d5-8602-4fe4-ad7c-5baa8ace044f",
+    "case_id": "slugify-uppercase-translations",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The fix removes the early `return char_list` inside the loop of `add_uppercase_char`, so every original pair in `_CYRILLIC`, `_GERMAN`, and `_GREEK` now gets an uppercase variant inserted at the front of the list. The existing capitalization convention (`char.upper()`, `xlate.capitalize()`) and the duplicate/identity guard (`upper_dict not in char_list and char != upper_dict[0]`) are preserved, and the function still returns the mutated list. Regression evidence is solid: the same added tests fail on the original source (5 failures, e.g. `('Ö','Oe')` missing) and pass on the candidate (106 passed). Ordinary slugify and smart_truncate behavior is untouched since only `slugify/special.py` changed.",
+        "concerns": [
+          "The new test `test_replacement_enabled_slugify_agrees_for_german` uses replacements `[('Ü','Ue'),('ü','ue')]` and expects `ueber-ueber-german-umlaut`; this passes but does not actually exercise the newly added PRE_TRANSLATIONS uppercase entries (it supplies its own replacements). The agreement contract is only weakly tested, though the core fix and its regression evidence are sound.",
+          "The issue mentions 'later German and other non-Latin characters'; the fix correctly covers all three language lists, and tests cover German and Greek, which is adequate."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "add_uppercase_char processes every original pair in PRE_TRANSLATIONS, not just the first.",
+            "satisfied": true,
+            "evidence": "Diff removes the in-loop `return char_list`; the loop now iterates all items. Baseline evidence shows `test_add_uppercase_char_processes_all_pairs` failed on original source with `('Ö','Oe') not found in [('Ä','Ae'),('ä','ae'),('ö','oe'),('ü','ue')]` and passes on candidate."
+          },
+          {
+            "requirement": "After processing, PRE_TRANSLATIONS contains an uppercase variant for each original pair, including later German and other non-Latin characters.",
+            "satisfied": true,
+            "evidence": "`test_processes_every_original_pair` failed on baseline for 'я' and passes on candidate; `test_later_german_characters_get_uppercase_variants` and `test_later_greek_characters_get_uppercase_variants` failed on baseline and pass on candidate."
+          },
+          {
+            "requirement": "Existing uppercase entries are retained and no duplicate keys are introduced.",
+            "satisfied": true,
+            "evidence": "Guard `if upper_dict not in char_list and char != upper_dict[0]` is unchanged. `test_existing_uppercase_entries_retained`, `test_no_duplicate_keys`, and `test_add_uppercase_char_no_duplicates` pass on candidate."
+          },
+          {
+            "requirement": "The existing capitalization convention used for uppercase variants is preserved.",
+            "satisfied": true,
+            "evidence": "Code still computes `upper_dict = char.upper(), xlate.capitalize()`. `test_capitalization_convention_preserved` failed on baseline (`('Я','Ya')` missing) and passes on candidate."
+          },
+          {
+            "requirement": "Public PRE_TRANSLATIONS and replacement-enabled slugify agree for the affected characters.",
+            "satisfied": true,
+            "evidence": "PRE_TRANSLATIONS = CYRILLIC + GERMAN + GREEK now includes all uppercase variants; `test_pre_translations_uppercase_entries_usable_as_replacements` iterates all uppercase entries and passes. The German agreement tests pass, though they supply explicit replacements rather than relying on PRE_TRANSLATIONS."
+          },
+          {
+            "requirement": "Ordinary slugify behavior is unchanged.",
+            "satisfied": true,
+            "evidence": "Only `slugify/special.py` changed; `slugify/slugify.py` untouched. `test_ordinary_slugify_unchanged` passes and the full suite (106 passed) includes the original test.py collection."
+          },
+          {
+            "requirement": "smart_truncate behavior is unchanged.",
+            "satisfied": true,
+            "evidence": "`smart_truncate` in `slugify/slugify.py` is unmodified; `test_smart_truncate_unchanged` passes on candidate."
+          },
+          {
+            "requirement": "New regression tests are added in a new file; test.py is not edited.",
+            "satisfied": true,
+            "evidence": "Diff adds `tests/test_uppercase_translations.py` (111 lines) and does not modify `test.py`; `tests/test_original_collection.py` still loads the original test.py."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "44017158-a464-4b1f-8b1c-980f1d9b7d82",
+        "candidate_number": 1
+      }
+    ]
+  },
+  {
+    "task_id": "4c4c2f1f-0100-49f0-9f42-dfd6548350e1",
+    "case_id": "slugify-uppercase-translations",
+    "mode": "multi_full",
+    "repeat": 1,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The fix removes the early `return char_list` inside the loop of `add_uppercase_char`, so every original pair in `_CYRILLIC`, `_GERMAN`, and `_GREEK` is processed. The loop still uses the existing convention `(char.upper(), xlate.capitalize())`, still guards against duplicates via `if upper_dict not in char_list and char != upper_dict[0]`, and still mutates/returns the same list. New regression tests in `tests/test_special_uppercase.py` cover every original pair, later German/Greek characters, no duplicate keys, retention of existing uppercase entries, capitalization convention, in-place mutation, public PRE_TRANSLATIONS contents, replacement-enabled slugify agreement, and unchanged ordinary slugify/smart_truncate behavior. Docker regression evidence shows the four key tests fail on the original source and pass on the candidate (106 passed), and the original test.py/tests/test_original_collection.py are untouched.",
+        "concerns": [
+          "The agreement test `test_pre_translations_uppercase_matches_slugify_replacement` is somewhat weak because it compares uppercase vs lowercase replacement slugs rather than directly deriving expected output from PRE_TRANSLATIONS, but the German and Cyrillic agreement tests do assert concrete expected values.",
+          "The issue's phrase 'PRE_TRANSLATIONS and replacement-enabled slugify must agree' is interpreted as the uppercase entries being present and usable as replacements; the tests demonstrate this for German and Cyrillic with concrete expected slugs."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "add_uppercase_char processes every original pair in PRE_TRANSLATIONS, not just the first.",
+            "satisfied": true,
+            "evidence": "Diff removes the early `return char_list` inside the for loop in slugify/special.py; the loop now iterates all items. Test test_processes_every_original_pair iterates _CYRILLIC/_GERMAN/_GREEK and asserts each (char.upper(), xlate.capitalize()) is in PRE_TRANSLATIONS; this test failed on baseline (AssertionError: ('Я','Ya') not found) and passes on candidate."
+          },
+          {
+            "requirement": "After processing, PRE_TRANSLATIONS contains an uppercase variant for each original pair, including later German and other non-Latin characters.",
+            "satisfied": true,
+            "evidence": "test_later_german_characters_get_uppercase_variants asserts ('Ä','Ae'), ('Ö','Oe'), ('Ü','Ue') present; test_later_non_latin_characters_get_uppercase_variants asserts ('Χ','Ch'), ('Υ','Y') present. Both failed on baseline and pass on candidate (106 passed)."
+          },
+          {
+            "requirement": "Existing uppercase entries are retained and not duplicated (no duplicate keys).",
+            "satisfied": true,
+            "evidence": "Guard `if upper_dict not in char_list and char != upper_dict[0]` is preserved. test_no_duplicate_keys asserts len(keys)==len(set(keys)); test_existing_uppercase_entries_retained asserts ('Ξ','X') and ('ϒ','Y') each appear exactly once. These pass on candidate."
+          },
+          {
+            "requirement": "The existing capitalization convention used for uppercase variants is preserved.",
+            "satisfied": true,
+            "evidence": "Code still computes `upper_dict = char.upper(), xlate.capitalize()`. test_capitalization_convention_preserved asserts (char.upper(), xlate.capitalize()) for _GERMAN and _CYRILLIC; failed on baseline (('Ö','Oe') not found) and passes on candidate."
+          },
+          {
+            "requirement": "Public PRE_TRANSLATIONS and replacement-enabled slugify agree for the affected characters.",
+            "satisfied": true,
+            "evidence": "test_public_pre_translations_contains_uppercase_entries asserts ('Ä','Ae') and ('Ё','E') in public PRE_TRANSLATIONS. test_replacement_enabled_slugify_agrees_for_german asserts slugify('ÜBER Über German Umlaut', replacements=[('Ü','UE'),('ü','ue')])=='ueber-ueber-german-umlaut'; test_replacement_enabled_slugify_agrees_for_cyrillic asserts slugify('Ёлка', replacements=[('Ё','E'),('ё','e')])=='elka'. All pass on candidate."
+          },
+          {
+            "requirement": "Ordinary slugify behavior is unchanged.",
+            "satisfied": true,
+            "evidence": "test_ordinary_slugify_unchanged asserts slugify('This is a test ---')=='this-is-a-test', slugify('影師嗎')=='ying-shi-ma', slugify('Компьютер')=='kompiuter', slugify(\"C'est déjà l'été.\")=='c-est-deja-l-ete'. Passes on candidate; the change only affects special.py's uppercase insertion, not slugify.py."
+          },
+          {
+            "requirement": "smart_truncate behavior is unchanged.",
+            "satisfied": true,
+            "evidence": "test_smart_truncate_unchanged and test_smart_truncate_no_max_length assert multiple concrete outputs; slugify.py is not modified in the diff. Passes on candidate."
+          },
+          {
+            "requirement": "New regression tests are added; test.py and tests/test_original_collection.py are not modified.",
+            "satisfied": true,
+            "evidence": "Diff adds tests/test_special_uppercase.py (122 lines) and does not touch test.py or tests/test_original_collection.py. Regression evidence confirms the four fail_to_pass tests fail on baseline and pass on candidate."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "c08cae8d-9cde-4da6-8b5c-8b0426e84938",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "3285ae34-504d-4737-b46c-a4e90572b571",
+    "case_id": "dotenv-empty-comment",
+    "mode": "multi_full",
+    "repeat": 1,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The fix in src/dotenv/parser.py handles the reported bug: when the equal sign is followed by whitespace and then a '#', the value is set to '' instead of parsing the comment text. The condition `len(equal_sign) > 1 and reader.peek(1) == \"#\"` correctly distinguishes `KEY= # comment` (empty string) from `KEY=#literal` (literal hash), because `_equal_sign` captures the '=' plus any following non-newline whitespace. New regression tests in tests/test_parser_empty_value_comment.py cover all stated contracts, and regression evidence shows 9 tests failing on original source and passing on the candidate, with the full suite passing (252 passed, 1 skipped).",
+        "concerns": [
+          "The fix relies on `_equal_sign` capturing trailing whitespace; this is correct given the regex `(=[^\\S\\r\\n]*)`, but it is a somewhat implicit coupling. It works for the stated cases.",
+          "No CHANGELOG entry was added, though the issue did not explicitly require one."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "`KEY= # comment` parses to value '' (empty string).",
+            "satisfied": true,
+            "evidence": "test_space_separated_comment_after_empty_value_is_empty_string asserts bindings[0].value == \"\" and isinstance str; failed on baseline with '# comment', passes on candidate."
+          },
+          {
+            "requirement": "`KEY=\\t# comment` (tab-separated) parses to value '' (empty string).",
+            "satisfied": true,
+            "evidence": "test_tab_separated_comment_after_empty_value_is_empty_string asserts value == \"\"; baseline failed with '# comment', candidate passes."
+          },
+          {
+            "requirement": "`KEY=#literal` parses to value '#literal' (hash not treated as comment when no preceding whitespace).",
+            "satisfied": true,
+            "evidence": "test_hash_without_preceding_whitespace_is_literal asserts value == \"#literal\"; passes on candidate. The condition requires len(equal_sign) > 1, so no whitespace means parse_value is used, preserving '#literal'."
+          },
+          {
+            "requirement": "A hash inside a nonempty unquoted value (e.g. `KEY=value#notcomment`) remains literal.",
+            "satisfied": true,
+            "evidence": "test_hash_inside_nonempty_unquoted_value_is_literal asserts value == \"value#notcomment\"; passes on candidate."
+          },
+          {
+            "requirement": "A hash inside a quoted value (e.g. `KEY=\"value # not comment\"`) remains literal.",
+            "satisfied": true,
+            "evidence": "test_hash_inside_quoted_value_is_literal and test_hash_inside_single_quoted_value_is_literal assert the literal value; pass on candidate."
+          },
+          {
+            "requirement": "A key without '=' parses to value None.",
+            "satisfied": true,
+            "evidence": "test_key_without_equals_is_none asserts bindings[0].value is None; passes on candidate."
+          },
+          {
+            "requirement": "Adjacent lines are parsed independently and correctly.",
+            "satisfied": true,
+            "evidence": "test_adjacent_lines_parsed_independently asserts [('A',''),('B','#literal'),('C','value#x')]; baseline failed, candidate passes."
+          },
+          {
+            "requirement": "`export KEY=value` bindings parse correctly.",
+            "satisfied": true,
+            "evidence": "test_export_binding_with_empty_value_and_comment asserts key 'KEY' and value ''; baseline failed, candidate passes."
+          },
+          {
+            "requirement": "CRLF line endings are handled correctly.",
+            "satisfied": true,
+            "evidence": "test_crlf_line_endings_with_empty_value_and_comment asserts [('A',''),('B','#literal')]; baseline failed, candidate passes."
+          },
+          {
+            "requirement": "dotenv_values stream parsing still works.",
+            "satisfied": true,
+            "evidence": "test_dotenv_values_stream_parsing_empty_value_comment asserts values['KEY']=='' and values['OTHER']=='#literal'; baseline failed, candidate passes."
+          },
+          {
+            "requirement": "load_dotenv override behavior is preserved.",
+            "satisfied": true,
+            "evidence": "test_load_dotenv_override_behavior_preserved asserts override=False keeps 'from-env' and override=True sets ''; baseline failed, candidate passes."
+          },
+          {
+            "requirement": "New regression tests added without editing original tests.",
+            "satisfied": true,
+            "evidence": "Diff adds only tests/test_parser_empty_value_comment.py; no modifications to existing test files. Full suite 252 passed, 1 skipped."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "4558e08e-4943-44b7-80c1-e1d760d324e5",
+        "candidate_number": 1
+      }
+    ]
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "runtime_commit": "9369b9fe55893ce9ab4a4539a009da152965e0c3",
+  "preregistration_sha256": "2a1d0034f196b5389ee3d66ae2221edc820ed850760180cc6d933c7d68e8e247",
+  "complete_matrix": true,
+  "runs": 24,
+  "all_target_tests_have_fixed_docker_image": true,
+  "formal_task_sandbox_reservations": 37,
+  "formal_evaluator_docker_probes": 22,
+  "fixed_reference_control_docker_probes": 16,
+  "all_original_tests_unchanged": true,
+  "all_approvals_pending": true,
+  "corpus_and_oracles_unchanged": true,
+  "app_files_source_install_match": 107,
+  "previous_tests_helpers_unchanged": 77,
+  "installed_wheel_full_suite": {
+    "tests": 258,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 256
+  },
+  "junit_sha256": "63412eb56fafc46f2e8c2974e0e9339c2b424201ab2ed67c20ce631af732d224",
+  "ruff_passed_before_runtime_commit": true,
+  "source_distribution_rebuild_tested": false,
+  "github_writes": false,
+  "new_head_github_ci": "not published"
+}
