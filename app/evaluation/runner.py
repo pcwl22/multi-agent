@@ -110,6 +110,7 @@ def run_evaluation(
     *,
     dataset_file: Path | None = None,
     workers: int = 1,
+    evaluation_runner=None,
 ) -> dict:
     dataset_file = (dataset_file or Path(__file__).parent / "dataset.json").resolve(strict=True)
     dataset_root = dataset_file.parent
@@ -142,7 +143,7 @@ def run_evaluation(
             raise ValueError("Dataset acceptance must be a file inside the dataset directory")
         resolved_cases.append((case, source, acceptance))
     service = TaskService(settings)
-    runner = DockerRunner(settings)
+    runner = evaluation_runner or DockerRunner(settings)
     records = []
     output.mkdir(parents=True, exist_ok=True)
     record_lock = threading.Lock()

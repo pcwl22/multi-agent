@@ -16,3 +16,5 @@ exclude docs/iteration4/release-artifacts.json
 recursive-include test_fixtures *.py *.txt *.json *.md
 
 exclude docs/ci-isolation-stage-20261018/release-artifacts.json
+
+include sandbox/Dockerfile.historical sandbox/historical_dotenv.py

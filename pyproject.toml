@@ -27,6 +27,7 @@ Repository = "https://github.com/pcwl22/multi-agent"
 repopilot = "app.cli:main"
 repopilot-mcp = "app.mcp_server.server:main"
 repopilot-eval = "app.evaluation.runner:main"
+repopilot-eval-historical = "app.evaluation.historical:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
@@ -34,6 +35,8 @@ include = ["app*"]
 [tool.setuptools.package-data]
 "app.evaluation" = ["dataset.json", "acceptance/*.py"]
 "app.evaluation.expanded" = ["*.json", "*.md", "acceptance/*.py", "repos/*/*.py", "repos/*/*.md", "repos/*/tests/*.py"]
+
+"app.evaluation.historical_cases" = ["*.json", "acceptance/*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
