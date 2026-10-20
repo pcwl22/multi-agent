@@ -1,0 +1,287 @@
+{
+  "runtime_commit": "098ca56cf0680e2db31a2e353c56be94b94a2309",
+  "preregistration_sha256": "2a0749ad146fe449fbce3aaff3fba4cd087905c4dc3b19f4495252c9ccca7303",
+  "planned_tasks": 36,
+  "completed_tasks": 36,
+  "created_tasks": 36,
+  "cohorts": {
+    "observed_calibration": [
+      "jsonpointer-large-index",
+      "itsdangerous-date-overflow",
+      "dotenv-empty-comment",
+      "slugify-uppercase-translations",
+      "jsonpointer-subclass-join",
+      "jsonpointer-assignment-errors"
+    ]
+  },
+  "groups": {
+    "all": {
+      "legacy": {
+        "single": {
+          "planned_runs": 6,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 3,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 82485,
+          "model_calls": 9,
+          "duration_seconds": 196.95659030000206,
+          "recorded_tokens_including_partial": 82485,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 6
+        },
+        "multi_no_review": {
+          "planned_runs": 6,
+          "ready_and_accepted": 2,
+          "strict_success_rate": 0.3333333333333333,
+          "holdout_passed": 2,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 95007,
+          "model_calls": 12,
+          "duration_seconds": 218.72083880000082,
+          "recorded_tokens_including_partial": 95007,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 6
+        },
+        "multi_full": {
+          "planned_runs": 6,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 5,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 224610,
+          "model_calls": 23,
+          "duration_seconds": 515.0575106000006,
+          "recorded_tokens_including_partial": 239131,
+          "regression_demonstrated": 4,
+          "regression_not_executed_for_current_candidate": 1
+        }
+      },
+      "quality": {
+        "single": {
+          "planned_runs": 6,
+          "ready_and_accepted": 2,
+          "strict_success_rate": 0.3333333333333333,
+          "holdout_passed": 2,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 94170,
+          "model_calls": 9,
+          "duration_seconds": 201.23976380000113,
+          "recorded_tokens_including_partial": 94170,
+          "regression_demonstrated": 2,
+          "regression_not_executed_for_current_candidate": 4
+        },
+        "multi_no_review": {
+          "planned_runs": 6,
+          "ready_and_accepted": 4,
+          "strict_success_rate": 0.6666666666666666,
+          "holdout_passed": 4,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 78511,
+          "model_calls": 11,
+          "duration_seconds": 231.88715970000067,
+          "recorded_tokens_including_partial": 78511,
+          "regression_demonstrated": 4,
+          "regression_not_executed_for_current_candidate": 2
+        },
+        "multi_full": {
+          "planned_runs": 6,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 3,
+          "budget_exhausted": 3,
+          "unknown_usage": 3,
+          "infrastructure_blocked": 0,
+          "provider_failures": 3,
+          "observed_tokens": 122539,
+          "model_calls": 13,
+          "duration_seconds": 292.74951599999986,
+          "recorded_tokens_including_partial": 122539,
+          "regression_demonstrated": 3,
+          "regression_not_executed_for_current_candidate": 3
+        }
+      }
+    },
+    "observed_calibration": {
+      "legacy": {
+        "single": {
+          "planned_runs": 6,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 3,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 82485,
+          "model_calls": 9,
+          "duration_seconds": 196.95659030000206,
+          "recorded_tokens_including_partial": 82485,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 6
+        },
+        "multi_no_review": {
+          "planned_runs": 6,
+          "ready_and_accepted": 2,
+          "strict_success_rate": 0.3333333333333333,
+          "holdout_passed": 2,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 95007,
+          "model_calls": 12,
+          "duration_seconds": 218.72083880000082,
+          "recorded_tokens_including_partial": 95007,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 6
+        },
+        "multi_full": {
+          "planned_runs": 6,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 5,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 224610,
+          "model_calls": 23,
+          "duration_seconds": 515.0575106000006,
+          "recorded_tokens_including_partial": 239131,
+          "regression_demonstrated": 4,
+          "regression_not_executed_for_current_candidate": 1
+        }
+      },
+      "quality": {
+        "single": {
+          "planned_runs": 6,
+          "ready_and_accepted": 2,
+          "strict_success_rate": 0.3333333333333333,
+          "holdout_passed": 2,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 94170,
+          "model_calls": 9,
+          "duration_seconds": 201.23976380000113,
+          "recorded_tokens_including_partial": 94170,
+          "regression_demonstrated": 2,
+          "regression_not_executed_for_current_candidate": 4
+        },
+        "multi_no_review": {
+          "planned_runs": 6,
+          "ready_and_accepted": 4,
+          "strict_success_rate": 0.6666666666666666,
+          "holdout_passed": 4,
+          "budget_exhausted": 2,
+          "unknown_usage": 2,
+          "infrastructure_blocked": 0,
+          "provider_failures": 2,
+          "observed_tokens": 78511,
+          "model_calls": 11,
+          "duration_seconds": 231.88715970000067,
+          "recorded_tokens_including_partial": 78511,
+          "regression_demonstrated": 4,
+          "regression_not_executed_for_current_candidate": 2
+        },
+        "multi_full": {
+          "planned_runs": 6,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 3,
+          "budget_exhausted": 3,
+          "unknown_usage": 3,
+          "infrastructure_blocked": 0,
+          "provider_failures": 3,
+          "observed_tokens": 122539,
+          "model_calls": 13,
+          "duration_seconds": 292.74951599999986,
+          "recorded_tokens_including_partial": 122539,
+          "regression_demonstrated": 3,
+          "regression_not_executed_for_current_candidate": 3
+        }
+      }
+    }
+  },
+  "execution_statuses": {
+    "legacy": {
+      "awaiting_approval": 8,
+      "failed": 4,
+      "budget_exhausted": 6
+    },
+    "quality": {
+      "failed": 2,
+      "awaiting_approval": 9,
+      "budget_exhausted": 7
+    }
+  },
+  "formal_wall_seconds": 876.3153852000005,
+  "limitations": [
+    "Six public bugs across the same four projects; two new bugs are within python-json-pointer, not unseen repositories.",
+    "Treatment bundles protocol, test-witness and review-evidence changes; cannot attribute effects to a single component.",
+    "New tests and fail-to-pass proof are enforced in all treatment modes; control preserves prior workflow rules.",
+    "Repeated calls are correlated; deterministic counterbalanced order is not a randomized population study.",
+    "Proxy alias does not establish underlying weights or training overlap. Observed tokens are not billing receipts.",
+    "No GitHub write or task approval in the model experiment. The previous 17/24 result stays immutable.",
+    "All six cases have now been observed. This is a calibration regression study, not a new-bug or unseen-repository holdout.",
+    "The initial V1 result was negative: 21/36 versus control 26/36; all 72 records remain immutable.",
+    "Control probes are reused with the exact frozen image and corpus; not counted as fresh executions.",
+    "The TestCase adapter does not execute unittest.load_tests extra doctests; no claim of complete native upstream-suite coverage.",
+    "Small, deterministically counterbalanced paired comparison; no significance or broad causal/generalization claim."
+  ],
+  "totals": {
+    "legacy": {
+      "tasks": 18,
+      "strict_success": 8,
+      "calls": 44,
+      "recorded_tokens_including_partial": 416623,
+      "unknown_usage_tasks": 6,
+      "regression_demonstrated": 4,
+      "failure_kinds": {
+        "review_rejected": 1,
+        "task_tests_failed": 2,
+        "provider_connection_unknown_usage": 6,
+        "patch_rejection": 1
+      },
+      "recovered_after_rejection": 1
+    },
+    "quality": {
+      "tasks": 18,
+      "strict_success": 9,
+      "calls": 33,
+      "recorded_tokens_including_partial": 295220,
+      "unknown_usage_tasks": 7,
+      "regression_demonstrated": 9,
+      "failure_kinds": {
+        "provider_connection_unknown_usage": 7,
+        "task_tests_failed": 2
+      },
+      "recovered_after_rejection": 0
+    }
+  },
+  "prior_results_preserved": {
+    "historical": "17/24",
+    "quality_v1": {
+      "legacy": "26/36",
+      "quality": "21/36",
+      "records_sha256": "5a516d120bf43b1f839a0e9abadce68379a3a1b05a8355460d020d2d7180c0b5"
+    }
+  }
+}

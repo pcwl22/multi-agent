@@ -26,3 +26,13 @@
 主指标仍同时要求：原始测试不变、缺陷基线重现、候选测试通过、独立隐藏验收通过、进入待人工审批。质量组还必须有绑定当前候选的失败到通过证明。两种工作流的证据门槛不同，不能将更多拒绝算作修复能力提升。小规模、相关的确定性交错比较不能证明统计显著、单组件因果或未见项目泛化；第二轮改善也不能覆盖首轮负面结果。保持默认关闭。
 
 新结果及完整审计在任务完成后另附。修复任务不进行人工审批或产品侧发布。开发分支仅在固定提交、完整 Diff 和确定 PR 标题/正文准备完成后，按 AGENTS.md 获取新的内容摘要批准。
+
+## 复现入口与审计脚本
+
+六案例语料导出沿用 `../repair-quality-20261020/spec/spec.json` 和同目录隐藏验收，调用 `app.evaluation.historical.prepare(upstream_root, corpus, spec_path)`；CLI 默认四案例注册表不等同于本轮六案例表。为自己重建的语料与固定 Docker 镜像记录实际摘要，先执行准入对照。新建任务与输出目录，不复用正式任务，也不将自己的复跑合并到这里已冻结的分母。
+
+程序化入口为 `app.evaluation.historical.run(corpus, output, lock_sha256, shared_settings, repeats=2, workers=2, variants=variants)`。公共 Settings 必须显式设置 `repair_quality_policy_version=2`、`context_chars=24000`、`model_path_scope=True`、`model_mode='live'`、固定镜像、isolated、patch_transactions/task_budgets 及本预注册预算。variants 仅有 legacy 和 quality，clone 公共 Settings，分别使用全新、互不重叠的 data_dir，质量开关分别为 False/True；其他配置相同。模型密钥经隐藏输入或安全环境提供，不写文件。
+
+Token 是已观测用量的准入阈值，不是账单或单个响应绝对硬上限；预算内客户端禁用 SDK 隐式 HTTP 重试，每次显式模型尝试均记账。测试/补丁反馈只使用原预算内重试，不进行评测方事后补跑。
+
+`audit-script.py.txt`、`live-controller.py.txt` 和 `freeze-script.py.txt` 保留本次实际脚本供代码审阅；它们绑定本机路径，不是复制后直接可运行的通用 CLI。审计脚本在冻结任务完成后读取完整本地现场，核对矩阵、交错顺序、所有候选、源码及归一化/上下文来源，不执行目标仓库代码。精简 JSON 是公开审查导出，完整 SQLite、工作区与日志保留本机，未上传全部现场或 wheel/Release。

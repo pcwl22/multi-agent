@@ -68,3 +68,7 @@
 ## 补充执行范围说明
 
 本轮“原始套件”指统一 Docker pytest 入口及收集适配器实际收集的 pytest/TestCase 用例，不代表全部上游原生 CI 矩阵。JSON Pointer 的 `tests.py` 还通过 `unittest.load_tests` 附加 doctest；当前 TestCase 适配器没有调用该钩子，因此这部分 doctest 未执行。所有原始 Python 测试文件仍按字节保留，未修改或删除。本轮未因此改动输入、补跑模型或缩减分母，结论应限于实际收集的套件。详见 [scope-note.json](scope-note.json)。
+
+## 新版本中的 V1 复现兼容说明
+
+以上首轮协议和结果保持不变。后续版本为新任务引入了 `repair_quality_policy_version=2`；若用当前运行时复现 V1，须对公共 Settings 显式设置 `repair_quality_policy_version=1`，两组保持相同版本，仅切换质量开关。精确复现首轮原运行时则检出预注册中的 `a1c5b99`。首轮任务不重新执行，预注册、全部 72 条结果及来源摘要不修改。
