@@ -144,8 +144,8 @@ def run_evaluation(
             raise ValueError("Dataset acceptance must be a file inside the dataset directory")
         resolved_cases.append((case, source, acceptance))
     if variants is not None:
-        if set(variants) != {"legacy", "quality"} or repeats != 4:
-            raise ValueError("Comparison requires legacy/quality variants and four balanced blocks")
+        if set(variants) != {"legacy", "quality"} or repeats not in {2, 4}:
+            raise ValueError("Comparison requires legacy/quality variants and two or four balanced blocks")
         common = settings.model_dump(exclude={"data_dir", "repair_quality_checks"})
         roots = []
         for name, variant in variants.items():
@@ -186,6 +186,8 @@ def run_evaluation(
             if variants:
                 order = (["legacy", "quality", "quality", "legacy"] if case_ids.index(case["id"]) % 2 == 0
                          else ["quality", "legacy", "legacy", "quality"])
+                if repeats == 2:
+                    order = ["legacy", "quality"] if case_ids.index(case["id"]) % 2 == 0 else ["quality", "legacy"]
                 name = order[repeat]
                 service = services[name]
                 variant_tags = {"variant": name, "variant_repeat": order[:repeat].count(name)}

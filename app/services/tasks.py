@@ -109,7 +109,7 @@ class TaskService:
             task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest={},
             patch_transaction_version=1 if self.settings.patch_transactions else None,
             publication_contract_version=1,
-            repair_quality_version=1 if self.settings.repair_quality_checks else None,
+            repair_quality_version=self.settings.repair_quality_policy_version if self.settings.repair_quality_checks else None,
             budget_version=1 if self.settings.task_budgets else None,
             budget_limits=self.settings.budget_limits.model_dump(),
             budget_deadline=created_at + self.settings.budget_limits.wall_seconds,

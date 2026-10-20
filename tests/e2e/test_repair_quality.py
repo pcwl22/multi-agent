@@ -52,7 +52,7 @@ def setup(tmp_path, model, mode="single", retries=1):
     (root / "tests/test_original.py").write_text("from repair_value import VALUE\ndef test_original():\n    assert VALUE in (0, 1)\n", encoding="utf-8")
     settings = Settings(_env_file=None, repository_root=root, data_dir=tmp_path / "data",
         sandbox_image="repopilot-sandbox:local", test_timeout=30, max_retries=retries,
-        retry_workspace_policy="isolated", patch_transactions=True, repair_quality_checks=True)
+        retry_workspace_policy="isolated", patch_transactions=True, repair_quality_checks=True, repair_quality_policy_version=1)
     service = TaskService(settings, model=model, runner=DockerRunner(settings))
     task = service.create(TaskRequest(repository_path=str(root), mode=mode,
         issue_description="Controlled fixture: code.VALUE must equal 1. Add NEW regression tests."))
@@ -100,6 +100,7 @@ def test_quality_policy_survives_restart_with_changed_settings(tmp_path):
     service, settings, task = setup(tmp_path, model)
     service.close()
     settings.repair_quality_checks = False
+    settings.repair_quality_policy_version = 2
     service = TaskService(settings, model=model, runner=DockerRunner(settings))
     try:
         state = service.run(task["task_id"])

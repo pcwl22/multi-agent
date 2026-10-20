@@ -8,6 +8,7 @@ from typing import Any
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
+from app.agents.api_context import contract_api_context
 from app.agents.contracts import literal_input_examples, validate_literal_inputs
 from app.agents.feedback import (
     compact_regression_evidence,
@@ -15,6 +16,7 @@ from app.agents.feedback import (
     failure_feedback,
 )
 from app.agents.model import Model, ModelFailure
+from app.agents.normalization import normalize_candidate
 from app.agents.quality import (
     CandidateQualityError,
     failed_assertions,
@@ -170,7 +172,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "execution_status": "failed",
                 "error": "Test retry budget exhausted",
             }
-        if state.get("repair_quality_version") == 1 or state["mode"] == "multi_full":
+        if state.get("repair_quality_version") in {1, 2} or state["mode"] == "multi_full":
             witnesses = state.get("regression_results", [])
             if not witnesses or witnesses[-1]["attempt"] != state["attempts"]:
                 return {"next_node": "regression"}
@@ -261,12 +263,16 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             if budget <= 0:
                 break
             context += f"\n--- FILE {path} ---\n{repo.read_file(path, min(12000, budget))}\n"
+        api_context = {}
+        if state.get("repair_quality_version") == 2:
+            context, api_context = contract_api_context(repo, paths, state["issue_description"], settings.context_chars)
         patch, usage = generate(
             Patch,
             {
-                **({"candidate_protocol": protocol(),
+                **({"candidate_protocol": protocol(state["repair_quality_version"]),
+                    **({"contract_api_context": api_context} if api_context else {}),
                     "original_failure_assertions": failed_assertions(repo, state.get("repair_feedback", []))}
-                   if state.get("repair_quality_version") == 1 else {}),
+                   if state.get("repair_quality_version") in {1, 2} else {}),
                 "mode": state["mode"],
                 "issue_description": state["issue_description"],
                 "plan": state["plan"],
@@ -291,8 +297,13 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             state,
         )
         try:
-            if state.get("repair_quality_version") == 1:
-                quality = validate_candidate(repo, patch)
+            if state.get("repair_quality_version") in {1, 2}:
+                if state.get("repair_quality_version") == 2:
+                    patch, quality = normalize_candidate(repo, patch)
+                else:
+                    quality = validate_candidate(repo, patch)
+                if api_context:
+                    usage["execution_history"].append(event("contract_api_context", **api_context, **candidate_tags(state)))
                 usage["execution_history"].append(event("candidate_quality", **quality, **candidate_tags(state)))
             validate_literal_inputs(
                 state["issue_description"], patch,
@@ -356,7 +367,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         value = result.model_dump()
         feedback = []
         if result.status == "failed":
-            feedback = [{**failure_feedback(value, state, prioritize_original=state.get("repair_quality_version") == 1), **candidate_tags(state)}]
+            feedback = [{**failure_feedback(value, state, prioritize_original=state.get("repair_quality_version") in {1, 2}), **candidate_tags(state)}]
         return {"test_results": [{**value, "attempt": state["attempts"],
                                   "diff_digest": state["diff_digest"], **candidate_tags(state)}],
                 "repair_feedback": feedback}
@@ -382,7 +393,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         witness = regression_witness(state, BudgetRunner())
         result = {"regression_results": [{**witness, "attempt": state["attempts"],
                   "diff_digest": state["diff_digest"], **candidate_tags(state)}]}
-        if state.get("repair_quality_version") == 1 and witness["status"] != "demonstrated":
+        if state.get("repair_quality_version") in {1, 2} and witness["status"] != "demonstrated":
             if witness["status"] == "unavailable":
                 result.update(execution_status="blocked", error="Regression evidence unavailable; preserved without model replay")
             else:
@@ -407,7 +418,15 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             if budget <= 0:
                 break
             context += f"\n--- FILE {path} ---\n{repo.read_file(path, min(12000, budget))}\n"
-        packet = review_packet(repo, state, settings.context_chars) if state.get("repair_quality_version") == 1 else {}
+        packet = review_packet(repo, state, settings.context_chars) if state.get("repair_quality_version") in {1, 2} else {}
+        if state.get("repair_quality_version") == 2:
+            gates = [e for e in state["execution_history"] if e["node"] == "candidate_quality" and e.get("candidate_id") == state.get("candidate_id")]
+            if gates:
+                gate = gates[-1]
+                packet["binding_provenance"] = {"origin": gate.get("binding_origin"),
+                    "original_model_claims": gate.get("raw_proposal", {}).get("contract_tests", []),
+                    "resolved_test_identities": gate.get("contract_tests", []),
+                    "interpretation": "Derived identities are static source facts, not model claims or semantic coverage proof. Original model prose stays untrusted."}
         review, usage = generate(
             Review,
             {

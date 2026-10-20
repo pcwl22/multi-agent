@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     patch_transactions: bool = False
     task_budgets: bool = False
     repair_quality_checks: bool = False
+    repair_quality_policy_version: int = Field(default=2, ge=1, le=2)
     budget_limits: BudgetLimits = Field(default_factory=BudgetLimits)
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)

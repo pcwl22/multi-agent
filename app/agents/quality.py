@@ -39,8 +39,8 @@ def test_functions(source: str) -> dict[str, list[str]]:
     return result
 
 
-def protocol() -> dict:
-    return {
+def protocol(version: int = 1) -> dict:
+    value = {
         "version": 1,
         "edits": "Exactly ONE Edit per canonical file path. Combine all changes for that file into one unique old substring and its replacement. Do not submit multiple hunks as separate Edit entries. Never edit original tests.",
         "contract_tests": "Nonempty exact identities: tests/test_new.py::test_name or tests/test_new.py::TestClass::test_name. Each must name a NEW file and an actual test definition in this complete candidate. No prose or invented paths.",
@@ -48,6 +48,12 @@ def protocol() -> dict:
         "example": {"edits": [{"path": "module.py", "old": "unique old block", "new": "complete replacement block"}, {"path": "tests/test_new.py", "old": "", "new": "def test_name():\n    assert observed_behavior() == required_value\n"}], "contract_tests": ["tests/test_new.py::test_name"]},
         "regression": "The SAME added tests will run on original source in Docker. At least one collected test must fail there and pass with this candidate. Collection errors and tests passing both versions are not a regression witness.",
     }
+
+    if version == 2:
+        value.update(version=2,
+            edits="Prefer ONE Edit per file. Independent non-overlapping hunks can be losslessly composed only when EACH old snippet matches exactly once in the ORIGINAL source. Overlap, dependent anchors and multiple creations are rejected; no guessing or sequential application.",
+            contract_tests="You may give exact NEW file::test identities. Actual test bindings are derived from the NEW source definitions if metadata is omitted; this is not semantic proof. If you name a test file or definition it must exist in this complete candidate. Pure prose is preserved as an unverified claim, not test evidence.")
+    return value
 
 
 def validate_candidate(repo: Repository, patch: Patch) -> dict:

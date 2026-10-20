@@ -341,7 +341,7 @@ def run(root: Path, output: Path, lock_sha: str, settings: Settings, *, repeats:
             "Reference fixes are controls, never counted as model repairs. No human approvals or GitHub writes."}
     if variants:
         result["variants"] = {name: summarize([r for r in records if r["variant"] == name]) for name in variants}
-        result["comparison_order"] = "ABBA / BAAB by alternating case; rotate modes per block; two repetitions per variant"
+        result["comparison_order"] = ("AB / BA" if repeats == 2 else "ABBA / BAAB") + f" by alternating case; rotate modes per block; {repeats // 2} repetitions per variant"
     save(output / "records.json", records)
     save(output / "report.json", result)
     save(output / "probe-records.json", runner.records)

@@ -21,3 +21,6 @@ docs/historical-evaluation-20261019/*.json -text whitespace=cr-at-eol
 docs/repair-quality-20261020/*.json -text whitespace=cr-at-eol
 docs/repair-quality-20261020/spec/*.json -text whitespace=cr-at-eol
 docs/repair-quality-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
+
+# Preserve the finite V2 calibration evidence exactly.
+docs/repair-quality-v2-20261020/*.json -text whitespace=cr-at-eol
