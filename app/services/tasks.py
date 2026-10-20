@@ -95,6 +95,8 @@ class TaskService:
         task_id, thread_id = str(uuid.uuid4()), str(uuid.uuid4())
         task_dir = self.data / "tasks" / task_id
         policy = request.retry_workspace_policy or self.settings.retry_workspace_policy
+        if self.settings.repair_quality_checks and (policy != "isolated" or not self.settings.patch_transactions):
+            raise ValueError("Repair quality checks require isolated candidates and patch transactions")
         creation_manifest = file_manifest(repo.root)
         candidate = {"workspace_path": str(task_dir / "workspace"), "candidate_id": None,
                      "candidate_number": 0}
@@ -107,6 +109,7 @@ class TaskService:
             task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest={},
             patch_transaction_version=1 if self.settings.patch_transactions else None,
             publication_contract_version=1,
+            repair_quality_version=1 if self.settings.repair_quality_checks else None,
             budget_version=1 if self.settings.task_budgets else None,
             budget_limits=self.settings.budget_limits.model_dump(),
             budget_deadline=created_at + self.settings.budget_limits.wall_seconds,

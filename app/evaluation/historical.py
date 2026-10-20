@@ -280,7 +280,7 @@ def summarize(records: list[dict]) -> dict:
 
 
 def run(root: Path, output: Path, lock_sha: str, settings: Settings, *, repeats: int = 2,
-        workers: int = 1) -> dict:
+        workers: int = 1, variants: dict[str, Settings] | None = None) -> dict:
     if settings.model_mode != "live" or not settings.task_budgets or not settings.patch_transactions:
         raise ValueError("Historical formal runs require live model, task budgets and patch transactions")
     if not settings.sandbox_image.startswith("sha256:"):
@@ -289,6 +289,9 @@ def run(root: Path, output: Path, lock_sha: str, settings: Settings, *, repeats:
         raise ValueError("Historical repeats must be between 1 and 10")
     if settings.data_dir.resolve().is_relative_to(root.resolve()) or root.resolve().is_relative_to(settings.data_dir.resolve()):
         raise ValueError("Task storage must exclude all corpus/control inputs")
+    for variant in (variants or {}).values():
+        if variant.data_dir.resolve().is_relative_to(root.resolve()) or root.resolve().is_relative_to(variant.data_dir.resolve()):
+            raise ValueError("Variant task storage must exclude the whole corpus")
     if settings.data_dir.exists() and any(settings.data_dir.iterdir()):
         raise ValueError("Use fresh task storage for the frozen formal run")
     lock = verify(root, lock_sha)
@@ -304,7 +307,7 @@ def run(root: Path, output: Path, lock_sha: str, settings: Settings, *, repeats:
         raise ValueError("All fixed-reference controls must pass before model evaluation")
     runner = ProbeRunner(settings, output / "formal-probe-ledgers")
     run_evaluation(settings, root / "sources", output / "formal", repeats,
-                   dataset_file=root / "dataset.json", workers=workers, evaluation_runner=runner)
+                   dataset_file=root / "dataset.json", workers=workers, evaluation_runner=runner, variants=variants)
     records = [json.loads(x) for x in (output / "formal/runs.jsonl").read_text(encoding="utf-8").splitlines()]
     for record in records:
         if record["task_id"] is None:
@@ -336,6 +339,9 @@ def run(root: Path, output: Path, lock_sha: str, settings: Settings, *, repeats:
             "patch_transactions": True, "workers": workers}, "modes": summarize(records),
         "limitations": "Small public historical sample; repeats are correlated, not independent bugs. "
             "Reference fixes are controls, never counted as model repairs. No human approvals or GitHub writes."}
+    if variants:
+        result["variants"] = {name: summarize([r for r in records if r["variant"] == name]) for name in variants}
+        result["comparison_order"] = "ABBA / BAAB by alternating case; rotate modes per block; two repetitions per variant"
     save(output / "records.json", records)
     save(output / "report.json", result)
     save(output / "probe-records.json", runner.records)

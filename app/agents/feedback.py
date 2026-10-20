@@ -22,11 +22,14 @@ class FailureObservation(BaseModel):
     details: str
 
 
-def observations(result: dict, baseline: Path, workspace: Path) -> list[dict]:
+def observations(result: dict, baseline: Path, workspace: Path, *, prioritize_original: bool = False) -> list[dict]:
     original = set(Repository(baseline).list_files())
     repo = Repository(workspace)
     items = []
-    for case in result.get('cases', []):
+    cases = result.get('cases', [])
+    if prioritize_original:
+        cases = sorted(cases, key=lambda c: c.get('file', '').replace('\\', '/') not in original)
+    for case in cases:
         if case['status'] not in {'failed', 'error'}:
             continue
         path = case.get('file', '').replace('\\', '/')
@@ -61,9 +64,9 @@ def observations(result: dict, baseline: Path, workspace: Path) -> list[dict]:
     return items
 
 
-def failure_feedback(result: dict, state: dict) -> dict:
+def failure_feedback(result: dict, state: dict, *, prioritize_original: bool = False) -> dict:
     workspace = Path(state['workspace_path'])
-    items = observations(result, workspace.parent / 'baseline', workspace)
+    items = observations(result, workspace.parent / 'baseline', workspace, prioritize_original=prioritize_original)
     signature = [{k: o[k] for k in ('file', 'test', 'origin', 'assertion', 'message')}
                  for o in items]
     # Missing testcase evidence remains a bounded raw fallback, never invented assertions.

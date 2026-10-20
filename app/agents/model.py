@@ -8,6 +8,7 @@ from app.agents.demo_fixtures import select_fixture
 from app.agents.failures import provider_failure
 from app.agents.instructions import system_instructions
 from app.agents.pacing import endpoint_pacer
+from app.agents.quality import test_functions
 from app.config.settings import Settings
 from app.models.schemas import Edit, Patch, Plan, Review
 from app.services.budgets import BudgetExceeded, current_budget
@@ -51,6 +52,8 @@ class MockModel:
                 raise ValueError("Mock fixture precondition not found in retrieved context")
             value = Patch(
                 rationale=f"Explicit demo fixture: repair {fixture.module}",
+                contract_tests=([fixture.regression_path + "::" + name for name in test_functions(fixture.regression_code)]
+                                if payload.get("candidate_protocol") else []),
                 edits=[
                     Edit(
                         path=fixture.module,

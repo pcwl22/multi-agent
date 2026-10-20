@@ -15,6 +15,13 @@ from app.agents.feedback import (
     failure_feedback,
 )
 from app.agents.model import Model, ModelFailure
+from app.agents.quality import (
+    CandidateQualityError,
+    failed_assertions,
+    protocol,
+    validate_candidate,
+)
+from app.agents.review_evidence import cited_ids, review_packet
 from app.agents.scope import repository_path_scope
 from app.config.settings import Settings
 from app.models.schemas import AgentState, Patch, Plan, Review
@@ -163,10 +170,11 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "execution_status": "failed",
                 "error": "Test retry budget exhausted",
             }
-        if state["mode"] == "multi_full":
+        if state.get("repair_quality_version") == 1 or state["mode"] == "multi_full":
             witnesses = state.get("regression_results", [])
             if not witnesses or witnesses[-1]["attempt"] != state["attempts"]:
                 return {"next_node": "regression"}
+        if state["mode"] == "multi_full":
             reviews = state["review_results"]
             if not reviews or reviews[-1]["attempt"] != state["attempts"]:
                 return {"next_node": "reviewer"}
@@ -256,6 +264,9 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         patch, usage = generate(
             Patch,
             {
+                **({"candidate_protocol": protocol(),
+                    "original_failure_assertions": failed_assertions(repo, state.get("repair_feedback", []))}
+                   if state.get("repair_quality_version") == 1 else {}),
                 "mode": state["mode"],
                 "issue_description": state["issue_description"],
                 "plan": state["plan"],
@@ -280,6 +291,9 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             state,
         )
         try:
+            if state.get("repair_quality_version") == 1:
+                quality = validate_candidate(repo, patch)
+                usage["execution_history"].append(event("candidate_quality", **quality, **candidate_tags(state)))
             validate_literal_inputs(
                 state["issue_description"], patch,
                 {p: repo.read_file(p, 100000) for p in existing_tests}
@@ -296,6 +310,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "patches": [{**patch.model_dump(), "changed_files": [], "applied": False,
                              **candidate_tags(state)}],
                 "patch_feedback": [{"attempt": attempt, "error": str(exc)[:2000],
+                                    **({"diagnostics": exc.diagnostics} if isinstance(exc, CandidateQualityError) else {}),
                                     **candidate_tags(state)}],
                 "attempts": attempt,
                 "diff": diff,
@@ -341,7 +356,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         value = result.model_dump()
         feedback = []
         if result.status == "failed":
-            feedback = [{**failure_feedback(value, state), **candidate_tags(state)}]
+            feedback = [{**failure_feedback(value, state, prioritize_original=state.get("repair_quality_version") == 1), **candidate_tags(state)}]
         return {"test_results": [{**value, "attempt": state["attempts"],
                                   "diff_digest": state["diff_digest"], **candidate_tags(state)}],
                 "repair_feedback": feedback}
@@ -364,9 +379,19 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
     @guarded("regression")
     def regression(state):
         validate_isolated(state)
-        return {"regression_results": [{**regression_witness(state, BudgetRunner()),
-                 "attempt": state["attempts"], "diff_digest": state["diff_digest"],
-                 **candidate_tags(state)}]}
+        witness = regression_witness(state, BudgetRunner())
+        result = {"regression_results": [{**witness, "attempt": state["attempts"],
+                  "diff_digest": state["diff_digest"], **candidate_tags(state)}]}
+        if state.get("repair_quality_version") == 1 and witness["status"] != "demonstrated":
+            if witness["status"] == "unavailable":
+                result.update(execution_status="blocked", error="Regression evidence unavailable; preserved without model replay")
+            else:
+                result["patch_feedback"] = [{"attempt": state["attempts"], **candidate_tags(state),
+                    "error": "No fail-to-pass regression witness for this candidate",
+                    "diagnostics": [{"code": "regression_not_demonstrated", "correction":
+                        "Return a complete candidate with an issue-justified NEW test that fails on the original source and passes on the fix. Do not weaken assertions or edit original tests."}],
+                    "regression_evidence": compact_regression_evidence(witness)}]
+        return result
 
     @guarded("reviewer")
     def reviewer(state):
@@ -382,6 +407,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
             if budget <= 0:
                 break
             context += f"\n--- FILE {path} ---\n{repo.read_file(path, min(12000, budget))}\n"
+        packet = review_packet(repo, state, settings.context_chars) if state.get("repair_quality_version") == 1 else {}
         review, usage = generate(
             Review,
             {
@@ -393,9 +419,19 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                 "contract_tests": state["patches"][-1].get("contract_tests", []),
                 "regression_evidence": [compact_regression_evidence(r) for r in
                                         state.get("regression_results", [])[-1:]],
+                **packet,
             },
             state,
         )
+        if packet:
+            evidence = packet["review_evidence"]
+            known = {x["id"] for x in [*evidence["test_facts"], *evidence["file_facts"]]}
+            invalid = [x for x in cited_ids(review.contract_checks) if x not in known]
+            if invalid:
+                review.approved = False
+                review.concerns.append("Unknown review evidence citations: " + ", ".join(invalid))
+            usage["execution_history"].append(event("review_evidence", **{**evidence,
+                "context_chars": len(packet["context"]), **candidate_tags(state)}))
         # Explicitly failed contracts override an inconsistent approval flag.
         if any(not check.satisfied for check in review.contract_checks):
             review.approved = False

@@ -106,6 +106,7 @@ class AgentState(TypedDict):
     budget_deadline: float
     budget_failure: dict | None
     patch_transaction_version: int | None
+    repair_quality_version: int | None
     publication_contract_version: int
     retry_workspace_policy: Literal["preserve", "isolated"]
     baseline_manifest: dict[str, str]

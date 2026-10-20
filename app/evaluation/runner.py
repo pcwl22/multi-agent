@@ -111,6 +111,7 @@ def run_evaluation(
     dataset_file: Path | None = None,
     workers: int = 1,
     evaluation_runner=None,
+    variants: dict[str, Settings] | None = None,
 ) -> dict:
     dataset_file = (dataset_file or Path(__file__).parent / "dataset.json").resolve(strict=True)
     dataset_root = dataset_file.parent
@@ -142,7 +143,25 @@ def run_evaluation(
         if not acceptance.is_relative_to(dataset_root) or not acceptance.is_file():
             raise ValueError("Dataset acceptance must be a file inside the dataset directory")
         resolved_cases.append((case, source, acceptance))
-    service = TaskService(settings)
+    if variants is not None:
+        if set(variants) != {"legacy", "quality"} or repeats != 4:
+            raise ValueError("Comparison requires legacy/quality variants and four balanced blocks")
+        common = settings.model_dump(exclude={"data_dir", "repair_quality_checks"})
+        roots = []
+        for name, variant in variants.items():
+            if variant.model_dump(exclude={"data_dir", "repair_quality_checks"}) != common:
+                raise ValueError("Comparison variants differ outside quality policy and task storage")
+            root = variant.data_dir.resolve()
+            if root.exists() and any(root.iterdir()):
+                raise ValueError("Comparison requires fresh variant task storage")
+            if any(root.is_relative_to(r) or r.is_relative_to(root) for r in roots):
+                raise ValueError("Comparison task roots overlap")
+            if root.is_relative_to(settings.repository_root.resolve()) or settings.repository_root.resolve().is_relative_to(root):
+                raise ValueError("Comparison task root overlaps the model repository")
+            roots.append(root)
+        if variants["legacy"].repair_quality_checks or not variants["quality"].repair_quality_checks:
+            raise ValueError("Comparison policies must be off/on respectively")
+    services = {name: TaskService(value) for name, value in (variants or {"default": settings}).items()}
     runner = evaluation_runner or DockerRunner(settings)
     records = []
     output.mkdir(parents=True, exist_ok=True)
@@ -163,11 +182,21 @@ def run_evaluation(
             baseline["status"] == "failed" and baseline["failed"] > 0 and baseline["errors"] == 0
         )
         for repeat in range(repeats):
+            variant_tags = {}
+            if variants:
+                order = (["legacy", "quality", "quality", "legacy"] if case_ids.index(case["id"]) % 2 == 0
+                         else ["quality", "legacy", "legacy", "quality"])
+                name = order[repeat]
+                service = services[name]
+                variant_tags = {"variant": name, "variant_repeat": order[:repeat].count(name)}
+            else:
+                service = services["default"]
             # Rotate order to reduce systematic warm-cache bias.
             for mode in MODES[repeat % 3 :] + MODES[: repeat % 3]:
                 started = time.monotonic()
                 if not baseline_verified:
                     record = {
+                        **variant_tags,
                         "case_id": case["id"],
                         "repeat": repeat,
                         "mode": mode,
@@ -207,6 +236,7 @@ def run_evaluation(
                     holdout_workspace(Path(state["workspace_path"]), holdout, acceptance_file)
                     acceptance = runner.run(holdout).model_dump()
                 record = {
+                    **variant_tags,
                     "case_id": case["id"],
                     "repeat": repeat,
                     "mode": mode,
@@ -291,7 +321,8 @@ def run_evaluation(
         with ThreadPoolExecutor(max_workers=workers) as executor:
             list(executor.map(evaluate_case, resolved_cases))
     finally:
-        service.close()
+        for service in services.values():
+            service.close()
     report = {
         "model_mode": settings.model_mode,
         "model_name": settings.model_name if settings.model_mode == "live" else None,
