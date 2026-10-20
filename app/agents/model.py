@@ -1,5 +1,6 @@
 import json
 import time
+import uuid
 from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
@@ -12,6 +13,7 @@ from app.agents.quality import test_functions
 from app.config.settings import Settings
 from app.models.schemas import Edit, Patch, Plan, Review
 from app.services.budgets import BudgetExceeded, current_budget
+from app.services.provider_circuit import ProviderCircuit, ProviderCircuitOpen
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -92,9 +94,10 @@ class MockModel:
 class LiveModel:
     manages_task_budget = True
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, *, dispatch_gate: ProviderCircuit | None = None):
         from langchain_openai import ChatOpenAI
 
+        self.dispatch_gate = dispatch_gate
         self.timeout = settings.model_timeout
         self.model_name = settings.model_name
         self.streaming = settings.model_streaming
@@ -114,56 +117,57 @@ class LiveModel:
     def generate(self, schema: type[T], payload: dict) -> tuple[T, dict]:
         started = time.monotonic()
         stats = {
-            "calls": 0,
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "adapter": "live",
-            "usage_complete": True,
-            "model_requested": self.model_name,
-            "streaming": self.streaming,
-            "rate_limit_wait_seconds": 0.0,
+            "calls": 0, "input_tokens": 0, "output_tokens": 0, "adapter": "live",
+            "usage_complete": True, "model_requested": self.model_name,
+            "streaming": self.streaming, "rate_limit_wait_seconds": 0.0,
+            "transport_attempts": [],
         }
-        messages = [
-            (
-                "system",
-                system_instructions(schema.__name__),
-            ),
-            ("human", json.dumps(payload, ensure_ascii=False)),
-        ]
+        messages = [("system", system_instructions(schema.__name__)),
+                    ("human", json.dumps(payload, ensure_ascii=False))]
         for attempt in range(2):
             budget = current_budget()
             reservation = None
+            attempt_id = None
             try:
                 if budget:
                     budget.check()
                 stats["rate_limit_wait_seconds"] += self.pacer.wait(
-                    self.min_interval, deadline=time.monotonic() + budget.remaining()
-                    if budget else None)
-                if budget:
-                    reservation = budget.reserve("model_requests")
+                    self.min_interval, deadline=time.monotonic() + budget.remaining() if budget else None)
                 client = self.client
-                if budget:
-                    timeout = min(self.timeout, budget.remaining())
+                if budget or self.dispatch_gate:
+                    timeout = min(self.timeout, budget.remaining()) if budget else self.timeout
                     root = self.client.root_client.with_options(max_retries=0, timeout=timeout)
                     client = self.client.model_copy(update={
                         "root_client": root, "client": root.chat.completions,
                         "request_timeout": timeout, "max_retries": 0,
-                        "max_tokens": min(4096, budget.limits.observed_tokens -
-                                          budget.view()["observed_tokens"])})
+                        **({"max_tokens": min(4096, budget.limits.observed_tokens - budget.view()["observed_tokens"])} if budget else {})})
+                reserve = (lambda: budget.reserve("model_requests")) if budget else (lambda: None)
+                if self.dispatch_gate:
+                    attempt_id, reservation = self.dispatch_gate.admit(reserve)
+                else:
+                    reservation = reserve()
+                    attempt_id = uuid.uuid4().hex
                 stats["calls"] += 1
-                response = client.with_structured_output(
-                    schema, method="function_calling", include_raw=True
-                ).invoke(messages)
-            except BudgetExceeded as exc:
+                attempt_started = time.monotonic()
+                attempt_timestamp = time.time()
+                response = client.with_structured_output(schema, method="function_calling", include_raw=True).invoke(messages)
+            except (BudgetExceeded, ProviderCircuitOpen) as exc:
                 exc.stats = stats
                 raise
             except Exception as exc:
                 if reservation is not None:
                     budget.complete(reservation, {"usage_complete": False})
-                stats["usage_complete"] = False
+                if attempt_id is not None:
+                    stats["usage_complete"] = False
                 stats["duration_seconds"] = time.monotonic() - started
-                stats["failure"] = provider_failure(exc)
-                raise ModelFailure(f"Model request failed: {type(exc).__name__}", stats) from exc
+                stats["failure"] = provider_failure(exc, streaming=self.streaming)
+                if attempt_id:
+                    stats["transport_attempts"].append({"attempt_id": attempt_id, "outcome": "failed",
+                        "started_at": attempt_timestamp, "duration_seconds": time.monotonic() - attempt_started,
+                        "failure": stats["failure"], "usage_complete": False})
+                    if self.dispatch_gate:
+                        self.dispatch_gate.complete(attempt_id, stats["failure"])
+                raise ModelFailure("Model request failed: " + stats["failure"]["diagnostics"]["exception_types"][0], stats) from exc
             usage = response["raw"].usage_metadata or {}
             if reservation is not None:
                 budget.complete(reservation, {"input_tokens": usage.get("input_tokens", 0),
@@ -174,19 +178,21 @@ class LiveModel:
             stats["usage_complete"] &= bool(usage)
             stats["input_tokens"] += usage.get("input_tokens", 0)
             stats["output_tokens"] += usage.get("output_tokens", 0)
+            missing = None if usage else {"kind": "usage_missing", "retryable": False, "retry_after_seconds": 0,
+                "diagnostics": {"phase": "response"}}
+            stats["transport_attempts"].append({"attempt_id": attempt_id,
+                "started_at": attempt_timestamp, "duration_seconds": time.monotonic() - attempt_started,
+                "outcome": "response_complete" if usage else "usage_missing", "usage_complete": bool(usage)})
+            if self.dispatch_gate:
+                self.dispatch_gate.complete(attempt_id, missing)
             if response["parsed"] is not None:
                 stats["duration_seconds"] = time.monotonic() - started
                 try:
                     return schema.model_validate(response["parsed"]), stats
                 except ValueError:
                     pass
-            messages.append(
-                (
-                    "human",
-                    "Previous output failed schema validation. Return valid "
-                    f"{schema.__name__} structured output; attempt {attempt + 1}.",
-                )
-            )
+            messages.append(("human", "Previous output failed schema validation. Return valid "
+                             f"{schema.__name__} structured output; attempt {attempt + 1}."))
         stats["duration_seconds"] = time.monotonic() - started
         raise ModelFailure("Model output failed schema validation twice", stats)
 

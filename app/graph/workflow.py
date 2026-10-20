@@ -34,6 +34,7 @@ from app.services.attempts import (
     validate_isolated,
 )
 from app.services.budgets import BudgetExceeded, budget_scope, current_budget, for_state, stopped
+from app.services.provider_circuit import ProviderCircuitOpen
 from app.services.regressions import regression_witness
 from app.services.transactions import apply_transaction
 from app.tools.repository import Repository, diff_repositories, digest, is_test_file, keywords
@@ -67,7 +68,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                     failed = {**result, "execution_status": "failed", "error": str(exc)[:2000]}
                     history = [*result.get("execution_history", []), event(
                         name, error=str(exc)[:2000], duration_seconds=time.monotonic() - started)]
-                    if isinstance(exc, (ModelFailure, BudgetExceeded)) and hasattr(exc, "stats"):
+                    if isinstance(exc, (ModelFailure, BudgetExceeded, ProviderCircuitOpen)) and hasattr(exc, "stats"):
                         failed.update(counters(state, exc.stats))
                         history.append(event("model", **exc.stats))
                         failure = exc.stats.get("failure")
@@ -79,6 +80,8 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
                                 "budget_exhausted": failure["retryable"] and not retryable}
                             if retryable:
                                 failed["execution_status"] = "retryable"
+                    if isinstance(exc, ProviderCircuitOpen):
+                        failed.update(execution_status="batch_paused", circuit_failure=exc.snapshot, next_node="__end__")
                     if not isinstance(exc, BudgetExceeded) and budget:
                         try:
                             budget.check()
@@ -130,7 +133,7 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         }
 
     def supervisor(state: AgentState):
-        if state["execution_status"] == "budget_exhausted":
+        if state["execution_status"] in {"budget_exhausted", "batch_paused"}:
             return {"next_node": END}
         if state["execution_status"] not in {"approved", "rejected", "failed"}:
             try:

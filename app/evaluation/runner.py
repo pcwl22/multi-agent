@@ -12,9 +12,12 @@ from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from app.agents.model import LiveModel
 from app.config.settings import Settings
+from app.models.reliability import CircuitSnapshot
 from app.models.schemas import TaskRequest
 from app.sandbox.runner import DockerRunner
+from app.services.provider_circuit import ProviderCircuit
 from app.services.tasks import TaskService
 from app.tools.repository import Repository, is_test_file
 
@@ -34,7 +37,8 @@ def aggregate(records: list[dict]) -> dict:
     evaluated = [
         r
         for r in records
-        if r["execution_status"] not in {"blocked", "invalid_case"}
+        if r["execution_status"] not in {"blocked", "invalid_case", "not_run"}
+        and not (r["execution_status"] == "batch_paused" and r.get("model_calls", 0) == 0)
         and (
             r.get("baseline_verified")
             or r in acceptance
@@ -53,6 +57,8 @@ def aggregate(records: list[dict]) -> dict:
     passed = sum(r["test_result"]["passed"] for r in records if r.get("test_result"))
     return {
         "runs": len(records),
+        "not_run": sum(r["execution_status"] == "not_run" or (r["execution_status"] == "batch_paused" and r.get("model_calls", 0) == 0) for r in records),
+        "planned_ready_and_accepted_rate": sum(r.get("baseline_verified", False) and r["execution_status"] == "awaiting_approval" and (r.get("test_result") or {}).get("status") == (r.get("acceptance") or {}).get("status") == "passed" for r in records) / len(records) if records else None,
         "acceptance_evaluated": len(acceptance),
         "repair_evaluated": len(evaluated),
         "bug_fix_success_rate": (
@@ -161,11 +167,19 @@ def run_evaluation(
             roots.append(root)
         if variants["legacy"].repair_quality_checks or not variants["quality"].repair_quality_checks:
             raise ValueError("Comparison policies must be off/on respectively")
-    services = {name: TaskService(value) for name, value in (variants or {"default": settings}).items()}
     runner = evaluation_runner or DockerRunner(settings)
     records = []
     output.mkdir(parents=True, exist_ok=True)
     record_lock = threading.Lock()
+    def save_circuit(snapshot):
+        temporary = output / "provider-circuit.tmp"
+        temporary.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(output / "provider-circuit.json")
+    circuit = ProviderCircuit(settings.evaluation_provider_failure_threshold, on_change=save_circuit) if (
+        settings.model_mode == "live" and settings.evaluation_provider_failure_threshold > 0) else None
+    save_circuit(circuit.snapshot() if circuit else CircuitSnapshot(enabled=False, threshold=0).model_dump())
+    services = {name: TaskService(value, **({"model": LiveModel(value, dispatch_gate=circuit)} if circuit else {}))
+                for name, value in (variants or {"default": settings}).items()}
 
     def record_result(record):
         with record_lock:
@@ -175,12 +189,12 @@ def run_evaluation(
 
     def evaluate_case(item):
         case, case_repository, acceptance_file = item
-        baseline_path = output / "baselines" / case["id"]
-        holdout_workspace(case_repository, baseline_path, acceptance_file)
-        baseline = runner.run(baseline_path).model_dump()
-        baseline_verified = (
-            baseline["status"] == "failed" and baseline["failed"] > 0 and baseline["errors"] == 0
-        )
+        baseline = None
+        if not circuit or not circuit.snapshot()['opened']:
+            baseline_path = output / "baselines" / case["id"]
+            holdout_workspace(case_repository, baseline_path, acceptance_file)
+            baseline = runner.run(baseline_path).model_dump()
+        baseline_verified = bool(baseline and baseline["status"] == "failed" and baseline["failed"] > 0 and baseline["errors"] == 0)
         for repeat in range(repeats):
             variant_tags = {}
             if variants:
@@ -196,7 +210,8 @@ def run_evaluation(
             # Rotate order to reduce systematic warm-cache bias.
             for mode in MODES[repeat % 3 :] + MODES[: repeat % 3]:
                 started = time.monotonic()
-                if not baseline_verified:
+                paused = circuit is not None and circuit.snapshot()["opened"]
+                if paused or not baseline_verified:
                     record = {
                         **variant_tags,
                         "case_id": case["id"],
@@ -205,11 +220,12 @@ def run_evaluation(
                         "task_id": None,
                         "thread_id": None,
                         "baseline": baseline,
-                        "baseline_verified": False,
-                        "execution_status": "blocked"
-                        if baseline["status"] in {"unavailable", "timeout"}
-                        else "invalid_case",
-                        "error": "Baseline did not establish a failing bug; repair was not run",
+                        "baseline_verified": baseline_verified,
+                        "execution_status": "not_run" if paused else ("blocked" if baseline["status"] in {"unavailable", "timeout"} else "invalid_case"),
+                        "not_run_reason": "provider_circuit_open" if paused else None,
+                        "circuit_failure": circuit.snapshot() if paused else None,
+                        "model_attempted": False,
+                        "error": "Batch circuit open; task not dispatched" if paused else "Baseline did not establish a failing bug; repair was not run",
                         "duration_seconds": 0,
                         "model_calls": 0,
                         "tokens": 0,
@@ -248,6 +264,11 @@ def run_evaluation(
                     "baseline_verified": baseline_verified,
                     "execution_status": state["execution_status"],
                     "error": state["error"],
+                    "provider_failure": state.get("failure"),
+                    "budget_failure": state.get("budget_failure"),
+                    "circuit_failure": state.get("circuit_failure"),
+                    "model_attempted": state["model_calls"] > 0,
+                    "not_run_reason": "provider_circuit_open" if state["execution_status"] == "batch_paused" else None,
                     "duration_seconds": time.monotonic() - started,
                     "model_calls": state["model_calls"],
                     "tokens": (state["input_tokens"] + state["output_tokens"])
@@ -294,6 +315,7 @@ def run_evaluation(
                                 "model_requested",
                                 "model_reported",
                                 "provider_response_id",
+                                "transport_attempts",
                                 "calls",
                                     "rate_limit_wait_seconds",
                             ]
@@ -332,6 +354,7 @@ def run_evaluation(
         if settings.model_base_url
         else None,
         "dataset_cases": len(dataset),
+        "provider_circuit": circuit.snapshot() if circuit else CircuitSnapshot(enabled=False, threshold=0).model_dump(),
         "repeats": repeats,
         "dataset_sha256": hashlib.sha256(dataset_file.read_bytes()).hexdigest(),
         "corpus_sha256": hashlib.sha256(
@@ -357,6 +380,7 @@ def run_evaluation(
         },
         "configuration": {
             "workers": workers,
+            "evaluation_provider_failure_threshold": settings.evaluation_provider_failure_threshold,
             "context_chars": settings.context_chars,
             "max_retries": settings.max_retries,
             "retry_workspace_policy": settings.retry_workspace_policy,
@@ -369,7 +393,9 @@ def run_evaluation(
         "note": (
             "null means no execution evidence. Mock results do not measure LLM capability. "
             "Synthetic cases and repeated calls do not establish real-project generalization. "
-            "Concurrent durations include shared resources, provider load and request pacing."
+            "Concurrent durations include shared resources, provider load and request pacing. "
+            "not_run cells retain the planned denominator; they are not model or repair failures. "
+            "The circuit latches for this batch; resuming or replaying this output is unsupported."
         ),
         "modes": {mode: aggregate([r for r in records if r["mode"] == mode]) for mode in MODES},
     }
@@ -413,6 +439,7 @@ def main():
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--workers", type=int, choices=range(1, 4), default=1)
+    parser.add_argument("--provider-failure-threshold", type=int, choices=range(21), help="Consecutive matching failures before batch pause; 0 disables")
     parser.add_argument("--dataset", type=Path, help="Optional dataset with per-case repositories")
     args = parser.parse_args()
     if not 1 <= args.repeats <= 100:
@@ -420,8 +447,11 @@ def main():
     output = args.output or Path(".repopilot/evaluations") / uuid.uuid4().hex
     if output.exists() and any(output.iterdir()):
         parser.error("Use a fresh output directory to avoid mixing evaluation records")
+    settings = Settings()
+    if args.provider_failure_threshold is not None:
+        settings.evaluation_provider_failure_threshold = args.provider_failure_threshold
     report = run_evaluation(
-        Settings(), args.repo, output, args.repeats, dataset_file=args.dataset, workers=args.workers
+        settings, args.repo, output, args.repeats, dataset_file=args.dataset, workers=args.workers
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
     print(f"Reports: {output.resolve()}")

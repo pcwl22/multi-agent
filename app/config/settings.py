@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     model_stream_usage: bool = True
     model_path_scope: bool = True
     model_min_interval: float = Field(default=0, ge=0, le=60)
+    evaluation_provider_failure_threshold: int = Field(default=3, ge=0, le=20)
     sandbox_image: str = "repopilot-sandbox:local"
     github_repository: str | None = None
     github_repository_subdirectory: str = ""

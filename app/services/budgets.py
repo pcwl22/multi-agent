@@ -15,12 +15,15 @@ from pathlib import Path
 from typing import Any
 
 from app.models.budgets import BudgetLimits
+from app.models.reliability import BudgetStop, StopKind
 from app.services.attempts import controlled_path
 
 
 class BudgetExceeded(ValueError):
-    def __init__(self, resource: str, message: str):
+    def __init__(self, resource: str, message: str, *, kind: StopKind | None = None):
         self.resource = resource
+        inferred = {"uncertain_dispatch": "dispatch_uncertain", "ledger_integrity": "ledger_integrity"}.get(resource, "limit_reached")
+        self.detail = BudgetStop(kind=kind or inferred, resource=resource, message=message)
         super().__init__(message)
 
 
@@ -76,7 +79,8 @@ class TaskBudget:
         return {'enabled': True, 'limits': self.limits.model_dump(), 'deadline': self.deadline,
                 'remaining_seconds': max(0, self.deadline - max(time.time(), row[0], self.anchor_time + time.monotonic() - self.anchor_monotonic)),
                 'model_requests': row[1], 'sandbox_runs': row[2], 'observed_tokens': row[3],
-                'usage_complete': not bool(row[4]), 'pending_reservations': pending}
+                'usage_complete': not bool(row[4]), 'pending_reservations': pending,
+                'usage_status': 'unknown' if row[4] else ('unconfirmed_dispatch' if pending else 'complete')}
 
     def remaining(self) -> float:
         with self.connect() as db:
@@ -95,7 +99,7 @@ class TaskBudget:
         if view['pending_reservations']:
             raise BudgetExceeded('uncertain_dispatch', 'Interrupted dispatch preserved; automatic replay disabled')
         if not view['usage_complete']:
-            raise BudgetExceeded('observed_tokens', 'Model usage incomplete; remaining token budget is unknown')
+            raise BudgetExceeded('observed_tokens', 'Model usage incomplete; remaining token budget is unknown', kind='usage_unknown')
         if view['observed_tokens'] >= self.limits.observed_tokens:
             raise BudgetExceeded('observed_tokens', 'Observed token budget exhausted')
         total = 0
@@ -141,5 +145,5 @@ def for_state(state: dict) -> TaskBudget | None:
 
 def stopped(exc: BudgetExceeded) -> dict[str, Any]:
     return {'execution_status': 'budget_exhausted', 'error': str(exc),
-            'budget_failure': {'resource': exc.resource, 'message': str(exc), 'timestamp': time.time()},
+            'budget_failure': {**exc.detail.model_dump(), 'timestamp': time.time()},
             'next_node': '__end__'}

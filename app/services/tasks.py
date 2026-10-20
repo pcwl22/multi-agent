@@ -114,6 +114,7 @@ class TaskService:
             budget_limits=self.settings.budget_limits.model_dump(),
             budget_deadline=created_at + self.settings.budget_limits.wall_seconds,
             budget_failure=None,
+            circuit_failure=None,
             budget_initialized=False,
             creation_manifest=creation_manifest, creation_attempts=0, creation_failures=[],
             attempt_history=[], previous_candidate_diff="", approved_candidate_id=None,
@@ -243,7 +244,7 @@ class TaskService:
             if transactions.pending(state):
                 raise ValueError("Pending patch transaction; inspect and explicitly recover before resume")
             config = self._config(state["thread_id"])
-            if state["execution_status"] in {"approved", "rejected", "failed", "budget_exhausted", "awaiting_approval"}:
+            if state["execution_status"] in {"approved", "rejected", "failed", "budget_exhausted", "batch_paused", "awaiting_approval"}:
                 raise ValueError("Task cannot be resumed from this status")
             current_diff = diff_repositories(
                 Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])

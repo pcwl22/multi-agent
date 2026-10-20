@@ -105,6 +105,7 @@ class AgentState(TypedDict):
     budget_limits: dict
     budget_deadline: float
     budget_failure: dict | None
+    circuit_failure: dict | None
     patch_transaction_version: int | None
     repair_quality_version: int | None
     publication_contract_version: int

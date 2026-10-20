@@ -267,6 +267,8 @@ def summarize(records: list[dict]) -> dict:
         rows = [x for x in records if x["mode"] == mode]
         strict = [x for x in rows if x.get("strict_success")]
         results[mode] = {"planned_runs": len(rows), "ready_and_accepted": len(strict),
+            "not_run": sum(x["execution_status"] == "not_run" or (x["execution_status"] == "batch_paused" and not x.get("model_calls", 0)) for x in rows),
+            "usage_unknown_stops": sum((x.get("budget_failure") or {}).get("kind") == "usage_unknown" for x in rows),
             "strict_success_rate": len(strict) / len(rows) if rows else None,
             "holdout_passed": sum(bool(x.get("acceptance") and x["acceptance"]["status"] == "passed") for x in rows),
             "budget_exhausted": sum(x["execution_status"] == "budget_exhausted" for x in rows),

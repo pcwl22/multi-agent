@@ -24,3 +24,6 @@ docs/repair-quality-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
 
 # Preserve the finite V2 calibration evidence exactly.
 docs/repair-quality-v2-20261020/*.json -text whitespace=cr-at-eol
+
+# Preserve the provider reliability probe evidence exactly.
+docs/provider-reliability-20261020/*.json -text whitespace=cr-at-eol

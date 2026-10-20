@@ -4,6 +4,8 @@ import time
 import httpx
 import streamlit as st
 
+from app.models.reliability import budget_stop_notice
+
 API = os.environ.get("REPOPILOT_API_URL", "http://127.0.0.1:8000")
 st.set_page_config(page_title="RepoPilot", page_icon="🛠️", layout="wide")
 st.title("RepoPilot · 智能代码修复")
@@ -169,8 +171,10 @@ try:
             if st.button("继续准备任务副本"):
                 api("POST", f"/api/tasks/{task_id}/resume")
                 st.rerun()
+        elif state["execution_status"] == "batch_paused":
+            st.warning("本轮模型调用已暂停，现有补丁和记录已保留。请检查本轮连接诊断；此任务不会自动重发。")
         elif state["execution_status"] == "budget_exhausted":
-            st.warning("任务预算已耗尽，现场与 Diff 已保留。核对诊断后创建新任务；此任务不再发起模型或 Docker 执行。")
+            st.warning(budget_stop_notice(state))
             st.json(state.get("budget_failure"))
         elif state["execution_status"] == "failed":
             st.info("任务已终止。检查错误、日志与补丁后创建新任务；此任务不会自动重试或发布。")
