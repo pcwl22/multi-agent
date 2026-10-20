@@ -1,0 +1,37 @@
+{
+  "formal": false,
+  "kind": "native pre-registration diagnostic",
+  "model_requested": "deepseek-v4.1-flash",
+  "status": "passed",
+  "stats": {
+    "calls": 1,
+    "input_tokens": 646,
+    "output_tokens": 569,
+    "adapter": "live",
+    "usage_complete": true,
+    "model_requested": "deepseek-v4.1-flash",
+    "streaming": true,
+    "rate_limit_wait_seconds": 0.0,
+    "model_reported": "deepseek-v4.1-flash",
+    "provider_response_id": null,
+    "duration_seconds": 8.280821000000287
+  },
+  "budget": {
+    "enabled": true,
+    "limits": {
+      "wall_seconds": 900.0,
+      "model_requests": 2,
+      "observed_tokens": 10000,
+      "sandbox_runs": 10,
+      "artifact_bytes": 268435456,
+      "result_bytes": 8388608
+    },
+    "deadline": 1792458755.101552,
+    "remaining_seconds": 139.7953269481659,
+    "model_requests": 1,
+    "sandbox_runs": 0,
+    "observed_tokens": 1215,
+    "usage_complete": true,
+    "pending_reservations": 0
+  }
+}

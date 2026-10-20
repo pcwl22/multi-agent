@@ -1,0 +1,382 @@
+{
+  "runtime_commit": "a1c5b99abd3f8e58ffd5e2cc551325fe8ef84e8f",
+  "preregistration_sha256": "254b42efb31a55036d04a3a46f67b18f8259442154231cd45dc9b671d9463a44",
+  "planned_tasks": 72,
+  "completed_tasks": 72,
+  "created_tasks": 72,
+  "cohorts": {
+    "tuning": [
+      "jsonpointer-large-index",
+      "itsdangerous-date-overflow",
+      "dotenv-empty-comment",
+      "slugify-uppercase-translations"
+    ],
+    "holdout": [
+      "jsonpointer-subclass-join",
+      "jsonpointer-assignment-errors"
+    ]
+  },
+  "groups": {
+    "all": {
+      "legacy": {
+        "single": {
+          "planned_runs": 12,
+          "ready_and_accepted": 10,
+          "strict_success_rate": 0.8333333333333334,
+          "holdout_passed": 10,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 188013,
+          "model_calls": 17,
+          "duration_seconds": 287.05612559999963,
+          "recorded_tokens_including_partial": 188013,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 12
+        },
+        "multi_no_review": {
+          "planned_runs": 12,
+          "ready_and_accepted": 8,
+          "strict_success_rate": 0.6666666666666666,
+          "holdout_passed": 8,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 257562,
+          "model_calls": 30,
+          "duration_seconds": 481.60029570000006,
+          "recorded_tokens_including_partial": 257562,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 12
+        },
+        "multi_full": {
+          "planned_runs": 12,
+          "ready_and_accepted": 8,
+          "strict_success_rate": 0.6666666666666666,
+          "holdout_passed": 8,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 572373,
+          "model_calls": 50,
+          "duration_seconds": 806.7649260000026,
+          "recorded_tokens_including_partial": 572373,
+          "regression_demonstrated": 7,
+          "regression_not_executed_for_current_candidate": 4
+        }
+      },
+      "quality": {
+        "single": {
+          "planned_runs": 12,
+          "ready_and_accepted": 8,
+          "strict_success_rate": 0.6666666666666666,
+          "holdout_passed": 8,
+          "budget_exhausted": 1,
+          "unknown_usage": 1,
+          "infrastructure_blocked": 0,
+          "provider_failures": 1,
+          "observed_tokens": 211317,
+          "model_calls": 18,
+          "duration_seconds": 329.02494929999784,
+          "recorded_tokens_including_partial": 211317,
+          "regression_demonstrated": 8,
+          "regression_not_executed_for_current_candidate": 4
+        },
+        "multi_no_review": {
+          "planned_runs": 12,
+          "ready_and_accepted": 6,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 6,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 301193,
+          "model_calls": 32,
+          "duration_seconds": 526.9811764000001,
+          "recorded_tokens_including_partial": 301193,
+          "regression_demonstrated": 6,
+          "regression_not_executed_for_current_candidate": 6
+        },
+        "multi_full": {
+          "planned_runs": 12,
+          "ready_and_accepted": 7,
+          "strict_success_rate": 0.5833333333333334,
+          "holdout_passed": 7,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 489276,
+          "model_calls": 43,
+          "duration_seconds": 716.4917373999988,
+          "recorded_tokens_including_partial": 489276,
+          "regression_demonstrated": 7,
+          "regression_not_executed_for_current_candidate": 5
+        }
+      }
+    },
+    "tuning": {
+      "legacy": {
+        "single": {
+          "planned_runs": 8,
+          "ready_and_accepted": 6,
+          "strict_success_rate": 0.75,
+          "holdout_passed": 6,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 147954,
+          "model_calls": 13,
+          "duration_seconds": 230.66633670000147,
+          "recorded_tokens_including_partial": 147954,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 8
+        },
+        "multi_no_review": {
+          "planned_runs": 8,
+          "ready_and_accepted": 6,
+          "strict_success_rate": 0.75,
+          "holdout_passed": 6,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 169226,
+          "model_calls": 20,
+          "duration_seconds": 329.2836320000006,
+          "recorded_tokens_including_partial": 169226,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 8
+        },
+        "multi_full": {
+          "planned_runs": 8,
+          "ready_and_accepted": 5,
+          "strict_success_rate": 0.625,
+          "holdout_passed": 5,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 394907,
+          "model_calls": 33,
+          "duration_seconds": 563.7776597000011,
+          "recorded_tokens_including_partial": 394907,
+          "regression_demonstrated": 5,
+          "regression_not_executed_for_current_candidate": 3
+        }
+      },
+      "quality": {
+        "single": {
+          "planned_runs": 8,
+          "ready_and_accepted": 5,
+          "strict_success_rate": 0.625,
+          "holdout_passed": 5,
+          "budget_exhausted": 1,
+          "unknown_usage": 1,
+          "infrastructure_blocked": 0,
+          "provider_failures": 1,
+          "observed_tokens": 153993,
+          "model_calls": 13,
+          "duration_seconds": 251.58098289999953,
+          "recorded_tokens_including_partial": 153993,
+          "regression_demonstrated": 5,
+          "regression_not_executed_for_current_candidate": 3
+        },
+        "multi_no_review": {
+          "planned_runs": 8,
+          "ready_and_accepted": 4,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 4,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 211459,
+          "model_calls": 22,
+          "duration_seconds": 383.92576619999954,
+          "recorded_tokens_including_partial": 211459,
+          "regression_demonstrated": 4,
+          "regression_not_executed_for_current_candidate": 4
+        },
+        "multi_full": {
+          "planned_runs": 8,
+          "ready_and_accepted": 4,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 4,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 348368,
+          "model_calls": 30,
+          "duration_seconds": 513.4047638000002,
+          "recorded_tokens_including_partial": 348368,
+          "regression_demonstrated": 4,
+          "regression_not_executed_for_current_candidate": 4
+        }
+      }
+    },
+    "holdout": {
+      "legacy": {
+        "single": {
+          "planned_runs": 4,
+          "ready_and_accepted": 4,
+          "strict_success_rate": 1.0,
+          "holdout_passed": 4,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 40059,
+          "model_calls": 4,
+          "duration_seconds": 56.389788899998166,
+          "recorded_tokens_including_partial": 40059,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 4
+        },
+        "multi_no_review": {
+          "planned_runs": 4,
+          "ready_and_accepted": 2,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 2,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 88336,
+          "model_calls": 10,
+          "duration_seconds": 152.31666369999948,
+          "recorded_tokens_including_partial": 88336,
+          "regression_demonstrated": 0,
+          "regression_not_executed_for_current_candidate": 4
+        },
+        "multi_full": {
+          "planned_runs": 4,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.75,
+          "holdout_passed": 3,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 177466,
+          "model_calls": 17,
+          "duration_seconds": 242.98726630000147,
+          "recorded_tokens_including_partial": 177466,
+          "regression_demonstrated": 2,
+          "regression_not_executed_for_current_candidate": 1
+        }
+      },
+      "quality": {
+        "single": {
+          "planned_runs": 4,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.75,
+          "holdout_passed": 3,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 57324,
+          "model_calls": 5,
+          "duration_seconds": 77.44396639999832,
+          "recorded_tokens_including_partial": 57324,
+          "regression_demonstrated": 3,
+          "regression_not_executed_for_current_candidate": 1
+        },
+        "multi_no_review": {
+          "planned_runs": 4,
+          "ready_and_accepted": 2,
+          "strict_success_rate": 0.5,
+          "holdout_passed": 2,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 89734,
+          "model_calls": 10,
+          "duration_seconds": 143.05541020000055,
+          "recorded_tokens_including_partial": 89734,
+          "regression_demonstrated": 2,
+          "regression_not_executed_for_current_candidate": 2
+        },
+        "multi_full": {
+          "planned_runs": 4,
+          "ready_and_accepted": 3,
+          "strict_success_rate": 0.75,
+          "holdout_passed": 3,
+          "budget_exhausted": 0,
+          "unknown_usage": 0,
+          "infrastructure_blocked": 0,
+          "provider_failures": 0,
+          "observed_tokens": 140908,
+          "model_calls": 13,
+          "duration_seconds": 203.0869735999986,
+          "recorded_tokens_including_partial": 140908,
+          "regression_demonstrated": 3,
+          "regression_not_executed_for_current_candidate": 1
+        }
+      }
+    }
+  },
+  "execution_statuses": {
+    "legacy": {
+      "awaiting_approval": 27,
+      "failed": 9
+    },
+    "quality": {
+      "budget_exhausted": 1,
+      "failed": 14,
+      "awaiting_approval": 21
+    }
+  },
+  "formal_wall_seconds": 1727.6461504,
+  "limitations": [
+    "Six public bugs across the same four projects; two new bugs are within python-json-pointer, not unseen repositories.",
+    "Treatment bundles protocol, test-witness and review-evidence changes; cannot attribute effects to a single component.",
+    "New tests and fail-to-pass proof are enforced in all treatment modes; control preserves prior workflow rules.",
+    "Repeated calls are correlated; deterministic counterbalanced order is not a randomized population study.",
+    "Proxy alias does not establish underlying weights or training overlap. Observed tokens are not billing receipts.",
+    "No GitHub write or task approval in the model experiment. The previous 17/24 result stays immutable."
+  ],
+  "totals": {
+    "legacy": {
+      "tasks": 36,
+      "strict_success": 26,
+      "holdout_passed": 26,
+      "calls": 97,
+      "recorded_tokens_including_partial": 1017948,
+      "unknown_usage_tasks": 0,
+      "regression_demonstrated": 7,
+      "failure_kinds": {
+        "task_tests_failed": 3,
+        "hidden_acceptance_failed_or_unavailable": 1,
+        "failed": 1,
+        "duplicate_file_edits": 2,
+        "other_patch_rejection": 3
+      },
+      "recovered_after_rejection": 0
+    },
+    "quality": {
+      "tasks": 36,
+      "strict_success": 21,
+      "holdout_passed": 21,
+      "calls": 93,
+      "recorded_tokens_including_partial": 1001786,
+      "unknown_usage_tasks": 1,
+      "regression_demonstrated": 21,
+      "failure_kinds": {
+        "test_declaration_rejected": 4,
+        "task_tests_failed": 9,
+        "duplicate_file_edits": 1,
+        "budget_or_unknown_usage": 1
+      },
+      "recovered_after_rejection": 0
+    }
+  }
+}

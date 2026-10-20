@@ -1,0 +1,3242 @@
+[
+  {
+    "task_id": "6f6ac864-a9ed-4efe-9fc1-e1cb9d86dc0d",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458880.1375585,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8451,
+        "output_tokens": 765,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 5.624215599999843
+      }
+    ]
+  },
+  {
+    "task_id": "849d948c-8c55-4af1-8eaa-2be56efeca84",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458888.6714253,
+        "calls": 1,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "adapter": "live",
+        "usage_complete": false,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.018293999999969,
+        "duration_seconds": 12.702689600000213,
+        "failure": {
+          "kind": "request_error",
+          "retryable": false,
+          "retry_after_seconds": 0.0
+        }
+      }
+    ]
+  },
+  {
+    "task_id": "01ac9ccd-461c-4043-9987-bd9ad680211a",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458895.8768299,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 833,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.230862700000216,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.593290100000104
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458914.8029523,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9669,
+        "output_tokens": 1916,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499883800000134,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 18.481204100000014
+      }
+    ]
+  },
+  {
+    "task_id": "9bf1a7ff-4f05-4a8d-93a9-1d5f3dd34714",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458903.6692839,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 896,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.348092700000052,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.004127400000016
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458920.9972248,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10115,
+        "output_tokens": 1694,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.038080700000137,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.014219299999695
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458943.6857119,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 14107,
+        "output_tokens": 1720,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499895899999956,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.906501299999945
+      }
+    ]
+  },
+  {
+    "task_id": "c6167ad4-be5f-429b-9e62-e4770cbe2edf",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458924.688548,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 521,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.466765199999827,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.637409500000103
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458932.1224365,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9415,
+        "output_tokens": 752,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.7005303999999342,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.810386600000129
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458949.0535967,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 10297,
+        "output_tokens": 943,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.4998930000001565,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.2715733
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458971.1282158,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10817,
+        "output_tokens": 3003,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.4999150999997255,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 21.71679499999982
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458984.4031954,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 22207,
+        "output_tokens": 1601,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.60831330000019
+      }
+    ]
+  },
+  {
+    "task_id": "f28acbeb-9114-42f1-ad33-c4898be02942",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458955.4766963,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 724,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.651245600000038,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.608745500000168
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458975.2327366,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9941,
+        "output_tokens": 2023,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499882900000102,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 18.522047999999813
+      },
+      {
+        "node": "model",
+        "timestamp": 1792458993.547816,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 15208,
+        "output_tokens": 2308,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.5490623000000596,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.79769609999994
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459012.5914276,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 18840,
+        "output_tokens": 1064,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.40626310000016,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.204255199999807
+      }
+    ]
+  },
+  {
+    "task_id": "2810cab2-681e-4771-9118-a9359e145cac",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792458996.4228892,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 917,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.6442581999999675,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.270455700000184
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459010.9910722,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10028,
+        "output_tokens": 3035,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.3839545000000726,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.077537199999824
+      }
+    ]
+  },
+  {
+    "task_id": "bf82e023-86c5-4f67-bc35-4b3059441bfc",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459021.969659,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 954,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.5522203999998965
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459036.3171725,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9883,
+        "output_tokens": 793,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.154569899999842,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.056913899999927
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459051.962636,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12388,
+        "output_tokens": 927,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.602950100000271,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.14709270000003
+      }
+    ]
+  },
+  {
+    "task_id": "434f1b45-f23f-435c-9ef9-6b119d12166e",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459028.1913147,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 678,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.576973799999905,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.857964299999821
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459050.7929509,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9810,
+        "output_tokens": 2937,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499889799999892,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 22.12103879999995
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459061.8312392,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 21726,
+        "output_tokens": 902,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.288068800000019
+      }
+    ]
+  },
+  {
+    "task_id": "cde5beb5-fd9c-443d-b517-12b7e539fe58",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459081.893205,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8728,
+        "output_tokens": 2459,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.634632499999952,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.98511069999995
+      }
+    ]
+  },
+  {
+    "task_id": "87856837-3e80-4b50-a0cb-0c2cde239ff2",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459070.5028584,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 1042,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.546868099999756,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.008382700000311
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459083.4010699,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9927,
+        "output_tokens": 864,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.265243499999997,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.625269900000148
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459104.3504941,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12452,
+        "output_tokens": 1781,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.606405699999868,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.207839499999864
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459119.3334234,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 18853,
+        "output_tokens": 986,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.009611899999982
+      }
+    ]
+  },
+  {
+    "task_id": "3f475815-d832-4ba8-aa05-1449f99f1519",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459093.6989405,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 678,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.456386000000293
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459115.3420057,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9810,
+        "output_tokens": 2853,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499903699999777,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 21.1660195999998
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459129.2080002,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 21564,
+        "output_tokens": 1062,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.861165599999822,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.224451099999897
+      }
+    ]
+  },
+  {
+    "task_id": "fed9b8eb-3eda-438a-a474-0f6704312d3c",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459146.5406406,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8728,
+        "output_tokens": 2526,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.489805599999727,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.187925199999881
+      }
+    ]
+  },
+  {
+    "task_id": "0eaabbe9-3c8c-4b5f-83d4-ec7bea4384c0",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459134.0293596,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8996,
+        "output_tokens": 880,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.290983799999594,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.97975120000001
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459149.3560214,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 11501,
+        "output_tokens": 933,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.964568599999893,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.977260300000125
+      }
+    ]
+  },
+  {
+    "task_id": "16565834-930b-4216-af3d-3e78e7309b3c",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459158.8982975,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 920,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.20925490000036
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459180.356601,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10031,
+        "output_tokens": 2566,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.326571799999783,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 20.99502429999984
+      }
+    ]
+  },
+  {
+    "task_id": "2577d168-b839-4b55-b75c-950034cacd4e",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459195.5181592,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8451,
+        "output_tokens": 770,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.966095000000223
+      }
+    ]
+  },
+  {
+    "task_id": "bec4bd8a-54b7-4f54-b6cf-08d2a2183cdb",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459206.9571202,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 521,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.9163942999998653,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.318293599999834
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459216.8318982,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9417,
+        "output_tokens": 866,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.6068778999997448,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.383509400000094
+      }
+    ]
+  },
+  {
+    "task_id": "8d1bb5f2-17de-4ee8-a625-dfac8fbaa4d3",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459170.3145878,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 1058,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.347602199999983,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.47522379999964
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459185.979594,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9943,
+        "output_tokens": 2261,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.5829468999995697,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.35320159999992
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459205.275488,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 14024,
+        "output_tokens": 2299,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.2917647000003853,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.514029200000095
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459226.7924995,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 19387,
+        "output_tokens": 1112,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.311576999999943,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.55144539999992
+      }
+    ]
+  },
+  {
+    "task_id": "fba70aec-13d3-4530-b845-06533edb2f93",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459237.5972242,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8996,
+        "output_tokens": 873,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.7742053000001761,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.833617099999628
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459254.9698758,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 11512,
+        "output_tokens": 828,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.573982299999898,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.975464699999975
+      }
+    ]
+  },
+  {
+    "task_id": "9cde5e24-7033-4f31-8067-605dca1f87fc",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459230.3757231,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1067,
+        "output_tokens": 830,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.958638300000075,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.27526080000007
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459251.538891,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9664,
+        "output_tokens": 2446,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499963899999784,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 20.612341699999888
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459262.2490473,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 21913,
+        "output_tokens": 982,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.294331900000088
+      }
+    ]
+  },
+  {
+    "task_id": "f6d5f4e8-d788-4896-abb0-ef24c2e73b48",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459268.7521508,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 783,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.4116363999996793,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.707452099999955
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459283.6257322,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9726,
+        "output_tokens": 810,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.495535999999902,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.6633740999996
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459295.3864305,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12234,
+        "output_tokens": 1043,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.2785822999999255
+      }
+    ]
+  },
+  {
+    "task_id": "68b90f79-43bc-481b-a8e9-8b4c32ff2f78",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459313.1716025,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9273,
+        "output_tokens": 1779,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.3471580999998878,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.39647419999983
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459328.8138683,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 14406,
+        "output_tokens": 2168,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.08639519999997
+      }
+    ]
+  },
+  {
+    "task_id": "02edc1d5-d67c-460e-aec6-ee311683b255",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459287.7959402,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10116,
+        "output_tokens": 1484,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.245899200000167,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 20.080829900000026
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459345.691236,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 20360,
+        "output_tokens": 8113,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 10.092254900000171,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 56.63892540000006
+      }
+    ]
+  },
+  {
+    "task_id": "c67229f2-93ff-496d-bd78-4afcb3b0c56c",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459354.0076256,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 922,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.680996199999754
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459374.6316617,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10723,
+        "output_tokens": 1897,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.9414003000001685,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 19.236723500000153
+      }
+    ]
+  },
+  {
+    "task_id": "a3a8274a-16bb-4642-93ac-fd55360a92d8",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459346.7255642,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 1051,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.329428799999732
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459363.0289576,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10253,
+        "output_tokens": 1552,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.728773799999999,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.91861149999977
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459382.023874,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 14089,
+        "output_tokens": 1872,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.333778700000039,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.516989499999909
+      }
+    ]
+  },
+  {
+    "task_id": "f6a2b3f9-dbe9-4e35-b2e7-d7fa5bf1e0fe",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459408.0826857,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1972,
+        "output_tokens": 1012,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.574709399999847,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.992250200000399
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459423.6437762,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10229,
+        "output_tokens": 1920,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.256271100000049,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.243261399999938
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459440.181684,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10341,
+        "output_tokens": 2368,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.048493400000098,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.572268200000053
+      }
+    ]
+  },
+  {
+    "task_id": "45e2d789-a202-468f-b21e-500a9eb2e4bb",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459389.4882386,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 770,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 5.829230599999846
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459399.943576,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10794,
+        "output_tokens": 1379,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.010034599999926286,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.79897290000008
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459418.2152314,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 11887,
+        "output_tokens": 1196,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.28789310000001933,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.34917889999997
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459464.932294,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 24908,
+        "output_tokens": 5980,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 8.24818090000008,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 45.63921680000021
+      }
+    ]
+  },
+  {
+    "task_id": "2440f3ae-a57f-4fad-a440-aa865d31bc51",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459456.6310039,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9619,
+        "output_tokens": 1933,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.657052999999905
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459474.3419707,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12312,
+        "output_tokens": 1950,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.0171676999998454,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.377113500000178
+      }
+    ]
+  },
+  {
+    "task_id": "50c18833-2fb2-49e8-bb3a-7ddfcb58f93d",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459487.3394108,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 535,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.232254800000192
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459503.503209,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9950,
+        "output_tokens": 1475,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.0356738999998925,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.43084940000017
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459520.0847049,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12101,
+        "output_tokens": 1399,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.239941899999849
+      }
+    ]
+  },
+  {
+    "task_id": "c72338e4-03cf-493e-8a45-581b329aaa82",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459484.6723413,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 1120,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.071143799999845
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459526.534226,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 22848,
+        "output_tokens": 6544,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.069007699999474,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 40.33201020000024
+      }
+    ]
+  },
+  {
+    "task_id": "cc574643-f1e3-426b-abf9-2760c1f13f22",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459528.7671614,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 743,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.161950400000023
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459537.4720876,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10479,
+        "output_tokens": 1163,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.6256045999998605,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.991641200000231
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459547.019103,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12444,
+        "output_tokens": 1144,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.2142650000000685
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459561.9348917,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 14439,
+        "output_tokens": 900,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.931273599999713,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.057168700000148
+      }
+    ]
+  },
+  {
+    "task_id": "0ec2a1a6-0913-4d79-8c91-fadd93042684",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459574.9091628,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 550,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.858674599999631,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.95540099999971
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459583.458464,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9715,
+        "output_tokens": 767,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.7098575999998502,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.85479099999975
+      }
+    ]
+  },
+  {
+    "task_id": "21885a70-20be-4117-9d5a-f3bc753c4826",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459593.2934184,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 743,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.238484800000151
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459614.460394,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10202,
+        "output_tokens": 2183,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.49989800000003,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 20.46619409999994
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459636.402819,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 13133,
+        "output_tokens": 2396,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.2047137999998085,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 19.526800399999956
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459654.401707,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 18393,
+        "output_tokens": 1044,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.69643939999969,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.073940199999925
+      }
+    ]
+  },
+  {
+    "task_id": "e5f60803-7b71-453c-8b51-bda87da6aa8d",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459553.4603698,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 732,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.7169284999999945,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.866785100000016
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459615.25848,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 22082,
+        "output_tokens": 7646,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 13.82929329999979,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 60.37331610000001
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459663.7889183,
+        "calls": 2,
+        "input_tokens": 22312,
+        "output_tokens": 8192,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 47.26449530000036
+      }
+    ]
+  },
+  {
+    "task_id": "dfdd8d38-e028-4fa3-945c-f5c7305a7d62",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459663.158894,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9342,
+        "output_tokens": 937,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.183653500000219
+      }
+    ]
+  },
+  {
+    "task_id": "304c08d2-d730-42e4-8fa0-22455721fed3",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459683.7312672,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10393,
+        "output_tokens": 3065,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.956993100000545
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459704.1547117,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10541,
+        "output_tokens": 2191,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.333481499999834,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 19.213499200000115
+      }
+    ]
+  },
+  {
+    "task_id": "7bc597fd-7534-4360-a939-dd9d4e06cfe2",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459681.0018678,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 743,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.333691799999542,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.057576700000027
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459693.4215167,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10202,
+        "output_tokens": 2097,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.05132970000067871,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.697015499999907
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459706.2103498,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12906,
+        "output_tokens": 1746,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.1172171999996863,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.548979200000758
+      }
+    ]
+  },
+  {
+    "task_id": "e750d141-32f0-4575-a0d2-dde6cb54a7f0",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459721.5648057,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9342,
+        "output_tokens": 937,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.657529699999941,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.052086300000155
+      }
+    ]
+  },
+  {
+    "task_id": "711b8b7d-3977-49f8-82f3-06dd7b96d718",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459735.0646143,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 754,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.1425938000002134,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.030763800000386
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459746.801375,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10215,
+        "output_tokens": 2043,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.976198700000168
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459770.8141243,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 13127,
+        "output_tokens": 2562,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.455038799999784,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 21.7021620000005
+      }
+    ]
+  },
+  {
+    "task_id": "c819764b-6f22-4953-a85e-305bdd593e90",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459786.416974,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9619,
+        "output_tokens": 2219,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.07634059999964
+      }
+    ]
+  },
+  {
+    "task_id": "d3afbb79-b61d-49aa-a3cb-d7cbdaf35843",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459712.0923285,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 767,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.4219182000006185
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459757.467829,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 21804,
+        "output_tokens": 5843,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.001158099999884,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 43.796840500000144
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459794.945029,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 23092,
+        "output_tokens": 5471,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.492351100000633,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 36.368930999999975
+      }
+    ]
+  },
+  {
+    "task_id": "0fbdc89e-8589-43e7-a660-4657c3943afd",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459800.651014,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 754,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.2914239000001544,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.684541800000261
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459811.4430058,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10492,
+        "output_tokens": 1831,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.18624189999991358,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.881207500000528
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459828.1381924,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 14848,
+        "output_tokens": 2179,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.0466669999996157,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.422833300000093
+      }
+    ]
+  },
+  {
+    "task_id": "453b03c3-2a13-431f-9716-d7b75861ec92",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459821.769953,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10393,
+        "output_tokens": 1986,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.029411999999866,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.541173599999638
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459864.2366633,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 21112,
+        "output_tokens": 6593,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.319832099999985,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 41.29794109999966
+      }
+    ]
+  },
+  {
+    "task_id": "a87bf787-1fde-4b0a-a110-aee460a27e2d",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459837.9362159,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1284,
+        "output_tokens": 765,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.0165232999997897,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.191158900000119
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459849.860014,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10278,
+        "output_tokens": 2120,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.6504374000005555,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.250193099999706
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459867.1557007,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 13092,
+        "output_tokens": 2250,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.560532399999829,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.874111399999492
+      }
+    ]
+  },
+  {
+    "task_id": "9d0f93fd-ca70-427b-83ad-cb4d6abeb3ae",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459879.0893943,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8870,
+        "output_tokens": 837,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.8154912999998487,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.691509100000076
+      }
+    ]
+  },
+  {
+    "task_id": "2ced8e70-1362-4594-8724-6a132ae56d7c",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459871.9384408,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 940,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.225454499999614
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459892.7881567,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 11018,
+        "output_tokens": 2525,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.326867400000083,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 19.377694600000723
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459915.9856665,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 11170,
+        "output_tokens": 2272,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.8280447999995886,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 21.07993929999975
+      }
+    ]
+  },
+  {
+    "task_id": "ab9f2a3b-159f-4f10-bc2b-cd0f7b3cd601",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459895.137441,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 773,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.9852327999997215,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.917263499999535
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459914.4365993,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9637,
+        "output_tokens": 2102,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.129702199999883,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 18.36481720000029
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459932.5895026,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 15685,
+        "output_tokens": 3471,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.695381600000474
+      }
+    ]
+  },
+  {
+    "task_id": "929a99bc-f37d-459d-8bf6-43637c8c08e4",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459939.6248996,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10116,
+        "output_tokens": 1798,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.679215199999817
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459957.0797215,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10174,
+        "output_tokens": 2279,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.4255451999997604,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.531271500000003
+      }
+    ]
+  },
+  {
+    "task_id": "7a3cdbad-cdbf-41e0-b0d0-2dc7988abd3f",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459943.837866,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 581,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.9780318000002808,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.370592499999475
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459956.5957017,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9451,
+        "output_tokens": 744,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.86309220000021,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.979383400000188
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459965.7376292,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 10362,
+        "output_tokens": 907,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.185197499999958
+      },
+      {
+        "node": "model",
+        "timestamp": 1792459983.916186,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10679,
+        "output_tokens": 1906,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.286057399999663,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.623930400000063
+      }
+    ]
+  },
+  {
+    "task_id": "784b707d-25bb-4770-b5f6-d3ace5424b0d",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459995.128858,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 767,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.7289850999995906,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.280792200000178
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460005.7962396,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9907,
+        "output_tokens": 1866,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.637299200000598
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460017.224682,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 15924,
+        "output_tokens": 1863,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.362488100000519
+      }
+    ]
+  },
+  {
+    "task_id": "82ad9a7d-4824-4d54-a7c1-8f5b57c0b1eb",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792459973.069971,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 922,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.46746660000008,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.478219700000409
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460038.0181878,
+        "calls": 2,
+        "input_tokens": 21462,
+        "output_tokens": 8192,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 12.96557010000015,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 62.68704590000016
+      }
+    ]
+  },
+  {
+    "task_id": "e7bf3f6f-4637-4e14-8aad-ab16a461a9da",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460029.5537548,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 796,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.439422399999785,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.1270427999998
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460039.519978,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9934,
+        "output_tokens": 1900,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.30949539999983244,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.46031159999984
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460057.8885968,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 13217,
+        "output_tokens": 2104,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 5.2018180999994,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.255192700000407
+      }
+    ]
+  },
+  {
+    "task_id": "c1527aab-e4d9-43d5-a48a-166f3265e90a",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460070.9276142,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9147,
+        "output_tokens": 1668,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.3680056999992303,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.458823800000573
+      }
+    ]
+  },
+  {
+    "task_id": "20c6f76f-5b22-4b19-b589-85794ba7159c",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460082.2316763,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 767,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.291245000000345
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460105.3395357,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9905,
+        "output_tokens": 1898,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499899899999946,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 22.524281499999233
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460119.7203398,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 13786,
+        "output_tokens": 1883,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.31873110000015
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460135.7901394,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 15173,
+        "output_tokens": 1229,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.564621800000168
+      }
+    ]
+  },
+  {
+    "task_id": "ac7abc4f-a5b3-4313-a68a-f321c66d7351",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460046.234368,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1983,
+        "output_tokens": 922,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.89892830000008
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460106.3002908,
+        "schema": "Patch",
+        "calls": 2,
+        "input_tokens": 21458,
+        "output_tokens": 6734,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 13.016968400000223,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 58.64107220000005
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460129.3505874,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 11832,
+        "output_tokens": 1382,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.14640209999925,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.59423340000012
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460147.8133998,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12567,
+        "output_tokens": 3318,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.22638950000055047,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.31665780000003
+      }
+    ]
+  },
+  {
+    "task_id": "3a60ab2e-6dbe-473f-ad6e-094fc29d4d5d",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460148.614979,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9147,
+        "output_tokens": 1660,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.20821500000056403,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.592137300000104
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460160.6369357,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 12171,
+        "output_tokens": 1774,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.994117299999743
+      }
+    ]
+  },
+  {
+    "task_id": "fce7ee87-4931-439b-9186-e7e72ae793cb",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460169.2880476,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8858,
+        "output_tokens": 2012,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 1.1931865999995352,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.34242660000018
+      }
+    ]
+  },
+  {
+    "task_id": "e2731217-6ce8-47e0-8f6d-4e40acd893ab",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460171.8184762,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 736,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.6879699999999502,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.865921399999934
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460183.0950127,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9876,
+        "output_tokens": 1871,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.8145233999994161,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.770620000000235
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460198.2418427,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 15179,
+        "output_tokens": 1912,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.9833294000000024,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.082723100000294
+      }
+    ]
+  },
+  {
+    "task_id": "a008ad63-e201-4499-9e52-f2eb4350453a",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460207.5201352,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8870,
+        "output_tokens": 580,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.847091800000271,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.222665199999938
+      }
+    ]
+  },
+  {
+    "task_id": "428e21ed-f3fc-4e6a-b71f-bebf4ec1d2ce",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460187.923535,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 932,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.38639349999994,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.66756439999972
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460205.7480369,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 10028,
+        "output_tokens": 1991,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.262667199999669,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.367143899999974
+      }
+    ]
+  },
+  {
+    "task_id": "a7604743-cafa-4071-adad-ebaf03f2c08b",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460218.6554258,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 1029,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.866258999999445
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460236.7326794,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9833,
+        "output_tokens": 1960,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 6.670081300000675,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.613400700000057
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460255.5395417,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 13140,
+        "output_tokens": 3200,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 2.068486000000121,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.80938420000075
+      }
+    ]
+  },
+  {
+    "task_id": "3c5a0d5b-8156-43b6-b6a5-825b4305e182",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460224.6713865,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 820,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.3630967999997665,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.74291119999998
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460248.9472966,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9915,
+        "output_tokens": 2018,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.4998961999999665,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 23.805499999999483
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460261.055324,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 19234,
+        "output_tokens": 1227,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.54296340000019
+      }
+    ]
+  },
+  {
+    "task_id": "b951f8e9-4857-4b78-abe1-89e156d89c9a",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460274.3902438,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 804,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 4.722491900000023,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.597840799999176
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460293.3283582,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9678,
+        "output_tokens": 1106,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499890900000537,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 18.47248899999977
+      }
+    ]
+  },
+  {
+    "task_id": "52674e86-b0f2-4c05-ac0d-46956063ad01",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460266.6171978,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1064,
+        "output_tokens": 796,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 3.8875491999997394,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.489541299999473
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460280.4700122,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9657,
+        "output_tokens": 779,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.499879699999838,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.387162799999714
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460303.3628674,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 10570,
+        "output_tokens": 1210,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 7.49988889999986,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 21.227187600000434
+      }
+    ]
+  },
+  {
+    "task_id": "0d48d72c-261a-4bd3-976c-e9000582c985",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460308.0199838,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 932,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.797819299999901,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 11.302064299999984
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460314.7142396,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9749,
+        "output_tokens": 1007,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 6.230227400000331
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460329.0523498,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 10934,
+        "output_tokens": 1287,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.708927499999845
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460344.998331,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 11380,
+        "output_tokens": 2182,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.574272800000472
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460360.5916266,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 20079,
+        "output_tokens": 1251,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 12.022129899999527
+      }
+    ]
+  },
+  {
+    "task_id": "6d7d5279-79d0-40fb-9d85-80dee7bb63bc",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460373.4513848,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8581,
+        "output_tokens": 1112,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.704737799999748
+      }
+    ]
+  },
+  {
+    "task_id": "e71b149f-cb3d-44d3-9f79-0c60a8fbfba4",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460384.4400225,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 659,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 7.75698470000043
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460397.987227,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9531,
+        "output_tokens": 1059,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.080303700000513
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460418.468255,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 10750,
+        "output_tokens": 1193,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 18.721413100000063
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460435.7517073,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 11067,
+        "output_tokens": 1754,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.88116119999995
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460449.072571,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 19426,
+        "output_tokens": 1302,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 9.78092480000032
+      }
+    ]
+  },
+  {
+    "task_id": "947d5ce1-6335-43ff-9ba0-3c538fd03718",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460465.8126626,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8581,
+        "output_tokens": 2628,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 14.47991490000004
+      }
+    ]
+  },
+  {
+    "task_id": "d2dd5d5e-add9-45c0-b667-7eb880a91054",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460479.2602468,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 901,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 10.228368500000215
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460488.5238605,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9721,
+        "output_tokens": 1014,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 8.818869699999595
+      }
+    ]
+  },
+  {
+    "task_id": "898f3e34-3006-4a4f-9c58-3d787ab3a6c7",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460505.3539586,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 8858,
+        "output_tokens": 2029,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.11312469999939
+      }
+    ]
+  },
+  {
+    "task_id": "2335da3c-bc23-4735-a39c-340464a1fc17",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460525.727937,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 850,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 15.416136100000585
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460544.0174232,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9948,
+        "output_tokens": 1802,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 17.81232739999996
+      }
+    ]
+  },
+  {
+    "task_id": "07a2e372-888d-47e7-a1a9-6cc0ef64a4bd",
+    "events": [
+      {
+        "node": "model",
+        "timestamp": 1792460562.310192,
+        "schema": "Plan",
+        "calls": 1,
+        "input_tokens": 1077,
+        "output_tokens": 804,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.223344300000463
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460579.288069,
+        "schema": "Patch",
+        "calls": 1,
+        "input_tokens": 9953,
+        "output_tokens": 1523,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 16.50737659999959
+      },
+      {
+        "node": "model",
+        "timestamp": 1792460596.0567808,
+        "schema": "Review",
+        "calls": 1,
+        "input_tokens": 17337,
+        "output_tokens": 1203,
+        "adapter": "live",
+        "usage_complete": true,
+        "model_requested": "deepseek-v4.1-flash",
+        "streaming": true,
+        "rate_limit_wait_seconds": 0.0,
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "duration_seconds": 13.431007500000305
+      }
+    ]
+  }
+]
