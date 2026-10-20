@@ -316,6 +316,7 @@ def run_evaluation(
                                 "model_reported",
                                 "provider_response_id",
                                 "transport_attempts",
+                                "sdk_versions",
                                 "calls",
                                     "rate_limit_wait_seconds",
                             ]

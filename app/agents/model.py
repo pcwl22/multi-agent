@@ -10,6 +10,7 @@ from app.agents.failures import provider_failure
 from app.agents.instructions import system_instructions
 from app.agents.pacing import endpoint_pacer
 from app.agents.quality import test_functions
+from app.agents.transport import sdk_versions
 from app.config.settings import Settings
 from app.models.schemas import Edit, Patch, Plan, Review
 from app.services.budgets import BudgetExceeded, current_budget
@@ -121,6 +122,7 @@ class LiveModel:
             "usage_complete": True, "model_requested": self.model_name,
             "streaming": self.streaming, "rate_limit_wait_seconds": 0.0,
             "transport_attempts": [],
+            "sdk_versions": sdk_versions(),
         }
         messages = [("system", system_instructions(schema.__name__)),
                     ("human", json.dumps(payload, ensure_ascii=False))]

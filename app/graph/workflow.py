@@ -370,7 +370,9 @@ def build_graph(settings: Settings, model: Model, runner: Any, checkpointer: Any
         value = result.model_dump()
         feedback = []
         if result.status == "failed":
-            feedback = [{**failure_feedback(value, state, prioritize_original=state.get("repair_quality_version") in {1, 2}), **candidate_tags(state)}]
+            feedback = [{**failure_feedback(value, state,
+                prioritize_original=state.get("repair_quality_version") in {1, 2},
+                include_preparation=state.get("repair_quality_version") == 2), **candidate_tags(state)}]
         return {"test_results": [{**value, "attempt": state["attempts"],
                                   "diff_digest": state["diff_digest"], **candidate_tags(state)}],
                 "repair_feedback": feedback}

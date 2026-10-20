@@ -11,7 +11,8 @@ from app.agents.transport import transport_diagnostics
 
 
 def provider_failure(exc: Exception, *, streaming: bool | None = None) -> dict:
-    status = getattr(exc, "status_code", None)
+    diagnostics = transport_diagnostics(exc, streaming=streaming)
+    status = diagnostics.get('http_status') or getattr(exc, "status_code", None)
     if status == 429:
         kind, retryable, delay = "rate_limit", True, 300.0
     elif isinstance(exc, (TimeoutError, httpx.TimeoutException, APITimeoutError)):
@@ -38,7 +39,7 @@ def provider_failure(exc: Exception, *, streaming: bool | None = None) -> dict:
             except (ValueError, TypeError, OverflowError):
                 pass
     return {
-        "diagnostics": transport_diagnostics(exc, streaming=streaming),
+        "diagnostics": diagnostics,
         "kind": kind,
         "retryable": retryable,
         "retry_after_seconds": min(max(delay, 0.0), 86400.0),

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
+from app.agents.test_context import preparation_context
 from app.tools.repository import Repository, digest, is_test_file
 
 
@@ -64,7 +65,8 @@ def observations(result: dict, baseline: Path, workspace: Path, *, prioritize_or
     return items
 
 
-def failure_feedback(result: dict, state: dict, *, prioritize_original: bool = False) -> dict:
+def failure_feedback(result: dict, state: dict, *, prioritize_original: bool = False,
+                     include_preparation: bool = False) -> dict:
     workspace = Path(state['workspace_path'])
     items = observations(result, workspace.parent / 'baseline', workspace, prioritize_original=prioritize_original)
     signature = [{k: o[k] for k in ('file', 'test', 'origin', 'assertion', 'message')}
@@ -78,7 +80,7 @@ def failure_feedback(result: dict, state: dict, *, prioritize_original: bool = F
     repeated = sum(p.get('diff_digest') == state['diff_digest'] and
                    p.get('failure_fingerprint') == fingerprint
                    for p in state.get('repair_feedback', []))
-    return dict(attempt=state['attempts'], diff_digest=state['diff_digest'],
+    value = dict(attempt=state['attempts'], diff_digest=state['diff_digest'],
                 failure_fingerprint=fingerprint, identical_prior_failures=repeated,
                 observations=items, evidence=result['evidence'],
                 raw_fallback=not bool(items),
@@ -89,6 +91,9 @@ def failure_feedback(result: dict, state: dict, *, prioritize_original: bool = F
                     if repeated else
                     'Compare the observed assertion with the ORIGINAL issue. Correct source '
                     'or an unjustified NEW test; existing tests stay immutable.'))
+    if include_preparation:
+        value['test_preparation_context'] = preparation_context(Repository(workspace), items)
+    return value
 
 
 def compact_test_evidence(result: dict) -> dict:

@@ -1,0 +1,37 @@
+{
+  "scope": "Read-only sealed local ledger; no provider invoice API or request-level receipt available in current evidence. No remote reconciliation claimed.",
+  "rows": [
+    {
+      "id": "probe-01",
+      "version": 1,
+      "ledger_sha256": "d88dc820707dc7bfbaeb4d4aaa276b72a7cd4e8f0d7bf571e36f43dc9f11e671",
+      "binding_sha256": "c1382a887203cd60f2652f7ed00a778915d60854941861b46c31e886b8ad12b8",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    },
+    {
+      "id": "probe-02",
+      "version": 1,
+      "ledger_sha256": "7d05e5b985a76b044e5e2222b609dfb7b18f6b0669ed875c2dd2b1214900902a",
+      "binding_sha256": "2c18968b5cbce57571a77ddcd694f29e5ce02ab5a254ae3a62c18232e02fbcf9",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 1,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unconfirmed_dispatch",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  ]
+}

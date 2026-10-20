@@ -1,0 +1,14 @@
+{
+  "plan_sha256": "0ddba6819f43338ba25453c78707074f5f89d9ed51aeb1f1a6ba66a98f323569",
+  "runtime_sha256": "887179f68c0846bb6282263a25957fae766bd19bcb8a43cfee146acd8656aa9e",
+  "wheel_sha256": "3922131d6e40febd1f52d19037111380acf3ec15c2129e47a541ed94b86a911e",
+  "test_junit_sha256": "942eaa122238290f096d16cbc3354c950e2b3e2492389584c343e7aed13fccb6",
+  "native_lock_sha256": "e4beb9618cca2911356187266b726b8fe4eb618143c46ffa626142b238b4b348",
+  "planned_fresh_cells": 2,
+  "maximum_model_request_reservations": 2,
+  "stop_on_first_failure": true,
+  "prior_uncertain_probe_replayed": false,
+  "large_repair_evaluation_planned": false,
+  "controller_sha256": "bc0ac4f06f1698a4736d74fd406f2d659c81eb01e6765084de2338eb024856f0",
+  "hard_controller_timeout_seconds": 135
+}

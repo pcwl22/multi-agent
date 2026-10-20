@@ -1,0 +1,68 @@
+"""Manual fresh-probe controller with an owned-child hard timeout and hidden key."""
+import getpass
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+Q = Path('E:/multi-agent/.repopilot/connectivity-collection-20261020')
+PY = Path('E:/multi-agent/.repopilot/ci-isolation-venv/Scripts/python.exe')
+
+def guarded_child(args, payload, timeout, *, cwd=None, env=None):
+    process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               cwd=cwd, env=env)
+    try:
+        stdout, stderr = process.communicate(input=payload, timeout=timeout)
+        return {'timed_out':False,'exit_code':process.returncode,'stdout':stdout,'stderr':stderr}
+    except subprocess.TimeoutExpired:
+        process.kill()  # Only the child created immediately above, no enumeration or shell.
+        stdout, stderr = process.communicate(timeout=10)
+        return {'timed_out':True,'exit_code':process.returncode,'stdout':stdout,'stderr':stderr}
+
+def main():
+    secret = getpass.getpass('Provider key (hidden): ')
+    try:
+        assert secret
+        freeze = json.loads((Q / 'freeze-summary.json').read_text(encoding='utf-8'))
+        assert hashlib.sha256(Path(__file__).read_bytes()).hexdigest() == freeze['controller_sha256']
+        raw = (Q / 'connectivity-plan.json').read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == freeze['plan_sha256']
+        assert not (Q / 'live-results').exists()
+        verification = json.loads((Q / 'verification.json').read_text(encoding='utf-8'))
+        for name, key in [('source-unit.xml','source_non_docker'),('wheel-full.xml','installed_wheel_full_docker_enabled')]:
+            assert hashlib.sha256((Q / name).read_bytes()).hexdigest() == verification[key]['sha256']
+        env = dict(os.environ, PYTHONIOENCODING='utf-8', HTTPS_PROXY='http://127.0.0.1:7890')
+        started = time.monotonic()
+        result = guarded_child([str(PY),'-I','-m','app.evaluation.connectivity',
+            '--plan',str(Q / 'connectivity-plan.json'),'--sha256',freeze['plan_sha256'],
+            '--output',str(Q / 'live-results')], (secret+'\n').encode(), 135,
+            cwd=Q / 'verification',env=env)
+        record = {k:v for k,v in result.items() if k not in {'stdout','stderr'}}
+        record.update(hard_controller_timeout_seconds=135,wall_seconds=time.monotonic()-started,
+            plan_sha256=freeze['plan_sha256'],replay_performed=False)
+        for channel in ['stdout','stderr']:
+            text = result[channel].decode('utf-8',errors='replace').replace(secret,'[REDACTED]')
+            (Q / ('controller-'+channel+'.log')).write_text(text,encoding='utf-8')
+        # Fail closed before copying any live evidence to publishable artifacts.
+        record['credential_found_in_artifacts'] = any(secret.encode() in p.read_bytes()
+            for p in (Q / 'live-results').rglob('*') if p.is_file())
+        (Q / 'controller-result.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+        print(json.dumps(record),flush=True)
+    finally:
+        secret = ''
+        print('CREDENTIAL_SESSION_CLOSED',flush=True)
+
+if __name__=='__main__':
+    if '--self-test' in sys.argv:
+        result=guarded_child([sys.executable,'-c','import time;time.sleep(30)'],b'',0.2)
+        assert result['timed_out'] and result['exit_code'] != 0
+        result=guarded_child([sys.executable,'-c','print("controlled")'],b'',5)
+        assert not result['timed_out'] and result['exit_code']==0 and b'controlled' in result['stdout']
+        (Q / 'controller-guard-check.json').write_text(json.dumps({'controlled_timeout_kills_only_owned_child':True,
+            'controlled_normal_exit':True,'live_provider_used':False},indent=2)+'\n',encoding='utf-8')
+        print('Guard controlled checks passed; no provider used.')
+    else:
+        main()

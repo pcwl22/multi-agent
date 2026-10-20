@@ -15,6 +15,7 @@ from pathlib import Path
 from pydantic import Field
 
 from app.config.settings import Settings
+from app.evaluation.native_collection import native_adapter
 from app.evaluation.runner import MODES, holdout_workspace, run_evaluation
 from app.models.budgets import BudgetLimits
 from app.models.schemas import StrictModel, TestResult
@@ -100,7 +101,10 @@ def export(repo: Path, revision: str, destination: Path) -> list[dict]:
     return omitted_links
 
 
-def prepare(upstream_root: Path, output: Path, spec: Path | None = None) -> str:
+def prepare(upstream_root: Path, output: Path, spec: Path | None = None, *,
+            collection_protocol: str = 'legacy') -> str:
+    if collection_protocol not in {'legacy', 'native-v2'}:
+        raise ValueError('Unsupported collection protocol')
     spec = spec or Path(__file__).parent / "historical_cases/spec.json"
     raw = spec.read_bytes()
     cases = [HistoricalCase.model_validate(x) for x in json.loads(raw)]
@@ -139,6 +143,8 @@ def prepare(upstream_root: Path, output: Path, spec: Path | None = None) -> str:
                 'for _name, _value in _original.items():\n'
                 '    if isinstance(_value, type) and issubclass(_value, unittest.TestCase):\n'
                 '        globals()[_name] = _value\n', encoding="utf-8")
+            if collection_protocol == 'native-v2':
+                adapter.write_text(native_adapter(case.collection_entrypoint), encoding='utf-8')
         # Do not silently drop original Python code or tests at the snapshot boundary.
         python_files = {p for p in manifest(source) if p.endswith(".py")}
         if not python_files <= set(Repository(source).list_files()):
@@ -163,6 +169,9 @@ def prepare(upstream_root: Path, output: Path, spec: Path | None = None) -> str:
     save(output / "dataset.json", dataset)
     lock = {"version": 1, "spec_sha256": sha(raw),
             "dataset_sha256": sha((output / "dataset.json").read_bytes()), "cases": records}
+    if collection_protocol == 'native-v2':
+        lock.update(version=2, collection_protocol='unittest-load-tests-v2',
+                    collection_note='Native suite runs once in order; parametrized pytest items report cached native outcomes. One extra integrity item per bridge is not an upstream test. Duplicate IDs are rejected.')
     save(output / "lock.json", lock)
     return sha((output / "lock.json").read_bytes())
 
@@ -359,11 +368,12 @@ def main() -> None:
     parser.add_argument("--lock")
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--workers", type=int, choices=[1, 2, 3], default=1)
+    parser.add_argument('--collection-protocol', choices=['legacy', 'native-v2'], default='legacy')
     args = parser.parse_args()
     if args.action == "prepare":
         if not args.upstream:
             parser.error("prepare requires --upstream")
-        print(prepare(args.upstream, args.corpus))
+        print(prepare(args.upstream, args.corpus, collection_protocol=args.collection_protocol))
     else:
         if not args.output or not args.lock:
             parser.error("controls/run require --output and --lock")

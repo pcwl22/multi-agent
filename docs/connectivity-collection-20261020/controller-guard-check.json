@@ -1,0 +1,5 @@
+{
+  "controlled_timeout_kills_only_owned_child": true,
+  "controlled_normal_exit": true,
+  "live_provider_used": false
+}

@@ -1,0 +1,29 @@
+{
+  "source_non_docker": {
+    "tests": 305,
+    "passed": 303,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 2,
+    "sha256": "c99a605c9a5cac76cf013ab62a9940693c4ced606138f888207c489eea4074ff"
+  },
+  "installed_wheel_full_docker_enabled": {
+    "tests": 377,
+    "passed": 375,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 2,
+    "sha256": "942eaa122238290f096d16cbc3354c950e2b3e2492389584c343e7aed13fccb6"
+  },
+  "new_test_cases": 34,
+  "new_docker_cases": 8,
+  "existing_test_files_unchanged": 85,
+  "native_control_runs": 24,
+  "native_independent_runs": 8,
+  "native_cases_eligible": 6,
+  "wheel_app_files": 118,
+  "source_wheel_install_match": true,
+  "demo_fixed_but_fixture_remains_broken": true,
+  "ruff": "passed",
+  "verification_environment_note": "Initial new-fixture run hit Windows WinError 206 before target execution. Fresh short basetemp resolved the verification path issue; no assertions changed. Production long-path behavior was not optimized in this stage."
+}

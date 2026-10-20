@@ -1,0 +1,40 @@
+import copy
+from pathlib import Path
+
+import jsonpointer
+import pytest
+from jsonpointer import JsonPointer, JsonPointerException, set_pointer
+
+assert Path(jsonpointer.__file__).resolve().is_relative_to(Path.cwd().resolve())
+
+
+@pytest.mark.parametrize("doc,path", [([1], "/4"), ((1, 2), "/0"), ("abc", "/0"), ({"x": (1, 2)}, "/x/1"), ({"x": "abc"}, "/x/0")])
+@pytest.mark.parametrize("public_wrapper", [False, True])
+def test_invalid_assignment_uses_pointer_exception_without_mutation(doc, path, public_wrapper):
+    before = copy.deepcopy(doc)
+    with pytest.raises(JsonPointerException):
+        if public_wrapper:
+            set_pointer(doc, path, 9)
+        else:
+            JsonPointer(path).set(doc, 9)
+    assert doc == before
+
+
+def test_read_only_duck_mapping_uses_public_exception():
+    class ReadOnly:
+        def __getitem__(self, key):
+            return "value"
+    with pytest.raises(JsonPointerException):
+        JsonPointer("/key").set(ReadOnly(), 9)
+
+
+def test_valid_dict_list_append_and_copy_behavior_is_preserved():
+    document = {"items": [1, 2]}
+    assert set_pointer(document, "/items/0", 7) is document
+    assert document == {"items": [7, 2]}
+    assert JsonPointer("/items/-").set(document, 8) is document
+    assert document == {"items": [7, 2, 8]}
+    copied = set_pointer(document, "/items/1", 9, inplace=False)
+    assert copied == {"items": [7, 9, 8]}
+    assert document == {"items": [7, 2, 8]}
+    assert set_pointer(document, "", {"root": True}, inplace=False) == {"root": True}

@@ -15,6 +15,8 @@ class TransportDiagnostics(StrictModel):
     exception_types: list[str] = Field(default_factory=list, max_length=8)
     chain_truncated: bool = False
     streaming_requested: bool | None = None
+    http_status: int | None = Field(default=None, ge=100, le=599, strict=True)
+    request_id_sha256: str | None = Field(default=None, pattern=r'^[a-f0-9]{64}$')
     response_completion: Literal['unconfirmed'] = 'unconfirmed'
     interpretation: str = 'Exception classes identify a transport phase, not the billing outcome or server root cause.'
 

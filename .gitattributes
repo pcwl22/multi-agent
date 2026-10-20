@@ -27,3 +27,8 @@ docs/repair-quality-v2-20261020/*.json -text whitespace=cr-at-eol
 
 # Preserve the provider reliability probe evidence exactly.
 docs/provider-reliability-20261020/*.json -text whitespace=cr-at-eol
+
+# Preserve this stage's frozen diagnostics, collection inventories and probe evidence.
+docs/connectivity-collection-20261020/*.json -text whitespace=cr-at-eol
+docs/connectivity-collection-20261020/spec/*.json -text whitespace=cr-at-eol
+docs/connectivity-collection-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
