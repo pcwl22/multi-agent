@@ -1,0 +1,14 @@
+{
+  "plan_sha256": "0ddba6819f43338ba25453c78707074f5f89d9ed51aeb1f1a6ba66a98f323569",
+  "planned_cells": 2,
+  "passed": 0,
+  "failed": 1,
+  "not_run": 1,
+  "model_request_reservations": 1,
+  "known_tokens_including_partial": 0,
+  "unknown_usage_cells": 1,
+  "connectivity_smoke_passed": false,
+  "repair_ability_evaluated": false,
+  "billing_reconciled": false,
+  "limitations": "Two smoke probes do not establish sustained availability or repair quality. Observed tokens are not a monetary spending cap. Old probes and budgets are never reopened."
+}

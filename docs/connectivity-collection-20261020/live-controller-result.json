@@ -1,0 +1,9 @@
+{
+  "timed_out": false,
+  "exit_code": 0,
+  "hard_controller_timeout_seconds": 135,
+  "wall_seconds": 73.77576489999774,
+  "plan_sha256": "0ddba6819f43338ba25453c78707074f5f89d9ed51aeb1f1a6ba66a98f323569",
+  "replay_performed": false,
+  "credential_found_in_artifacts": false
+}
