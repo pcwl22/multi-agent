@@ -1,0 +1,199 @@
+[
+  {
+    "id": "probe-01",
+    "streaming": false,
+    "status": "failed",
+    "error_type": "ModelFailure",
+    "model_calls": 1,
+    "stats": {
+      "calls": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "adapter": "live",
+      "usage_complete": false,
+      "model_requested": "deepseek-v4.1-flash",
+      "streaming": false,
+      "rate_limit_wait_seconds": 0.0,
+      "transport_attempts": [
+        {
+          "attempt_id": "e93ad5f6d2cc4ceb80db7994ba3f6e7a",
+          "outcome": "failed",
+          "started_at": 1792465854.1656058,
+          "duration_seconds": 64.65574430000015,
+          "failure": {
+            "diagnostics": {
+              "version": 1,
+              "phase": "response",
+              "exception_types": [
+                "APIStatusError",
+                "APIStatusError"
+              ],
+              "chain_truncated": false,
+              "streaming_requested": false,
+              "response_completion": "unconfirmed",
+              "interpretation": "Exception classes identify a transport phase, not the billing outcome or server root cause."
+            },
+            "kind": "provider_unavailable",
+            "retryable": true,
+            "retry_after_seconds": 120.0
+          },
+          "usage_complete": false
+        }
+      ],
+      "duration_seconds": 64.68719079999937,
+      "failure": {
+        "diagnostics": {
+          "version": 1,
+          "phase": "response",
+          "exception_types": [
+            "APIStatusError",
+            "APIStatusError"
+          ],
+          "chain_truncated": false,
+          "streaming_requested": false,
+          "response_completion": "unconfirmed",
+          "interpretation": "Exception classes identify a transport phase, not the billing outcome or server root cause."
+        },
+        "kind": "provider_unavailable",
+        "retryable": true,
+        "retry_after_seconds": 120.0
+      }
+    },
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 150.0,
+        "model_requests": 1,
+        "observed_tokens": 20000,
+        "sandbox_runs": 1,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792466000.7846942,
+      "remaining_seconds": 81.96200466156006,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0,
+      "usage_status": "unknown"
+    },
+    "usage_complete": false,
+    "tokens": null,
+    "observed_tokens": 0
+  },
+  {
+    "id": "probe-02",
+    "streaming": true,
+    "status": "dispatch_uncertain",
+    "reason": "execution_interrupted_with_pending_reservation",
+    "model_calls": null,
+    "physical_attempt_upper_bound": 1,
+    "request_reservations": 1,
+    "tokens": null,
+    "observed_tokens": 0,
+    "usage_complete": false,
+    "budget_stop_kind": "dispatch_uncertain",
+    "replayed": false
+  },
+  {
+    "id": "probe-03",
+    "streaming": false,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-04",
+    "streaming": true,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-05",
+    "streaming": false,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-06",
+    "streaming": true,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-07",
+    "streaming": false,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-08",
+    "streaming": true,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-09",
+    "streaming": false,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-10",
+    "streaming": true,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-11",
+    "streaming": false,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  },
+  {
+    "id": "probe-12",
+    "streaming": true,
+    "status": "not_run",
+    "reason": "batch_interrupted_no_resume",
+    "model_calls": 0,
+    "tokens": 0,
+    "observed_tokens": 0,
+    "usage_complete": true
+  }
+]

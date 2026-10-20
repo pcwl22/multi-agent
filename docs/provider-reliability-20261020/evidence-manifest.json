@@ -1,0 +1,52 @@
+[
+  {
+    "path": "preregistration.json",
+    "sha256": "ed05d8e93566e9c72b8ea1bb75b0511d79c0e2f13a987168a233801abf99c34d",
+    "bytes": 21574
+  },
+  {
+    "path": "wheel-artifact.json",
+    "sha256": "bfdb0665ae1b86f6f4910fce741465e0a2de1598e4d6f8ca2855625b4317fabd",
+    "bytes": 18676
+  },
+  {
+    "path": "wheel-full-final.xml",
+    "sha256": "a5ee79c2a5ad22099b696feba507ae916e304bb591b97f491574f0008297d01c",
+    "bytes": 51140
+  },
+  {
+    "path": "fault-controls-final.xml",
+    "sha256": "58cd0ad47308321032e6d202fd9f0ca6d4f632ceae16fc555fd88a204c5acadc",
+    "bytes": 6537
+  },
+  {
+    "path": "results/records.json",
+    "sha256": "ec6f41be4a10ac387917fdecf25bc17033a3325a9f11dc9d10e9230195075afc",
+    "bytes": 2612
+  },
+  {
+    "path": "results/provider-circuit.json",
+    "sha256": "6215f53197eaddf6bdeb5e3adcfa2236da01d813f6c6e9456135422dba360a20",
+    "bytes": 456
+  },
+  {
+    "path": "results/preflight.json",
+    "sha256": "bf766967c8d2b9749da38de0bb4f6b99120a49b3f6970d8392c883457d5bf1fb",
+    "bytes": 82
+  },
+  {
+    "path": "results/timing.json",
+    "sha256": "fdf18d8309c3c526b99f88b48e9fecea258514bfa0e30848cf1d42aba6764cb6",
+    "bytes": 155
+  },
+  {
+    "path": "data/probe-01/budget.sqlite3",
+    "sha256": "d88dc820707dc7bfbaeb4d4aaa276b72a7cd4e8f0d7bf571e36f43dc9f11e671",
+    "bytes": 12288
+  },
+  {
+    "path": "data/probe-02/budget.sqlite3",
+    "sha256": "7d05e5b985a76b044e5e2222b609dfb7b18f6b0669ed875c2dd2b1214900902a",
+    "bytes": 12288
+  }
+]

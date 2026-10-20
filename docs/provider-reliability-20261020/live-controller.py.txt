@@ -1,0 +1,112 @@
+"""Hidden memory-only credential, frozen bounded native probe, no publication."""
+import getpass
+import hashlib
+import json
+import os
+import subprocess
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+import httpx
+from pydantic import SecretStr
+
+from app.agents.model import LiveModel, ModelFailure
+from app.config.settings import Settings
+from app.models.budgets import BudgetLimits
+from app.models.schemas import Plan
+from app.services.budgets import BudgetExceeded, TaskBudget, budget_scope
+from app.services.provider_circuit import ProviderCircuit, ProviderCircuitOpen
+
+Q = Path('E:/multi-agent/.repopilot/provider-reliability-20261020')
+W = Path('C:/Users/14659/.codex/worktrees/ci-fixtures-model-scope/multi-agent')
+os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
+secret = getpass.getpass('Provider key (hidden): ')
+try:
+    assert secret
+    print('CREDENTIAL_READY; RUN or CLOSE', flush=True)
+    if input().strip() == 'RUN':
+        raw = (Q / 'preregistration.json').read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == (Q / 'preregistration.sha256').read_text().strip()
+        p = json.loads(raw)
+        assert len(p['planned_cells']) == p['physical_request_cap'] == 12
+        assert not (Q / 'data').exists() and not (Q / 'results').exists()
+        assert hashlib.sha256((Q / 'wheel-full-final.xml').read_bytes()).hexdigest() == p['junit_sha256']
+        import app
+        for row in p['app_files']:
+            assert hashlib.sha256((W / row['path']).read_bytes()).hexdigest() == row['sha256']
+            assert hashlib.sha256((Path(app.__file__).parent.parent / row['path']).read_bytes()).hexdigest() == row['sha256']
+        subprocess.run(['git', 'diff', '--exit-code', p['runtime_commit'], '--', 'app', 'frontend', 'tests', '.env.example', 'scripts', 'sandbox', 'pyproject.toml'], cwd=W, check=True, capture_output=True)
+        for old in p['prior_results']:
+            assert hashlib.sha256(Path(old['path']).read_bytes()).hexdigest() == old['sha256']
+        (Q / 'results').mkdir()
+        def save(name, data):
+            encoded = (json.dumps(data, ensure_ascii=False, indent=2) + '\n').replace(secret, '[REDACTED]')
+            (Q / 'results' / name).write_text(encoded, encoding='utf-8')
+        gate = ProviderCircuit(3, on_change=lambda snapshot: save('provider-circuit.json', snapshot))
+        started = time.monotonic()
+        timing = {'started_at': datetime.now(timezone.utc).isoformat(), 'preregistration_sha256': hashlib.sha256(raw).hexdigest()}
+        save('timing.json', timing)
+        preflight = {'kind': 'authenticated GET model-list; no generation', 'passed': False}
+        try:
+            response = httpx.get(p['model_base_url'] + '/models', headers={'Authorization': 'Bearer ' + secret}, timeout=30)
+            response.raise_for_status()
+            preflight['passed'] = p['model_name'] in {x['id'] for x in response.json()['data']}
+            del response
+        except Exception as exc:
+            preflight['error_type'] = type(exc).__name__
+        save('preflight.json', preflight)
+        rows = []
+        for cell in p['planned_cells']:
+            if gate.snapshot()['opened'] or not preflight['passed']:
+                row = {**cell, 'status': 'not_run', 'reason': 'circuit_open' if gate.snapshot()['opened'] else 'preflight_failed',
+                    'model_calls': 0, 'tokens': 0, 'observed_tokens': 0, 'usage_complete': True}
+            else:
+                root = Q / 'data' / cell['id']
+                root.mkdir(parents=True)
+                state = {'task_id': cell['id'], 'task_path': str(root), 'budget_deadline': time.time() + 150,
+                    'budget_limits': BudgetLimits(**p['budget_limits']).model_dump()}
+                budget = TaskBudget(state, create=True)
+                settings = Settings(_env_file=None, model_mode='live', model_name=p['model_name'], model_base_url=p['model_base_url'],
+                    openai_api_key=SecretStr(secret), model_streaming=cell['streaming'], model_stream_usage=True,
+                    model_timeout=120, model_min_interval=7.5)
+                model = LiveModel(settings, dispatch_gate=gate)
+                stats = {'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'usage_complete': True}
+                row = {**cell, 'status': 'failed'}
+                try:
+                    with budget_scope(budget):
+                        value, stats = model.generate(Plan, p['payload'])
+                        budget.check()
+                    row.update(status='passed', result=value.model_dump())
+                except (ModelFailure, BudgetExceeded, ProviderCircuitOpen) as exc:
+                    stats = getattr(exc, 'stats', stats)
+                    row['error_type'] = type(exc).__name__
+                    if isinstance(exc, BudgetExceeded):
+                        row['budget_failure'] = exc.detail.model_dump()
+                    if isinstance(exc, ProviderCircuitOpen):
+                        row.update(status='not_run', reason='circuit_open')
+                view = budget.view()
+                assert stats['calls'] == view['model_requests'] <= 1
+                assert not view['pending_reservations']
+                row.update(model_calls=stats['calls'], stats=stats, budget=view, usage_complete=view['usage_complete'],
+                    tokens=view['observed_tokens'] if view['usage_complete'] else None,
+                    observed_tokens=view['observed_tokens'])
+                del model, settings
+            rows.append(row)
+            save('records.json', rows)
+            print(json.dumps({k: row.get(k) for k in ['id', 'streaming', 'status', 'model_calls', 'tokens', 'error_type']}), flush=True)
+        timing.update(completed_at=datetime.now(timezone.utc).isoformat(), wall_seconds=time.monotonic() - started)
+        save('timing.json', timing)
+        report = {'planned': 12, 'completed_records': len(rows), 'passed': sum(r['status'] == 'passed' for r in rows),
+            'failed': sum(r['status'] == 'failed' for r in rows), 'not_run': sum(r['status'] == 'not_run' for r in rows),
+            'model_calls': sum(r['model_calls'] for r in rows), 'known_tokens_including_partial': sum(r['observed_tokens'] for r in rows),
+            'unknown_usage_cells': sum(not r['usage_complete'] for r in rows), 'circuit': gate.snapshot(),
+            'purpose': p['purpose'], 'repair_ability_evaluated': False}
+        assert report['model_calls'] <= 12
+        save('report.json', report)
+        print(json.dumps({'probe_complete': report}), flush=True)
+except Exception as exc:
+    print(json.dumps({'controller_error': type(exc).__name__}), flush=True)
+finally:
+    secret = ''
+    print('CREDENTIAL_SESSION_CLOSED', flush=True)

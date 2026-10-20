@@ -1,0 +1,121 @@
+"""Read-only reconciliation of an interrupted probe; never resumes a reservation."""
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import shutil
+import sqlite3
+import subprocess
+import xml.etree.ElementTree as ET
+
+Q = Path('E:/multi-agent/.repopilot/provider-reliability-20261020')
+W = Path('C:/Users/14659/.codex/worktrees/ci-fixtures-model-scope/multi-agent')
+D = W / 'docs/provider-reliability-20261020'
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+def read(p):
+    return json.loads(p.read_text(encoding='utf-8'))
+def save(name, data):
+    (D / name).write_bytes((json.dumps(data, ensure_ascii=False, indent=2) + '\n').encode())
+
+assert not (D / 'report.json').exists(), 'Do not overwrite sealed evidence'
+p = read(Q / 'preregistration.json')
+assert sha(Q / 'preregistration.json') == (Q / 'preregistration.sha256').read_text().strip()
+assert not (Q / 'results/report.json').exists(), 'Use completed results if a controller finished'
+subprocess.run(['git', 'diff', '--exit-code', p['runtime_commit'], '--', 'app', 'frontend', 'tests', '.env.example', 'sandbox', 'scripts', 'pyproject.toml'], cwd=W, check=True, capture_output=True)
+for f in p['app_files']:
+    assert sha(W / f['path']) == sha(Path('E:/multi-agent/.repopilot/ci-isolation-venv/Lib/site-packages') / f['path']) == f['sha256']
+for old in p['prior_results']:
+    assert sha(Path(old['path'])) == old['sha256']
+assert sha(Q / 'wheel-full-final.xml') == p['junit_sha256']
+suites = list(ET.parse(Q / 'wheel-full-final.xml').getroot().iter('testsuite'))
+assert sum(int(s.get('tests', 0)) for s in suites) == 343
+assert sum(int(s.get('failures', 0)) + int(s.get('errors', 0)) for s in suites) == 0
+old_tests = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', '982979e', '--', 'tests'], cwd=W, text=True).splitlines()
+assert len(old_tests) == 83
+for name in old_tests:
+    original = subprocess.check_output(['git', 'show', '982979e:' + name], cwd=W)
+    assert original.replace(b'\r\n', b'\n') == (W / name).read_bytes().replace(b'\r\n', b'\n')
+raw_rows = read(Q / 'results/records.json')
+assert len(raw_rows) == 1 and raw_rows[0]['id'] == 'probe-01'
+assert raw_rows[0]['status'] == 'failed' and raw_rows[0]['model_calls'] == 1
+assert not raw_rows[0]['usage_complete']
+ledgers, paths = [], []
+for path in sorted((Q / 'data').glob('*/budget.sqlite3')):
+    with sqlite3.connect(path.as_uri() + '?mode=ro', uri=True) as db:
+        binding, requests, tokens, incomplete = db.execute('SELECT binding,model_requests,tokens,incomplete FROM budget').fetchone()
+        pending = db.execute('SELECT count(*) FROM reservations WHERE completed=0').fetchone()[0]
+    ledgers.append({'id': path.parent.name, 'binding': json.loads(binding), 'model_request_reservations': requests,
+        'observed_tokens': tokens, 'usage_incomplete_flag': bool(incomplete), 'pending_reservations': pending})
+    paths.append(path)
+assert [r['id'] for r in ledgers] == ['probe-01', 'probe-02']
+assert [r['model_request_reservations'] for r in ledgers] == [1, 1]
+assert [r['pending_reservations'] for r in ledgers] == [0, 1]
+assert read(Q / 'results/preflight.json')['passed']
+rows = [raw_rows[0], {**p['planned_cells'][1], 'status': 'dispatch_uncertain', 'reason': 'execution_interrupted_with_pending_reservation',
+    'model_calls': None, 'physical_attempt_upper_bound': 1, 'request_reservations': 1,
+    'tokens': None, 'observed_tokens': ledgers[1]['observed_tokens'], 'usage_complete': False,
+    'budget_stop_kind': 'dispatch_uncertain', 'replayed': False}]
+rows += [{**cell, 'status': 'not_run', 'reason': 'batch_interrupted_no_resume', 'model_calls': 0,
+    'tokens': 0, 'observed_tokens': 0, 'usage_complete': True} for cell in p['planned_cells'][2:]]
+assert len(rows) == 12 and [r['id'] for r in rows] == [c['id'] for c in p['planned_cells']]
+report = {'status': 'interrupted_sealed_without_replay', 'planned_cells': 12,
+    'passed': 0, 'failed': 1, 'dispatch_uncertain': 1, 'not_run': 10,
+    'confirmed_model_calls': 1, 'model_request_reservations': 2, 'physical_request_attempts_upper_bound': 2,
+    'unknown_usage_cells': 2, 'known_tokens_including_partial': sum(r['observed_tokens'] for r in ledgers),
+    'live_connectivity_gate_passed': False, 'repair_ability_evaluated': False, 'prior_failure_root_cause_established': False,
+    'runtime_commit': p['runtime_commit'], 'preregistration_sha256': sha(Q / 'preregistration.json'),
+    'sealed_at': datetime.now(timezone.utc).isoformat(),
+    'interruption_handling': 'Controller process absent on two checks. Original partial result, circuit snapshot and ledgers preserved. No uncertain dispatch or remaining cell resumed; no replacement run.',
+    'circuit_snapshot_scope': 'Last saved in-process observation, not a resumable log. The second pending reservation is authoritative evidence of uncertainty even though the prior circuit snapshot has in_flight=0.'}
+save('report.json', report)
+save('probe-records.json', rows)
+save('ledger-summaries.json', ledgers)
+save('verification.json', {'full_installed_wheel_suite': p['full_suite'], 'controlled_faults_passed': 37,
+    'fault_controls_are_live_llm': False, 'fault_controls_use_actual_sdk_and_injected_http': True,
+    'packaged_app_files_match_source_and_installation': 114, 'existing_test_helper_files_unchanged': 83,
+    'all_planned_probe_dispositions_retained': True, 'unknown_dispatch_replayed': False,
+    'old_three_experiment_reports_unchanged': True, 'new_historical_repair_evaluation_started': False,
+    'github_writes': False, 'new_head_ci_run': False, 'sdist_tested': False})
+for source, name in [('results/records.json', 'raw-records-partial.json'), ('results/provider-circuit.json', 'circuit-snapshot.json'),
+    ('results/preflight.json', 'preflight.json'), ('results/timing.json', 'original-timing.json'), ('wheel-artifact.json', 'wheel-artifact.json')]:
+    shutil.copyfile(Q / source, D / name)
+artifacts = ['preregistration.json', 'wheel-artifact.json', 'wheel-full-final.xml', 'fault-controls-final.xml',
+    'results/records.json', 'results/provider-circuit.json', 'results/preflight.json', 'results/timing.json',
+    *[x.relative_to(Q).as_posix() for x in paths]]
+save('evidence-manifest.json', [{'path': name, 'sha256': sha(Q / name), 'bytes': (Q / name).stat().st_size} for name in artifacts])
+for name, target in [('freeze-probes.py', 'freeze-script.py.txt'), ('live-probes.py', 'live-controller.py.txt'), ('seal-interrupted.py', 'audit-script.py.txt')]:
+    shutil.copyfile(Q / name, D / target)
+text = f'''# P0 连接诊断、整批熔断与未知用量结果（2026-10-20）
+
+实现已完成，安装包完整回归 **341 passed、2 skipped**；37 项受控故障检查通过。真实探测因运行中断而封存，**未通过真实连接准入**：计划 12 项，0 通过、1 次已记录服务不可用失败、1 次发送结果未确认、10 项未执行。没有恢复不确定发送，没有补跑或替换；不进入新的历史 Bug 修复评测。
+
+预算账本记录 **2 次发送预留**；仅 **1 次模型调用**有完整落盘调用记录，另一次可能已发送，无法确认，物理尝试上界为 2。两项实际用量均未知，已观测 Token 为 {report['known_tokens_including_partial']}，不能解释为实际零消耗。未发送的 10 项是真正零请求，不属于模型失败或用量未知。
+
+第 1 项是非流式请求，记录 provider_unavailable、response 阶段、APIStatusError 链及 Retry-After 120 秒；未保存响应正文，不能推断服务端具体根因。第 2 项为流式计划单元，进程中断留下一个未完成预留，未留下响应证据，因此不猜测请求是否到达或是否完成。没有把中断当作真实熔断成功：中断前只有 1 次同类失败，未达到阈值 3。批次门控与并发上界由受控 SDK/HTTP 注入单独验证。
+
+## 已实现
+
+- 最多 8 层允许列表异常链和连接/读取/代理/协议等阶段，保留本地产生的逐次标识与耗时，不记录异常文字、URL、头或服务端错误正文。
+- live 评测批次共享发送前门控，默认连续 3 次同类/同阶段失败停止新准入，认证拒绝立即停止；0 显式禁用。已准入请求可结束和记账，打开后不自动复位。
+- 所有计划单元保留，未执行与真实失败分开；历史主指标分母不缩减，通用报告另列完整计划成功率。
+- 保留旧 budget_exhausted/resource 契约，新增 kind 区分额度阈值、用量未知、发送未确认和账本异常；界面按原因解释。预算启用时未知状态和未完成预留继续阻止重放；batch_paused 任务终止后不能通过重启绕过。
+- 证据写入失败也停止新发送，不丢弃已完成响应的用量。门控是批次进程内机制，不是跨进程全局协调器或可恢复调度器。
+
+## 验证和边界
+
+新 wheel 的 **114 个包内应用文件**与固定源码、安装目录逐字节匹配，阶段前 **83 个既有测试/辅助文件未改**。新增两个测试文件共 37 项，覆盖连接、读取超时、代理、协议、流式断开、缺失用量、并发在途请求、重启/API 禁止重放、证据写入失败和旧状态展示。受控测试是实际 SDK + 注入 HTTP，**不是真实 LLM**。最初新增夹具的测试凭据/证据枚举问题已修正，只修改自己新增的测试。
+
+安装包完整测试显式启用真实 Docker；两个跳过来自 Windows 符号链接权限，Ruff/空白检查通过。尚未对新提交运行 GitHub CI，没有验证新的 sdist。完整本地现场位于 `.repopilot/provider-reliability-20261020`，原始部分记录和预算 SQLite 原样保留。
+
+这次小请求诊断不评估代码修复能力，不证明上轮 13 次连接失败根因已解决，也不证明长期/长上下文可用。旧历史结果 17/24、质量 V1 26/36 对 21/36、V2 8/18 对 9/18（13 项连接失败）全部保持不变，质量开关仍默认关闭。后续原生测试收集和测试语义改进尚未开展。
+
+实现提交 `{p['runtime_commit']}`，预注册 SHA-256 `{report['preregistration_sha256']}`；wheel `{p['wheel_sha256']}`。模型请求别名 deepseek-v4.1-flash，不构成权重/账单证明。
+
+[方法和兼容边界](methodology.md)、[12 项处置记录](probe-records.json)、[原始部分记录](raw-records-partial.json)、[预算只读摘要](ledger-summaries.json)、[核验](verification.json)、[证据摘要](evidence-manifest.json)。新的固定开发提交若更新 PR #5，须另行绑定人工批准内容摘要；此阶段尚无 GitHub 写入。
+'''
+(D / 'report.md').write_text(text, encoding='utf-8')
+dest = Path('E:/multi-agent/docs/provider-reliability-20261020')
+assert not (dest / 'publication-request.json').exists()
+shutil.copytree(D, dest, dirs_exist_ok=True)
+print(json.dumps({'sealed': True, 'report': report, 'existing_tests_preserved': 83}, ensure_ascii=False))

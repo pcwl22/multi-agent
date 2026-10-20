@@ -1,0 +1,21 @@
+{
+  "status": "interrupted_sealed_without_replay",
+  "planned_cells": 12,
+  "passed": 0,
+  "failed": 1,
+  "dispatch_uncertain": 1,
+  "not_run": 10,
+  "confirmed_model_calls": 1,
+  "model_request_reservations": 2,
+  "physical_request_attempts_upper_bound": 2,
+  "unknown_usage_cells": 2,
+  "known_tokens_including_partial": 0,
+  "live_connectivity_gate_passed": false,
+  "repair_ability_evaluated": false,
+  "prior_failure_root_cause_established": false,
+  "runtime_commit": "3e5b296deb52b7e3b9c34070b5aa3b83df589f29",
+  "preregistration_sha256": "ed05d8e93566e9c72b8ea1bb75b0511d79c0e2f13a987168a233801abf99c34d",
+  "sealed_at": "2026-10-20T07:13:50.138885+00:00",
+  "interruption_handling": "Controller process absent on two checks. Original partial result, circuit snapshot and ledgers preserved. No uncertain dispatch or remaining cell resumed; no replacement run.",
+  "circuit_snapshot_scope": "Last saved in-process observation, not a resumable log. The second pending reservation is authoritative evidence of uncertainty even though the prior circuit snapshot has in_flight=0."
+}
