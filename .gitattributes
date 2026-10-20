@@ -16,3 +16,8 @@ app/evaluation/historical_cases/acceptance/*.txt -text whitespace=cr-at-eol
 
 # Keep frozen historical evaluation evidence JSON byte-identical in Git.
 docs/historical-evaluation-20261019/*.json -text whitespace=cr-at-eol
+
+# Preserve preregistered repair-quality comparison inputs and evidence.
+docs/repair-quality-20261020/*.json -text whitespace=cr-at-eol
+docs/repair-quality-20261020/spec/*.json -text whitespace=cr-at-eol
+docs/repair-quality-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
