@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)
     model_max_output_tokens: int | None = Field(default=None, ge=1, le=32768)
+    model_output_token_parameter: Literal['max_completion_tokens', 'max_tokens'] = 'max_completion_tokens'
+    model_thinking: Literal['provider_default', 'disabled'] = 'provider_default'
     model_streaming: bool = False
     model_stream_usage: bool = True
     model_path_scope: bool = True

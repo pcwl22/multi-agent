@@ -8,8 +8,9 @@ from pydantic import BaseModel
 from app.agents.demo_fixtures import select_fixture
 from app.agents.failures import provider_failure
 from app.agents.instructions import system_instructions
-from app.agents.output_diagnostics import observe_output
+from app.agents.output_diagnostics import observe_output, response_shape
 from app.agents.pacing import endpoint_pacer
+from app.agents.provider_options import output_options
 from app.agents.quality import test_functions
 from app.agents.transport import sdk_versions
 from app.config.settings import Settings
@@ -106,6 +107,8 @@ class LiveModel:
         self.pacer = endpoint_pacer(settings.model_base_url)
         self.min_interval = settings.model_min_interval
         self.max_output_tokens = settings.model_max_output_tokens
+        self.output_token_parameter = settings.model_output_token_parameter
+        self.thinking = settings.model_thinking
         self.client = ChatOpenAI(
             model=settings.model_name,
             temperature=0,
@@ -115,7 +118,7 @@ class LiveModel:
             max_retries=1,
             base_url=settings.model_base_url,
             api_key=settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
-            **({'max_tokens': self.max_output_tokens} if self.max_output_tokens is not None else {}),
+            **output_options(self.max_output_tokens, self.output_token_parameter, self.thinking),
         )
 
     def generate(self, schema: type[T], payload: dict) -> tuple[T, dict]:
@@ -126,6 +129,9 @@ class LiveModel:
             "streaming": self.streaming, "rate_limit_wait_seconds": 0.0,
             "transport_attempts": [],
             "structured_attempts": [],
+            "response_shapes": [],
+            "request_policy": {"output_token_parameter": self.output_token_parameter,
+                               "thinking": self.thinking, "structured_method": "function_calling"},
             "sdk_versions": sdk_versions(),
         }
         messages = [("system", system_instructions(schema.__name__)),
@@ -150,7 +156,7 @@ class LiveModel:
                     client = self.client.model_copy(update={
                         "root_client": root, "client": root.chat.completions,
                         "request_timeout": timeout, "max_retries": 0,
-                        **({"max_tokens": output_limit} if output_limit is not None else {})})
+                        **output_options(output_limit, self.output_token_parameter, self.thinking)})
                 reserve = (lambda: budget.reserve("model_requests")) if budget else (lambda: None)
                 if self.dispatch_gate:
                     attempt_id, reservation = self.dispatch_gate.admit(reserve)
@@ -183,6 +189,7 @@ class LiveModel:
                 budget.complete(reservation, {"input_tokens": usage.get("input_tokens", 0),
                     "output_tokens": usage.get("output_tokens", 0), "usage_complete": bool(usage)})
             metadata = getattr(response["raw"], "response_metadata", {}) or {}
+            stats['response_shapes'].append(response_shape(response['raw']))
             stats["model_reported"] = metadata.get("model_name") or metadata.get("model")
             stats["provider_response_id"] = metadata.get("id")
             stats["usage_complete"] &= bool(usage)
