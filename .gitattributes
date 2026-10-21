@@ -32,3 +32,8 @@ docs/provider-reliability-20261020/*.json -text whitespace=cr-at-eol
 docs/connectivity-collection-20261020/*.json -text whitespace=cr-at-eol
 docs/connectivity-collection-20261020/spec/*.json -text whitespace=cr-at-eol
 docs/connectivity-collection-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
+
+# Keep sealed output-diagnostics evidence byte-identical, including original XML failures.
+docs/output-diagnostics-20261021/** -text whitespace=cr-at-eol
+docs/output-diagnostics-20261021/initial-source-full.xml -whitespace
+docs/output-diagnostics-20261021/*.patch -whitespace
