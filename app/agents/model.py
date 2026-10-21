@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from app.agents.demo_fixtures import select_fixture
 from app.agents.failures import provider_failure
 from app.agents.instructions import system_instructions
+from app.agents.output_diagnostics import observe_output
 from app.agents.pacing import endpoint_pacer
 from app.agents.quality import test_functions
 from app.agents.transport import sdk_versions
@@ -104,6 +105,7 @@ class LiveModel:
         self.streaming = settings.model_streaming
         self.pacer = endpoint_pacer(settings.model_base_url)
         self.min_interval = settings.model_min_interval
+        self.max_output_tokens = settings.model_max_output_tokens
         self.client = ChatOpenAI(
             model=settings.model_name,
             temperature=0,
@@ -113,6 +115,7 @@ class LiveModel:
             max_retries=1,
             base_url=settings.model_base_url,
             api_key=settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
+            **({'max_tokens': self.max_output_tokens} if self.max_output_tokens is not None else {}),
         )
 
     def generate(self, schema: type[T], payload: dict) -> tuple[T, dict]:
@@ -122,6 +125,7 @@ class LiveModel:
             "usage_complete": True, "model_requested": self.model_name,
             "streaming": self.streaming, "rate_limit_wait_seconds": 0.0,
             "transport_attempts": [],
+            "structured_attempts": [],
             "sdk_versions": sdk_versions(),
         }
         messages = [("system", system_instructions(schema.__name__)),
@@ -130,6 +134,7 @@ class LiveModel:
             budget = current_budget()
             reservation = None
             attempt_id = None
+            output_limit = self.max_output_tokens
             try:
                 if budget:
                     budget.check()
@@ -139,10 +144,13 @@ class LiveModel:
                 if budget or self.dispatch_gate:
                     timeout = min(self.timeout, budget.remaining()) if budget else self.timeout
                     root = self.client.root_client.with_options(max_retries=0, timeout=timeout)
+                    if budget:
+                        output_limit = min(self.max_output_tokens or 4096,
+                                           budget.limits.observed_tokens - budget.view()["observed_tokens"])
                     client = self.client.model_copy(update={
                         "root_client": root, "client": root.chat.completions,
                         "request_timeout": timeout, "max_retries": 0,
-                        **({"max_tokens": min(4096, budget.limits.observed_tokens - budget.view()["observed_tokens"])} if budget else {})})
+                        **({"max_tokens": output_limit} if output_limit is not None else {})})
                 reserve = (lambda: budget.reserve("model_requests")) if budget else (lambda: None)
                 if self.dispatch_gate:
                     attempt_id, reservation = self.dispatch_gate.admit(reserve)
@@ -187,15 +195,27 @@ class LiveModel:
                 "outcome": "response_complete" if usage else "usage_missing", "usage_complete": bool(usage)})
             if self.dispatch_gate:
                 self.dispatch_gate.complete(attempt_id, missing)
+            parsed = None
+            parse_status = 'invalid' if response.get('parsing_error') is not None else 'missing'
             if response["parsed"] is not None:
-                stats["duration_seconds"] = time.monotonic() - started
                 try:
-                    return schema.model_validate(response["parsed"]), stats
+                    parsed = schema.model_validate(response["parsed"])
+                    parse_status = 'parsed'
                 except ValueError:
-                    pass
+                    parse_status = 'invalid'
+            observation = observe_output(schema.__name__, metadata, parse_status, output_limit)
+            stats['structured_attempts'].append(observation)
+            if observation['finish_reason'] == 'length':
+                stats['duration_seconds'] = time.monotonic() - started
+                stats['output_failure'] = {'kind': 'output_truncated', 'schema': observation['schema_name']}
+                raise ModelFailure('Model response reached its output limit; no automatic parse retry', stats)
+            if parsed is not None:
+                stats["duration_seconds"] = time.monotonic() - started
+                return parsed, stats
             messages.append(("human", "Previous output failed schema validation. Return valid "
                              f"{schema.__name__} structured output; attempt {attempt + 1}."))
         stats["duration_seconds"] = time.monotonic() - started
+        stats['output_failure'] = {'kind': 'schema_invalid', 'schema': observation['schema_name']}
         raise ModelFailure("Model output failed schema validation twice", stats)
 
 

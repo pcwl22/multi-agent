@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     budget_limits: BudgetLimits = Field(default_factory=BudgetLimits)
     context_chars: int = Field(default=24000, ge=2000, le=100000)
     model_timeout: float = Field(default=45, ge=1, le=180)
+    model_max_output_tokens: int | None = Field(default=None, ge=1, le=32768)
     model_streaming: bool = False
     model_stream_usage: bool = True
     model_path_scope: bool = True
