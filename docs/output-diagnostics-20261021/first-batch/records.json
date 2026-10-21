@@ -1,0 +1,470 @@
+[
+  {
+    "id": "01-jsonpointer-large-index-multi_full-legacy",
+    "phase": "pilot",
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "completed",
+    "reason": null,
+    "worker": {
+      "exit_code": 0,
+      "hard_timeout": false
+    },
+    "task_id": "2701e16a-5144-4f1d-ae79-a581701fdf1d",
+    "execution_status": "failed",
+    "original_tests_unchanged": true,
+    "baseline_verified": true,
+    "test_result": null,
+    "acceptance": null,
+    "regression_witness": null,
+    "common_success": false,
+    "strict_success": false,
+    "model_calls": 2,
+    "observed_tokens": 10400,
+    "usage_unknown": false,
+    "ledger": {
+      "version": 1,
+      "ledger_sha256": "7a9cab65acea24e2c3a09e47a898b26ab6dd0ad8f39409e473e42310827d7555",
+      "binding_sha256": "fb180022eeb078b3840bdc67491880b12136e8806e3a25a62c7b3c95ddac5830",
+      "model_request_reservations": 2,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 10400,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "circuit": {
+      "version": 1,
+      "enabled": true,
+      "threshold": 1,
+      "opened": false,
+      "consecutive_failures": 0,
+      "failure_signature": null,
+      "triggering_attempt_id": null,
+      "opened_at": null,
+      "admitted": 2,
+      "completed": 2,
+      "in_flight": 0,
+      "evidence_write_failed": false,
+      "ordering": "Completion order across this batch; already admitted calls may finish. Open is latched, with no automatic reset or replay."
+    },
+    "duration_seconds": 53.3148741,
+    "error": "Model output failed schema validation twice",
+    "diff_digest": "",
+    "credential_found_in_artifacts": false
+  },
+  {
+    "id": "02-jsonpointer-large-index-multi_full-quality",
+    "phase": "pilot",
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "completed",
+    "reason": null,
+    "worker": {
+      "exit_code": 0,
+      "hard_timeout": false
+    },
+    "task_id": "48312c7c-eb0f-465f-b563-411b63375f52",
+    "execution_status": "failed",
+    "original_tests_unchanged": true,
+    "baseline_verified": true,
+    "test_result": null,
+    "acceptance": null,
+    "regression_witness": null,
+    "common_success": false,
+    "strict_success": false,
+    "model_calls": 4,
+    "observed_tokens": 36329,
+    "usage_unknown": false,
+    "ledger": {
+      "version": 1,
+      "ledger_sha256": "0fc07ba7a96a3a18d21da3244602a6321042231f73713a8a3084388f456f7a69",
+      "binding_sha256": "b4da9375917604aa72d9253e726bc55eb8638d81a55d238ae48c05d9d4dde0ea",
+      "model_request_reservations": 4,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 36329,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "circuit": {
+      "version": 1,
+      "enabled": true,
+      "threshold": 1,
+      "opened": false,
+      "consecutive_failures": 0,
+      "failure_signature": null,
+      "triggering_attempt_id": null,
+      "opened_at": null,
+      "admitted": 4,
+      "completed": 4,
+      "in_flight": 0,
+      "evidence_write_failed": false,
+      "ordering": "Completion order across this batch; already admitted calls may finish. Open is latched, with no automatic reset or replay."
+    },
+    "duration_seconds": 110.36878070000012,
+    "error": "Patch rejected: [Errno 2] No such file or directory: 'E:\\\\multi-agent\\\\.repopilot\\\\new-channel-evaluation-20261021\\\\pilot\\\\02-jsonpointer-large-index-multi_full-quality\\\\data\\\\tasks\\\\48312c7c-eb0f-465f-b563-411b63375f52\\\\attempts\\\\0001\\\\workspace\\\\tests\\\\test_overlimit_index.py.repopilot-8ce256d5-25ae-4048-b3ae-795ba9b43b17.tmp'",
+    "diff_digest": "",
+    "credential_found_in_artifacts": false
+  },
+  {
+    "id": "03-itsdangerous-date-overflow-multi_full-quality",
+    "phase": "pilot",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "dispatch_uncertain",
+    "reason": "worker_failed_or_interrupted",
+    "worker": {
+      "exit_code": 1,
+      "hard_timeout": false
+    }
+  },
+  {
+    "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+    "phase": "pilot",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "01-jsonpointer-large-index-single-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "02-jsonpointer-large-index-multi_no_review-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "03-jsonpointer-large-index-multi_full-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "04-jsonpointer-large-index-multi_no_review-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "05-jsonpointer-large-index-multi_full-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "06-jsonpointer-large-index-single-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "07-itsdangerous-date-overflow-single-quality",
+    "phase": "formal",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "08-itsdangerous-date-overflow-multi_no_review-quality",
+    "phase": "formal",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "09-itsdangerous-date-overflow-multi_full-quality",
+    "phase": "formal",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "10-itsdangerous-date-overflow-multi_no_review-legacy",
+    "phase": "formal",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "11-itsdangerous-date-overflow-multi_full-legacy",
+    "phase": "formal",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "12-itsdangerous-date-overflow-single-legacy",
+    "phase": "formal",
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "13-dotenv-empty-comment-single-legacy",
+    "phase": "formal",
+    "case_id": "dotenv-empty-comment",
+    "variant": "legacy",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "14-dotenv-empty-comment-multi_no_review-legacy",
+    "phase": "formal",
+    "case_id": "dotenv-empty-comment",
+    "variant": "legacy",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "15-dotenv-empty-comment-multi_full-legacy",
+    "phase": "formal",
+    "case_id": "dotenv-empty-comment",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "16-dotenv-empty-comment-multi_no_review-quality",
+    "phase": "formal",
+    "case_id": "dotenv-empty-comment",
+    "variant": "quality",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "17-dotenv-empty-comment-multi_full-quality",
+    "phase": "formal",
+    "case_id": "dotenv-empty-comment",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "18-dotenv-empty-comment-single-quality",
+    "phase": "formal",
+    "case_id": "dotenv-empty-comment",
+    "variant": "quality",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "19-slugify-uppercase-translations-single-quality",
+    "phase": "formal",
+    "case_id": "slugify-uppercase-translations",
+    "variant": "quality",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "20-slugify-uppercase-translations-multi_no_review-quality",
+    "phase": "formal",
+    "case_id": "slugify-uppercase-translations",
+    "variant": "quality",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "21-slugify-uppercase-translations-multi_full-quality",
+    "phase": "formal",
+    "case_id": "slugify-uppercase-translations",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "22-slugify-uppercase-translations-multi_no_review-legacy",
+    "phase": "formal",
+    "case_id": "slugify-uppercase-translations",
+    "variant": "legacy",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "23-slugify-uppercase-translations-multi_full-legacy",
+    "phase": "formal",
+    "case_id": "slugify-uppercase-translations",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "24-slugify-uppercase-translations-single-legacy",
+    "phase": "formal",
+    "case_id": "slugify-uppercase-translations",
+    "variant": "legacy",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "25-jsonpointer-subclass-join-single-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "legacy",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "26-jsonpointer-subclass-join-multi_no_review-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "legacy",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "27-jsonpointer-subclass-join-multi_full-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "28-jsonpointer-subclass-join-multi_no_review-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "quality",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "29-jsonpointer-subclass-join-multi_full-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "30-jsonpointer-subclass-join-single-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "quality",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "31-jsonpointer-assignment-errors-single-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "quality",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "32-jsonpointer-assignment-errors-multi_no_review-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "quality",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "33-jsonpointer-assignment-errors-multi_full-quality",
+    "phase": "formal",
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "quality",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "34-jsonpointer-assignment-errors-multi_no_review-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "legacy",
+    "mode": "multi_no_review",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "35-jsonpointer-assignment-errors-multi_full-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "legacy",
+    "mode": "multi_full",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  },
+  {
+    "id": "36-jsonpointer-assignment-errors-single-legacy",
+    "phase": "formal",
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "legacy",
+    "mode": "single",
+    "status": "not_run",
+    "reason": "worker_failed_or_interrupted"
+  }
+]

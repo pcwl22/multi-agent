@@ -1,0 +1,224 @@
+[
+  {
+    "id": "01-jsonpointer-large-index-multi_full-legacy",
+    "phase": "pilot",
+    "event": {
+      "node": "model",
+      "timestamp": 1792545542.3088255,
+      "calls": 1,
+      "input_tokens": 1096,
+      "output_tokens": 8192,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-4.1-flash-background",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "transport_attempts": [
+        {
+          "attempt_id": "e5b507a8ee94462488cf53c18d72088c",
+          "started_at": 1792545499.0633693,
+          "duration_seconds": 43.24439799999982,
+          "outcome": "response_complete",
+          "usage_complete": true
+        }
+      ],
+      "structured_attempts": [
+        {
+          "schema_name": "Plan",
+          "finish_reason": "length",
+          "parse_status": "parsed",
+          "output_limit": 8192
+        }
+      ],
+      "sdk_versions": {
+        "openai": "2.45.0",
+        "httpx": "0.28.1",
+        "langchain-openai": "1.7.2"
+      },
+      "model_reported": "deepseek-4.1-flash-background",
+      "provider_response_id": null,
+      "duration_seconds": 43.27997050000067,
+      "output_failure": {
+        "kind": "output_truncated",
+        "schema": "Plan"
+      }
+    }
+  },
+  {
+    "id": "02-jsonpointer-large-index-multi_full-quality",
+    "phase": "pilot",
+    "event": {
+      "node": "model",
+      "timestamp": 1792545590.115649,
+      "calls": 1,
+      "input_tokens": 1096,
+      "output_tokens": 8192,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-4.1-flash-background",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "transport_attempts": [
+        {
+          "attempt_id": "5e7682b9f5ed4508a88a094440b669f3",
+          "started_at": 1792545548.4539487,
+          "duration_seconds": 41.660603000000265,
+          "outcome": "response_complete",
+          "usage_complete": true
+        }
+      ],
+      "structured_attempts": [
+        {
+          "schema_name": "Plan",
+          "finish_reason": "length",
+          "parse_status": "missing",
+          "output_limit": 8192
+        }
+      ],
+      "sdk_versions": {
+        "openai": "2.45.0",
+        "httpx": "0.28.1",
+        "langchain-openai": "1.7.2"
+      },
+      "model_reported": "deepseek-4.1-flash-background",
+      "provider_response_id": null,
+      "duration_seconds": 41.697344899999734,
+      "output_failure": {
+        "kind": "output_truncated",
+        "schema": "Plan"
+      }
+    }
+  },
+  {
+    "id": "03-itsdangerous-date-overflow-multi_full-quality",
+    "phase": "pilot",
+    "event": {
+      "node": "model",
+      "timestamp": 1792545638.4806008,
+      "calls": 1,
+      "input_tokens": 2001,
+      "output_tokens": 8192,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-4.1-flash-background",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "transport_attempts": [
+        {
+          "attempt_id": "e964bb77fd4f4554a0f688b6753defea",
+          "started_at": 1792545596.8867493,
+          "duration_seconds": 41.593178799999805,
+          "outcome": "response_complete",
+          "usage_complete": true
+        }
+      ],
+      "structured_attempts": [
+        {
+          "schema_name": "Plan",
+          "finish_reason": "length",
+          "parse_status": "missing",
+          "output_limit": 8192
+        }
+      ],
+      "sdk_versions": {
+        "openai": "2.45.0",
+        "httpx": "0.28.1",
+        "langchain-openai": "1.7.2"
+      },
+      "model_reported": "deepseek-4.1-flash-background",
+      "provider_response_id": null,
+      "duration_seconds": 41.65372260000004,
+      "output_failure": {
+        "kind": "output_truncated",
+        "schema": "Plan"
+      }
+    }
+  },
+  {
+    "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+    "phase": "pilot",
+    "event": {
+      "node": "model",
+      "timestamp": 1792545659.7497635,
+      "schema": "Plan",
+      "calls": 1,
+      "input_tokens": 2001,
+      "output_tokens": 3154,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-4.1-flash-background",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "transport_attempts": [
+        {
+          "attempt_id": "406c396fa53f48dfbfcf7e80c6a1cb26",
+          "started_at": 1792545644.5196106,
+          "duration_seconds": 15.201126200000544,
+          "outcome": "response_complete",
+          "usage_complete": true
+        }
+      ],
+      "structured_attempts": [
+        {
+          "schema_name": "Plan",
+          "finish_reason": "stop",
+          "parse_status": "parsed",
+          "output_limit": 8192
+        }
+      ],
+      "sdk_versions": {
+        "openai": "2.45.0",
+        "httpx": "0.28.1",
+        "langchain-openai": "1.7.2"
+      },
+      "model_reported": "deepseek-4.1-flash-background",
+      "provider_response_id": null,
+      "duration_seconds": 15.25778530000025
+    }
+  },
+  {
+    "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+    "phase": "pilot",
+    "event": {
+      "node": "model",
+      "timestamp": 1792545729.30394,
+      "calls": 1,
+      "input_tokens": 10049,
+      "output_tokens": 8192,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-4.1-flash-background",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "transport_attempts": [
+        {
+          "attempt_id": "62d129a090f7477b962f6c19500250c5",
+          "started_at": 1792545661.703347,
+          "duration_seconds": 67.59993209999993,
+          "outcome": "response_complete",
+          "usage_complete": true
+        }
+      ],
+      "structured_attempts": [
+        {
+          "schema_name": "Patch",
+          "finish_reason": "length",
+          "parse_status": "missing",
+          "output_limit": 8192
+        }
+      ],
+      "sdk_versions": {
+        "openai": "2.45.0",
+        "httpx": "0.28.1",
+        "langchain-openai": "1.7.2"
+      },
+      "model_reported": "deepseek-4.1-flash-background",
+      "provider_response_id": null,
+      "duration_seconds": 67.69067059999998,
+      "output_failure": {
+        "kind": "output_truncated",
+        "schema": "Patch"
+      }
+    }
+  }
+]

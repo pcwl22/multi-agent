@@ -1,0 +1,26 @@
+[
+  {
+    "id": "01-jsonpointer-large-index-multi_full-legacy",
+    "phase": "pilot",
+    "diff": "",
+    "diff_digest": ""
+  },
+  {
+    "id": "02-jsonpointer-large-index-multi_full-quality",
+    "phase": "pilot",
+    "diff": "",
+    "diff_digest": ""
+  },
+  {
+    "id": "03-itsdangerous-date-overflow-multi_full-quality",
+    "phase": "pilot",
+    "diff": "",
+    "diff_digest": ""
+  },
+  {
+    "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+    "phase": "pilot",
+    "diff": "",
+    "diff_digest": ""
+  }
+]

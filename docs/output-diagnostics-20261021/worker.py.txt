@@ -1,0 +1,154 @@
+"""Fresh bounded real workflow cells; all target execution stays in Docker."""
+import argparse
+import hashlib
+import json
+import logging
+import os
+import time
+from pathlib import Path
+
+from app.evaluation.connectivity import runtime_digest
+from app.evaluation.historical import ProbeRunner, controls, verify
+from app.models.budgets import BudgetLimits
+from app.services.budget_audit import audit_ledger
+from app.services.provider_circuit import ProviderCircuit
+from dotenv import dotenv_values
+from pydantic import SecretStr
+
+from app.agents.model import LiveModel
+from app.config.settings import Settings
+from app.evaluation.runner import holdout_workspace
+from app.models.schemas import TaskRequest
+from app.services.regressions import regression_witness
+from app.services.tasks import TaskService
+from app.tools.repository import Repository, is_test_file
+
+Q = Path(__file__).parent
+ROOT = Path('E:/multi-agent')
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save(path, value):
+    raw = (json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode()
+    tmp = path.with_suffix('.tmp')
+    tmp.write_bytes(raw)
+    tmp.replace(path)
+
+
+def settings(plan, data, quality=False, key=None):
+    return Settings(_env_file=None, repository_root=Path(plan['corpus']) / 'sources',
+        data_dir=data, model_mode='live', model_name=plan['model_name'],
+        model_base_url=plan['model_base_url'], openai_api_key=SecretStr(key) if key else None,
+        model_streaming=True, model_stream_usage=True, model_timeout=60,
+        model_min_interval=7.5, model_max_output_tokens=plan['model_max_output_tokens'], context_chars=24000, model_path_scope=True,
+        sandbox_image=plan['image'], test_timeout=120, max_retries=1,
+        retry_workspace_policy='isolated', patch_transactions=True, task_budgets=True,
+        repair_quality_checks=quality, repair_quality_policy_version=2,
+        evaluation_provider_failure_threshold=1, budget_limits=BudgetLimits(**plan['budget_limits']))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', choices=['controls', 'cell'])
+    parser.add_argument('--cell')
+    parser.add_argument('--digest', required=True)
+    args = parser.parse_args()
+    assert sha(Q / 'plan.json') == args.digest
+    p = read(Q / 'plan.json')
+    assert runtime_digest() == p['runtime_sha256']
+    assert sha(Path(__file__)) == p['worker_sha256']
+    corpus = Path(p['corpus'])
+    lock = verify(corpus, p['lock_sha256'])
+    os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
+    logging.getLogger('repopilot.graph').setLevel(logging.CRITICAL)
+    if args.action == 'controls':
+        result = controls(corpus, Q / 'controls', p['lock_sha256'], settings(p, Q / 'unused'))
+        assert result['all_eligible'] and len(result['cases']) == 6
+        print(json.dumps({'controls_complete': True, 'cases': 6}), flush=True)
+        return
+
+    cell = next(c for c in p['pilot'] + p['formal'] if c['id'] == args.cell)
+    out = Q / cell['phase'] / cell['id']
+    out.mkdir(parents=True, exist_ok=False)
+    config = dotenv_values(ROOT / '.env')
+    assert config['REPOPILOT_MODEL_MODE'] == 'live'
+    assert config['REPOPILOT_MODEL_NAME'] == p['model_name']
+    assert config['REPOPILOT_MODEL_BASE_URL'] == p['model_base_url']
+    secret = config['OPENAI_API_KEY']
+    assert secret and secret == config['DEEPSEEK_API_KEY']
+    s = settings(p, Path(p['task_storage']) / cell['phase'][0] / cell['id'][:2], cell['variant'] == 'quality', secret)
+    controls_doc = read(Q / 'controls/controls.json')
+    assert sha(Q / 'controls/controls.json') == read(Q / 'controls-binding.json')['sha256']
+    assert controls_doc['lock_sha256'] == p['lock_sha256'] and controls_doc['all_eligible']
+    control = next(c for c in controls_doc['cases'] if c['id'] == cell['case_id'])
+    assert control['baseline_holdout']['status'] == 'failed'
+    case = next(c for c in lock['cases'] if c['case']['id'] == cell['case_id'])
+    spec = case['case']
+    source = corpus / 'sources' / spec['id']
+    circuit = ProviderCircuit(1, on_change=lambda value: save(out / 'circuit.json', value))
+    probe = ProbeRunner(s, out / 'evaluator-ledgers')
+    started = time.monotonic()
+    service = TaskService(s, model=LiveModel(s, dispatch_gate=circuit))
+    try:
+        task = service.create(TaskRequest(repository_path=str(source),
+                                         issue_description=spec['issue'], mode=cell['mode']))
+        save(out / 'dispatch-intent.json', {**cell, 'task_id': task['task_id'],
+             'status': 'workflow_result_unconfirmed', 'automatic_replay_allowed': False})
+        state = service.run(task['task_id'])
+        save(out / 'state.json', state)
+    finally:
+        service.close()
+        secret = ''
+    if state['execution_status'] == 'creation_failed':
+        ledger = audit_ledger(Path(state['task_path']))
+        save(out / 'result.json', {**cell, 'task_id': state['task_id'], 'execution_status': 'creation_failed',
+            'original_tests_unchanged': None, 'baseline_verified': True, 'strict_success': False,
+            'common_success': False, 'test_result': None, 'acceptance': None, 'regression_witness': None,
+            'model_calls': state['model_calls'], 'observed_tokens': ledger['observed_tokens'],
+            'usage_unknown': ledger['usage_unknown'], 'ledger': ledger, 'provider_failure': None,
+            'budget_failure': state.get('budget_failure'), 'circuit': circuit.snapshot(),
+            'duration_seconds': time.monotonic()-started, 'error': 'Task creation failed before candidate activation'})
+        return
+    actual = Repository(state['workspace_path'])
+    unchanged = all(sha(actual.path(path)) == value for path, value in case['source_manifest'].items()
+                    if is_test_file(path))
+    current = next((t for t in reversed(state['test_results'])
+                    if t.get('candidate_id') == state['candidate_id']), None)
+    holdout = None
+    witness = None
+    if current and current['status'] == 'passed' and unchanged:
+        holdout_workspace(actual.root, out / 'holdout',
+                          corpus / 'acceptance' / spec['acceptance'].removesuffix('.txt'))
+        holdout = probe.run(out / 'holdout').model_dump()
+        # Identical evaluator-owned fail-to-pass gate for BOTH policies/modes.
+        witness = regression_witness(state, probe)
+    save(out / 'evaluator-probes.json', probe.records)
+    (out / 'repair.patch').write_text(state['diff'], encoding='utf-8')
+    ledger = audit_ledger(Path(state['task_path']))
+    common = bool(unchanged and state['execution_status'] == 'awaiting_approval'
+                  and current and current['status'] == 'passed'
+                  and holdout and holdout['status'] == 'passed')
+    result = {**cell, 'task_id': state['task_id'], 'execution_status': state['execution_status'],
+        'original_tests_unchanged': unchanged, 'baseline_verified': True,
+        'test_result': current, 'acceptance': holdout, 'regression_witness': witness,
+        'common_success': common,
+        'strict_success': bool(common and witness and witness['status'] == 'demonstrated'),
+        'model_calls': state['model_calls'], 'observed_tokens': ledger['observed_tokens'],
+        'usage_unknown': ledger['usage_unknown'], 'ledger': ledger,
+        'budget_failure': state.get('budget_failure'), 'provider_failure': state.get('failure'),
+        'circuit': circuit.snapshot(), 'duration_seconds': time.monotonic() - started,
+        'error': state.get('error'), 'diff_digest': state['diff_digest']}
+    save(out / 'result.json', result)
+    print(json.dumps({k: result[k] for k in ['id', 'execution_status', 'strict_success',
+                     'model_calls', 'observed_tokens', 'usage_unknown', 'duration_seconds']}), flush=True)
+
+
+if __name__ == '__main__':
+    main()

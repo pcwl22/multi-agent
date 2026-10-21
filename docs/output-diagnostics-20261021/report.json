@@ -1,0 +1,47 @@
+{
+  "completed_at": "2026-10-21T01:22:10.372027+00:00",
+  "plan_sha256": "a44c6cdafdfbd3c8628dc4c8f03e5d77f2a1fa32cf6e342b597bccf796cf7e69",
+  "stop_reason": "pilot_strict_success_gate_not_met",
+  "formal_admitted": false,
+  "prior_ledger_hashes_unchanged": true,
+  "prior_ledger_count": 12,
+  "configuration_unchanged": true,
+  "runtime_unchanged": true,
+  "github_writes": false,
+  "pilot": {
+    "legacy": {
+      "planned": 2,
+      "completed": 2,
+      "strict_success": 0,
+      "model_calls": 3,
+      "known_tokens": 32684,
+      "unknown_usage": 0
+    },
+    "quality": {
+      "planned": 2,
+      "completed": 2,
+      "strict_success": 0,
+      "model_calls": 2,
+      "known_tokens": 19481,
+      "unknown_usage": 0
+    }
+  },
+  "formal": {
+    "legacy": {
+      "planned": 18,
+      "completed": 0,
+      "strict_success": 0,
+      "model_calls": 0,
+      "known_tokens": 0,
+      "unknown_usage": 0
+    },
+    "quality": {
+      "planned": 18,
+      "completed": 0,
+      "strict_success": 0,
+      "model_calls": 0,
+      "known_tokens": 0,
+      "unknown_usage": 0
+    }
+  }
+}

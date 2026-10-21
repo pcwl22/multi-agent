@@ -1,0 +1,44 @@
+{
+  "checked_cells": [
+    {
+      "phase": "pilot",
+      "id": "01-jsonpointer-large-index-multi_full-legacy",
+      "ledger_sha256": "7a9cab65acea24e2c3a09e47a898b26ab6dd0ad8f39409e473e42310827d7555",
+      "original_tests_unchanged": true,
+      "strict_success_recomputed": false
+    },
+    {
+      "phase": "pilot",
+      "id": "02-jsonpointer-large-index-multi_full-quality",
+      "ledger_sha256": "0fc07ba7a96a3a18d21da3244602a6321042231f73713a8a3084388f456f7a69",
+      "original_tests_unchanged": true,
+      "strict_success_recomputed": false
+    }
+  ],
+  "interrupted_ledgers": [
+    {
+      "cell": "03-itsdangerous-date-overflow-multi_full-quality",
+      "path": "E:\\multi-agent\\.repopilot\\new-channel-evaluation-20261021\\pilot\\03-itsdangerous-date-overflow-multi_full-quality\\data\\tasks\\e54e137d-b35d-4b53-9e62-6e5403ac14ca",
+      "audit": {
+        "version": 1,
+        "ledger_sha256": "681fbde7bc4fdb55bae84efa5f5ed004c50d52ee7288b1e24794b5946f2083d6",
+        "binding_sha256": "4e2efd60623d5a3d0e963d222bcd4c6d012a8ca877f7a07d738d187ff668adfa",
+        "model_request_reservations": 0,
+        "sandbox_run_reservations": 0,
+        "pending_model_reservations": 0,
+        "pending_sandbox_reservations": 0,
+        "observed_tokens": 0,
+        "usage_status": "complete",
+        "usage_unknown": false,
+        "billing_status": "not_reconciled",
+        "automatic_replay_allowed": false,
+        "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+      }
+    }
+  ],
+  "prior_nine_ledgers_unchanged": true,
+  "corpus_unchanged": true,
+  "runtime_unchanged": true,
+  "credentials_not_found_in_artifacts": true,
+  "strict_metric_identical_for_both_policies": true
+}

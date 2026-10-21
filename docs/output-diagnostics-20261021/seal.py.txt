@@ -1,0 +1,176 @@
+"""Verify the sealed new-runtime batch and export reviewable local evidence."""
+import hashlib
+import json
+import shutil
+import subprocess
+import xml.etree.ElementTree as ET
+from collections import Counter
+from pathlib import Path
+
+from app.evaluation.connectivity import runtime_digest
+from app.evaluation.historical import verify
+from app.services.budget_audit import audit_ledger
+from dotenv import dotenv_values
+
+from app.tools.repository import Repository, is_test_file
+
+Q = Path(__file__).parent
+ROOT = Path('E:/multi-agent')
+W = Path('E:/Agent/repopilot-output-diagnostics-20261021')
+OUT = ROOT / 'docs/output-diagnostics-20261021'
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save(path, value):
+    path.write_bytes((json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode())
+
+
+def junit(path):
+    suites = list(ET.parse(path).getroot().iter('testsuite'))
+    totals = {k: sum(int(s.get(k, 0)) for s in suites) for k in ['tests', 'failures', 'errors', 'skipped']}
+    totals['passed'] = totals['tests'] - totals['failures'] - totals['errors'] - totals['skipped']
+    return {**totals, 'sha256': sha(path)}
+
+
+def main():
+    plan = read(Q / 'plan.json')
+    summary = read(Q / 'report.json')
+    rows = read(Q / 'records.json')
+    assert sha(Q / 'plan.json') == summary['plan_sha256']
+    assert sha(Q / 'controller.py') == plan['controller_sha256']
+    assert sha(Q / 'worker.py') == plan['worker_sha256']
+    assert runtime_digest() == plan['runtime_sha256']
+    assert sha(Q / 'wheel-full.xml') == plan['verified_full_junit_sha256']
+    assert sha(Q / 'short-path-preflight.json') == plan['short_path_preflight_sha256']
+    assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=W).strip()
+    corpus = Path(plan['corpus'])
+    lock = verify(corpus, plan['lock_sha256'])
+    old = read(Q / 'prior-ledgers.json')
+    for item in old:
+        assert audit_ledger(Path(item['path'])) == item['audit']
+    config = dotenv_values(ROOT / '.env')
+    keys = [config[x] for x in ['OPENAI_API_KEY', 'DEEPSEEK_API_KEY', 'SOL_API_KEY'] if config.get(x)]
+    assert not any(key.encode() in f.read_bytes() for f in Q.rglob('*') if f.is_file() for key in keys)
+    checked, events, failures, patches, interrupted = [], [], [], [], []
+    for row in rows:
+        folder = Q / row['phase'] / row['id']
+        if row['status'] != 'completed':
+            if row['status'] == 'dispatch_uncertain':
+                root = Path(plan['task_storage']) / row['phase'][0] / row['id'][:2]
+                for path in root.rglob('budget.sqlite3'):
+                    interrupted.append({'id': row['id'], 'audit': audit_ledger(path.parent)})
+            continue
+        state = read(folder / 'state.json')
+        ledger = audit_ledger(Path(state['task_path']))
+        assert ledger == row['ledger']
+        assert ledger['model_request_reservations'] == row['model_calls'] == state['model_calls']
+        if state['execution_status'] == 'creation_failed':
+            assert not row['strict_success']
+            failures.append({'id': row['id'], 'phase': row['phase'], 'kind': 'creation_failed',
+                             'creation_failures': state['creation_failures']})
+            checked.append({'id': row['id'], 'ledger': ledger, 'creation_failed': True})
+            continue
+        repo = Repository(state['workspace_path'])
+        case = next(c for c in lock['cases'] if c['case']['id'] == row['case_id'])
+        unchanged = all(sha(repo.path(name)) == value for name, value in case['source_manifest'].items()
+                        if is_test_file(name))
+        assert unchanged == row['original_tests_unchanged']
+        current = next((t for t in reversed(state['test_results']) if t.get('candidate_id') == state['candidate_id']), None)
+        common = bool(unchanged and state['execution_status'] == 'awaiting_approval'
+                      and current and current['status'] == 'passed'
+                      and row['acceptance'] and row['acceptance']['status'] == 'passed')
+        strict = bool(common and row['regression_witness'] and row['regression_witness']['status'] == 'demonstrated')
+        assert strict == row['strict_success']
+        for probe in read(folder / 'evaluator-probes.json'):
+            assert probe['result']['evidence'] == 'docker' and probe['result']['image_id'] == plan['image']
+        checked.append({'id': row['id'], 'phase': row['phase'], 'ledger': ledger,
+                        'original_tests_unchanged': unchanged, 'strict_success': strict})
+        patches.append({'id': row['id'], 'phase': row['phase'], 'diff': state['diff'], 'diff_digest': state['diff_digest']})
+        events.extend({'id': row['id'], 'phase': row['phase'], 'event': e}
+                      for e in state['execution_history'] if e['node'] == 'model')
+        if not strict:
+            failures.append({'id': row['id'], 'phase': row['phase'], 'status': state['execution_status'],
+                'error': state['error'], 'budget_failure': state.get('budget_failure'), 'provider_failure': state.get('failure'),
+                'patch_feedback': state.get('patch_feedback'), 'repair_feedback': state.get('repair_feedback'),
+                'review_results': state.get('review_results'), 'regression_results': state.get('regression_results'),
+                'test_status': (current or {}).get('status'), 'holdout_status': (row['acceptance'] or {}).get('status')})
+    completed = [r for r in rows if r['status'] == 'completed']
+    reasons = Counter(a['finish_reason'] for e in events for a in e['event'].get('structured_attempts', []))
+    output_failures = Counter(e['event']['output_failure']['kind'] for e in events if e['event'].get('output_failure'))
+    parsed_length = sum(a['finish_reason'] == 'length' and a['parse_status'] == 'parsed'
+                        for e in events for a in e['event'].get('structured_attempts', []))
+    artifact = read(Q / 'runtime-artifact.json')
+    old_test_paths = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only',
+        'b0bdee194545b9bcb4fbf6340fb280fdc21ecaac', '--', 'tests'], cwd=W).decode().splitlines()
+    for name in old_test_paths:
+        before = subprocess.check_output(['git', 'show', 'b0bdee194545b9bcb4fbf6340fb280fdc21ecaac:'+name], cwd=W)
+        assert before.replace(b'\r\n', b'\n') == (W/name).read_bytes().replace(b'\r\n', b'\n')
+    verification = {'installed_full_suite': junit(Q / 'wheel-full.xml'),
+        'initial_source_suite': junit(ROOT / '.repopilot/new-channel-evaluation-20261021/output-full.xml'),
+        'initial_isolated_collection': junit(Q / 'wheel-collection-failed.xml'),
+        'existing_test_files_unchanged': len(old_test_paths), 'new_test_cases': 14,
+        'package_app_files': artifact['app_files'], 'source_wheel_install_match': True,
+        'checked_cells': checked, 'interrupted_ledgers': interrupted,
+        'prior_ledger_count': len(old), 'prior_ledgers_unchanged': True,
+        'configuration_unchanged': summary['configuration_unchanged'], 'credentials_scan_passed': True,
+        'finish_reasons': dict(reasons), 'output_failures': dict(output_failures),
+        'parsed_but_length_reported': parsed_length}
+    OUT.mkdir(parents=True, exist_ok=False)
+    for name in ['plan.json', 'plan.sha256', 'records.json', 'report.json', 'prior-ledgers.json',
+                 'controls-binding.json', 'runtime-artifact.json', 'short-path-preflight.json', 'wheel-full.xml',
+                 'wheel-collection-failed.xml']:
+        shutil.copy2(Q/name, OUT/name)
+    shutil.copy2(Q/'controls/controls.json', OUT/'reused-controls.json')
+    shutil.copy2(ROOT/'.repopilot/new-channel-evaluation-20261021/output-full.xml', OUT/'initial-source-full.xml')
+    for name in ['controller.py', 'worker.py', 'preflight.py', 'seal.py']:
+        shutil.copy2(Q/name, OUT/(name+'.txt'))
+    prior_dir = OUT/'first-batch'
+    prior_dir.mkdir()
+    for name in ['report.md', 'report.json', 'records.json', 'plan.json', 'verification.json', 'failure-analysis.json']:
+        shutil.copy2(ROOT/'docs/new-channel-evaluation-20261021'/name, prior_dir/name)
+    save(OUT/'verification.json', verification)
+    save(OUT/'model-events.json', events)
+    save(OUT/'failure-analysis.json', failures)
+    save(OUT/'candidate-patches.json', patches)
+    patch = subprocess.check_output(['git', 'diff', '--binary', 'b0bdee194545b9bcb4fbf6340fb280fdc21ecaac', plan['runtime_commit']], cwd=W)
+    (OUT/'implementation.patch').write_bytes(patch)
+    lines = ['# 输出诊断优化与新通道真实校准（2026-10-21）', '',
+        '本轮先恢复 Docker、重新执行 24 项历史语料控制，完成首批试评测并保留负面结果，再实现输出诊断、验证完整安装包，最后使用独立短路径开始第二批。', '',
+        '## 本地实现与验证', '',
+        f"运行时提交 `{plan['runtime_commit']}`。新增安全结构化输出观察，仅记录允许列表结束原因、schema 类别、解析状态及输出上限，不保存响应正文或解析异常文字。明确 `finish_reason=length` 时终止重复解析请求，保留用量，分类为 output_truncated；不冒充连接故障。非截断格式失败保留原有至多两次显式尝试。", '',
+        '新增可选 `REPOPILOT_MODEL_MAX_OUTPUT_TOKENS`，范围 1..32768。未设置时预算请求仍为 4096，非预算请求仍沿用提供方默认；剩余任务额度可降低上限。本次第二批显式设为 8192，没有改写用户根 `.env`。', '',
+        f"新安装包完整回归 **{verification['installed_full_suite']['passed']} passed、{verification['installed_full_suite']['skipped']} skipped**，显式启用 Docker；14 项新增受控 HTTP/SSE 用例通过。{len(old_test_paths)} 个既有 tests 文件/辅助文件字节不变，{artifact['app_files']} 个包内应用文件与源码/安装一致。Ruff 和差异格式检查通过。", '',
+        '验证过程的失败没有删除：首次源码完整测试为 382 passed、7 failed、2 skipped，7 项均为主进程源码路径与 -I 子进程安装路径不一致的断言；修正为统一 wheel 运行时。新独立环境首次收集缺少 pywin32 路径钩子，保留 1 项收集错误 XML，使用标准 site.addsitedir 加载既有依赖环境后完成上述完整验证。未修改任何既有断言。', '',
+        '## 两批真实结果', '',
+        '第一批共 6 次真实请求、46,729 已知 Token，未新增未知用量。首项 Plan 格式失败且两次输出达到 4096，但没有结束原因，不能追溯断言截断。第二项候选写入深路径失败；第三项 WinError 206 创建失败、0 请求，控制器随后对不存在工作区的后处理失败；第四项和完整矩阵均未执行。原批次已封存，没有覆盖或恢复。', '',
+        '第二批采用独立任务与短存储根 E:/Agent/nc21r2，六案例创建预检通过，不调用模型或执行目标代码。创建失败现在可在没有工作区的情况下记录并停止整批。24 项控制复用首批同一镜像/语料的不可变证据，不称为第二批重新运行。', '',
+        '| 第二批阶段 | 策略 | 计划 | 完成 | 严格成功 | 请求 | 已知 Token | 未知用量任务 |',
+        '|---|---|---:|---:|---:|---:|---:|---:|']
+    for phase in ['pilot', 'formal']:
+        for variant in ['legacy', 'quality']:
+            r = summary[phase][variant]
+            lines.append(f"| {phase} | {variant} | {r['planned']} | {r['completed']} | {r['strict_success']} | {r['model_calls']} | {r['known_tokens']} | {r['unknown_usage']} |")
+    lines.extend(['', f"完整矩阵准入：{summary['formal_admitted']}；停止原因：`{summary['stop_reason']}`。",
+        f"实际结束原因计数：`{dict(reasons)}`；输出失败计数：`{dict(output_failures)}`。", '',
+        f"其中 {parsed_length} 项响应虽然可解析成结构化对象，服务端仍报告 length，因此按预先规定的完整响应门槛保守拒绝。该计数不等于 JSON 一定损坏，也不能推断底层官方服务异常；它表明本配置未满足本轮完整输出准入。", '',
+        '两种策略使用同一严格计分门槛：固定失败基线成立、原始测试不变、候选进入待审批、候选套件和独立隐藏验收均通过、当前同一新增测试在原版失败而在候选通过。评测器额外回放仅作观测，不改变原工作流判断；模型看不到参考修复或隐藏验收。', '',
+        '每任务预算为 360 秒、8 次模型请求预留、100,000 已观测 Token、10 次任务 Docker；另有最多两项 evaluator 探针，各一次 Docker 预算。每工作进程硬时限 660 秒，试评测 30 分钟、条件完整阶段 60 分钟。SDK 隐式重试关闭；首次连接失败、用量未知/待确认、进程失败或基础设施不可用停止余下单元，保留分母，不补跑。Token 阈值和输出上限不是金额上限。', '',
+        f"此前 {len(old)} 份任务账本保持原摘要，根 `.env` 未改，未批准候选、推送、更新 PR 或合并。质量开关保持默认关闭。两批和旧通道实验分开报告；条件矩阵未准入时，未执行不算模型失败。公开且已知的相关历史案例、小样本和通道别名不足以证明修复能力提升或未见仓库泛化。", '',
+        '实现补丁、冻结协议、完整回归 XML、两批负面记录、模型事件、候选补丁、失败原因和只读账本验证均保留在同目录。原始任务存储不自动清理或重发。', ''])
+    (OUT/'report.md').write_bytes('\n'.join(lines).encode())
+    manifest = [{'path': f.relative_to(OUT).as_posix(), 'sha256': sha(f)} for f in sorted(OUT.rglob('*')) if f.is_file()]
+    save(OUT/'evidence-manifest.json', {'files': manifest})
+    assert not any(key.encode() in f.read_bytes() for f in OUT.rglob('*') if f.is_file() for key in keys)
+    print(json.dumps({'sealed': True, 'completed_cells': len(completed), 'finish_reasons': dict(reasons),
+                      'output_failures': dict(output_failures), 'report': str(OUT/'report.md')}))
+
+
+if __name__ == '__main__':
+    main()
