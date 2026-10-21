@@ -1,0 +1,96 @@
+{
+  "status": "demonstrated",
+  "generated_tests": [
+    "tests/test_events_utc_regression.py"
+  ],
+  "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-isolated-data\\tasks\\57a47cf4-1d30-496e-8449-8082e472394b\\regression\\attempt-1-ea2cd07a-9c4b-40ce-b10d-8cfa266d1f3b",
+  "baseline_result": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": ".F..F..                                                                  [100%]\n=================================== FAILURES ===================================\n____________________ test_positive_offset_converted_to_utc _____________________\n\n    def test_positive_offset_converted_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n>       assert result == datetime(2026, 4, 1, 10, 0, 0, tzinfo=timezone.utc)\nE       assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc)\nE        +  where datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc) = datetime(2026, 4, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)\nE        +    where datetime.timezone.utc = timezone.utc\n\ntests/test_events_utc_regression.py:8: AssertionError\n____________________ test_negative_offset_converted_to_utc _____________________\n\n    def test_negative_offset_converted_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n>       assert result == datetime(2026, 4, 1, 17, 0, 0, tzinfo=timezone.utc)\nE       assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 17, 0, tzinfo=datetime.timezone.utc)\nE        +  where datetime.datetime(2026, 4, 1, 17, 0, tzinfo=datetime.timezone.utc) = datetime(2026, 4, 1, 17, 0, 0, tzinfo=datetime.timezone.utc)\nE        +    where datetime.timezone.utc = timezone.utc\n\ntests/test_events_utc_regression.py:26: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_events_utc_regression.py::test_positive_offset_converted_to_utc\nFAILED tests/test_events_utc_regression.py::test_negative_offset_converted_to_utc\n2 failed, 5 passed in 0.12s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 5,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 0.9733796000000439,
+    "evidence": "docker",
+    "cases": [
+      {
+        "file": "tests/test_events_utc_regression.py",
+        "name": "test_positive_offset_converted_to_utc",
+        "classname": "tests.test_events_utc_regression",
+        "line": 6,
+        "status": "failed",
+        "message": "assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc)\n +  where datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc) = datetime(2026, 4, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)\n +    where datetime.timezone.utc = timezone.utc",
+        "details": "def test_positive_offset_converted_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n>       assert result == datetime(2026, 4, 1, 10, 0, 0, tzinfo=timezone.utc)\nE       assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc)\nE        +  where datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc) = datetime(2026, 4, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)\nE        +    where datetime.timezone.utc = timezone.utc\n\ntests/test_events_utc_regression.py:8: AssertionError"
+      },
+      {
+        "file": "tests/test_events_utc_regression.py",
+        "name": "test_negative_offset_converted_to_utc",
+        "classname": "tests.test_events_utc_regression",
+        "line": 24,
+        "status": "failed",
+        "message": "assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 17, 0, tzinfo=datetime.timezone.utc)\n +  where datetime.datetime(2026, 4, 1, 17, 0, tzinfo=datetime.timezone.utc) = datetime(2026, 4, 1, 17, 0, 0, tzinfo=datetime.timezone.utc)\n +    where datetime.timezone.utc = timezone.utc",
+        "details": "def test_negative_offset_converted_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n>       assert result == datetime(2026, 4, 1, 17, 0, 0, tzinfo=timezone.utc)\nE       assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 17, 0, tzinfo=datetime.timezone.utc)\nE        +  where datetime.datetime(2026, 4, 1, 17, 0, tzinfo=datetime.timezone.utc) = datetime(2026, 4, 1, 17, 0, 0, tzinfo=datetime.timezone.utc)\nE        +    where datetime.timezone.utc = timezone.utc\n\ntests/test_events_utc_regression.py:26: AssertionError"
+      },
+      {
+        "file": "tests/test_contract.py",
+        "name": "test_existing_contract",
+        "classname": "tests.test_contract",
+        "line": 4,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_utc_regression.py",
+        "name": "test_z_suffix_is_utc",
+        "classname": "tests.test_events_utc_regression",
+        "line": 12,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_utc_regression.py",
+        "name": "test_naive_treated_as_utc",
+        "classname": "tests.test_events_utc_regression",
+        "line": 18,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_utc_regression.py",
+        "name": "test_zero_offset_is_utc",
+        "classname": "tests.test_events_utc_regression",
+        "line": 30,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_utc_regression.py",
+        "name": "test_return_type_and_tzinfo_are_utc",
+        "classname": "tests.test_events_utc_regression",
+        "line": 36,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      }
+    ],
+    "cases_truncated": false
+  },
+  "fail_to_pass_tests": [
+    "tests/test_events_utc_regression.py::tests.test_events_utc_regression::test_positive_offset_converted_to_utc",
+    "tests/test_events_utc_regression.py::tests.test_events_utc_regression::test_negative_offset_converted_to_utc"
+  ],
+  "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+  "attempt": 1,
+  "diff_digest": "5e9b62d29ed127daf57f0f86995703e35bb5d4bb657a6e92e79224fb858ef247",
+  "candidate_id": "990d85dc-8deb-4179-9aac-c408dbcb7135",
+  "candidate_number": 1
+}

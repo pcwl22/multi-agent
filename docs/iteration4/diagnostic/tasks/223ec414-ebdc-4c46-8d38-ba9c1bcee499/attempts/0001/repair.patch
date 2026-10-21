@@ -1,0 +1,112 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,31 @@
++def _merge_value(default_value, override_value):
++    if isinstance(default_value, dict) and isinstance(override_value, dict):
++        return _merge_mappings(default_value, override_value)
++    if isinstance(override_value, list):
++        return list(override_value)
++    return override_value
++
++
++def _merge_mappings(defaults, overrides):
++    result = {}
++    for key, value in defaults.items():
++        if isinstance(value, dict):
++            result[key] = _merge_mappings(value, {})
++        elif isinstance(value, list):
++            result[key] = list(value)
++        else:
++            result[key] = value
++    for key, value in overrides.items():
++        if key in result:
++            result[key] = _merge_value(result[key], value)
++        elif isinstance(value, dict):
++            result[key] = _merge_mappings(value, {})
++        elif isinstance(value, list):
++            result[key] = list(value)
++        else:
++            result[key] = value
++    return result
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
+-    return result
++    return _merge_mappings(defaults, overrides)
+--- a/tests/test_merge_config_regression.py
++++ b/tests/test_merge_config_regression.py
+@@ -0,0 +1,72 @@
++from config import merge_config
++
++
++def test_simple_override_preserved():
++    assert merge_config({"a": 1}, {"a": 2, "b": 3}) == {"a": 2, "b": 3}
++    assert merge_config({}, {}) == {}
++
++
++def test_nested_mappings_are_merged_recursively():
++    defaults = {"db": {"host": "localhost", "port": 5432, "opts": {"ssl": False}}}
++    overrides = {"db": {"port": 6543, "opts": {"ssl": True}}}
++    result = merge_config(defaults, overrides)
++    assert result == {
++        "db": {"host": "localhost", "port": 6543, "opts": {"ssl": True}}
++    }
++    assert isinstance(result, dict)
++    assert isinstance(result["db"], dict)
++    assert isinstance(result["db"]["opts"], dict)
++
++
++def test_override_wins_at_leaves():
++    defaults = {"a": {"b": {"c": 1, "d": 2}}}
++    overrides = {"a": {"b": {"c": 99}}}
++    result = merge_config(defaults, overrides)
++    assert result == {"a": {"b": {"c": 99, "d": 2}}}
++
++
++def test_lists_are_replaced_not_concatenated():
++    defaults = {"items": [1, 2, 3], "nested": {"items": ["a"]}}
++    overrides = {"items": [4], "nested": {"items": ["b", "c"]}}
++    result = merge_config(defaults, overrides)
++    assert result == {"items": [4], "nested": {"items": ["b", "c"]}}
++    assert isinstance(result["items"], list)
++    assert isinstance(result["nested"]["items"], list)
++
++
++def test_inputs_are_not_mutated():
++    defaults = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    overrides = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    defaults_snapshot = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    overrides_snapshot = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    merge_config(defaults, overrides)
++    assert defaults == defaults_snapshot
++    assert overrides == overrides_snapshot
++
++
++def test_result_is_independent_of_inputs():
++    defaults = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    overrides = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    result = merge_config(defaults, overrides)
++    assert result["db"] is not defaults["db"]
++    assert result["db"] is not overrides["db"]
++    assert result["db"]["opts"] is not defaults["db"]["opts"]
++    assert result["db"]["opts"] is not overrides["db"]["opts"]
++    assert result["items"] is not defaults["items"]
++    assert result["items"] is not overrides["items"]
++    result["db"]["opts"]["ssl"] = "changed"
++    result["items"].append(99)
++    assert defaults["db"]["opts"]["ssl"] is False
++    assert defaults["items"] == [1, 2]
++    assert overrides["db"]["opts"]["ssl"] is True
++    assert overrides["items"] == [3]
++
++
++def test_new_keys_from_overrides_are_independent():
++    defaults = {}
++    overrides = {"db": {"opts": {"ssl": True}}, "items": [1]}
++    result = merge_config(defaults, overrides)
++    assert result == {"db": {"opts": {"ssl": True}}, "items": [1]}
++    assert result["db"] is not overrides["db"]
++    assert result["db"]["opts"] is not overrides["db"]["opts"]
++    assert result["items"] is not overrides["items"]

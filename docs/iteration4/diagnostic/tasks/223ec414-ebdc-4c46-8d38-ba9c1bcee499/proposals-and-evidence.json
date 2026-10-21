@@ -1,0 +1,134 @@
+{
+  "patches": [
+    {
+      "rationale": "The original merge_config performs a shallow dict update, so nested mappings are not merged and nested objects are shared with the inputs. The issue requires a recursive merge where overrides win at leaves, lists are replaced (not concatenated), and the returned structure is independent of both inputs (no shared nested objects, no mutation of inputs). I implement a recursive helper that builds fresh dicts at every level, copies list values into new lists, and leaves other leaf values as-is. The existing simple-override behavior is preserved. New regression tests in a fresh file cover nested merge, leaf override, list replacement, input non-mutation, and output independence.",
+      "edits": [
+        {
+          "path": "config.py",
+          "old": "def merge_config(defaults, overrides):\n    result = dict(defaults)\n    result.update(overrides)\n    return result",
+          "new": "def _merge_value(default_value, override_value):\n    if isinstance(default_value, dict) and isinstance(override_value, dict):\n        return _merge_mappings(default_value, override_value)\n    if isinstance(override_value, list):\n        return list(override_value)\n    return override_value\n\n\ndef _merge_mappings(defaults, overrides):\n    result = {}\n    for key, value in defaults.items():\n        if isinstance(value, dict):\n            result[key] = _merge_mappings(value, {})\n        elif isinstance(value, list):\n            result[key] = list(value)\n        else:\n            result[key] = value\n    for key, value in overrides.items():\n        if key in result:\n            result[key] = _merge_value(result[key], value)\n        elif isinstance(value, dict):\n            result[key] = _merge_mappings(value, {})\n        elif isinstance(value, list):\n            result[key] = list(value)\n        else:\n            result[key] = value\n    return result\n\n\ndef merge_config(defaults, overrides):\n    return _merge_mappings(defaults, overrides)"
+        },
+        {
+          "path": "tests/test_merge_config_regression.py",
+          "old": "",
+          "new": "from config import merge_config\n\n\ndef test_simple_override_preserved():\n    assert merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3}\n    assert merge_config({}, {}) == {}\n\n\ndef test_nested_mappings_are_merged_recursively():\n    defaults = {\"db\": {\"host\": \"localhost\", \"port\": 5432, \"opts\": {\"ssl\": False}}}\n    overrides = {\"db\": {\"port\": 6543, \"opts\": {\"ssl\": True}}}\n    result = merge_config(defaults, overrides)\n    assert result == {\n        \"db\": {\"host\": \"localhost\", \"port\": 6543, \"opts\": {\"ssl\": True}}\n    }\n    assert isinstance(result, dict)\n    assert isinstance(result[\"db\"], dict)\n    assert isinstance(result[\"db\"][\"opts\"], dict)\n\n\ndef test_override_wins_at_leaves():\n    defaults = {\"a\": {\"b\": {\"c\": 1, \"d\": 2}}}\n    overrides = {\"a\": {\"b\": {\"c\": 99}}}\n    result = merge_config(defaults, overrides)\n    assert result == {\"a\": {\"b\": {\"c\": 99, \"d\": 2}}}\n\n\ndef test_lists_are_replaced_not_concatenated():\n    defaults = {\"items\": [1, 2, 3], \"nested\": {\"items\": [\"a\"]}}\n    overrides = {\"items\": [4], \"nested\": {\"items\": [\"b\", \"c\"]}}\n    result = merge_config(defaults, overrides)\n    assert result == {\"items\": [4], \"nested\": {\"items\": [\"b\", \"c\"]}}\n    assert isinstance(result[\"items\"], list)\n    assert isinstance(result[\"nested\"][\"items\"], list)\n\n\ndef test_inputs_are_not_mutated():\n    defaults = {\"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n    overrides = {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [3]}\n    defaults_snapshot = {\"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n    overrides_snapshot = {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [3]}\n    merge_config(defaults, overrides)\n    assert defaults == defaults_snapshot\n    assert overrides == overrides_snapshot\n\n\ndef test_result_is_independent_of_inputs():\n    defaults = {\"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n    overrides = {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [3]}\n    result = merge_config(defaults, overrides)\n    assert result[\"db\"] is not defaults[\"db\"]\n    assert result[\"db\"] is not overrides[\"db\"]\n    assert result[\"db\"][\"opts\"] is not defaults[\"db\"][\"opts\"]\n    assert result[\"db\"][\"opts\"] is not overrides[\"db\"][\"opts\"]\n    assert result[\"items\"] is not defaults[\"items\"]\n    assert result[\"items\"] is not overrides[\"items\"]\n    result[\"db\"][\"opts\"][\"ssl\"] = \"changed\"\n    result[\"items\"].append(99)\n    assert defaults[\"db\"][\"opts\"][\"ssl\"] is False\n    assert defaults[\"items\"] == [1, 2]\n    assert overrides[\"db\"][\"opts\"][\"ssl\"] is True\n    assert overrides[\"items\"] == [3]\n\n\ndef test_new_keys_from_overrides_are_independent():\n    defaults = {}\n    overrides = {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [1]}\n    result = merge_config(defaults, overrides)\n    assert result == {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [1]}\n    assert result[\"db\"] is not overrides[\"db\"]\n    assert result[\"db\"][\"opts\"] is not overrides[\"db\"][\"opts\"]\n    assert result[\"items\"] is not overrides[\"items\"]\n"
+        }
+      ],
+      "contract_tests": [
+        "test_simple_override_preserved: merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3} and merge_config({}, {}) == {} (preserves original simple-override semantics).",
+        "test_nested_mappings_are_merged_recursively: merge_config({\"db\": {\"host\": \"localhost\", \"port\": 5432, \"opts\": {\"ssl\": False}}}, {\"db\": {\"port\": 6543, \"opts\": {\"ssl\": True}}}) == {\"db\": {\"host\": \"localhost\", \"port\": 6543, \"opts\": {\"ssl\": True}}}; result and nested values are dict instances.",
+        "test_override_wins_at_leaves: merge_config({\"a\": {\"b\": {\"c\": 1, \"d\": 2}}}, {\"a\": {\"b\": {\"c\": 99}}}) == {\"a\": {\"b\": {\"c\": 99, \"d\": 2}}} (override leaf wins, non-overridden leaf preserved).",
+        "test_lists_are_replaced_not_concatenated: merge_config({\"items\": [1, 2, 3], \"nested\": {\"items\": [\"a\"]}}, {\"items\": [4], \"nested\": {\"items\": [\"b\", \"c\"]}}) == {\"items\": [4], \"nested\": {\"items\": [\"b\", \"c\"]}}; list values are list instances.",
+        "test_inputs_are_not_mutated: after merge_config(defaults, overrides), defaults and overrides equal their pre-call snapshots (no mutation of either input).",
+        "test_result_is_independent_of_inputs: result nested dicts and lists are not identical objects to any input nested dict/list; mutating result nested values does not change defaults or overrides.",
+        "test_new_keys_from_overrides_are_independent: keys present only in overrides are deep-copied into result so result nested dicts/lists are not shared with overrides."
+      ],
+      "changed_files": [
+        "config.py",
+        "tests/test_merge_config_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "dfa5d847-32de-4b94-b05f-b2920a810dc9",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.11s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.021486300000106,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_simple_override_preserved",
+          "classname": "tests.test_merge_config_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_nested_mappings_are_merged_recursively",
+          "classname": "tests.test_merge_config_regression",
+          "line": 9,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_override_wins_at_leaves",
+          "classname": "tests.test_merge_config_regression",
+          "line": 21,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_lists_are_replaced_not_concatenated",
+          "classname": "tests.test_merge_config_regression",
+          "line": 28,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_inputs_are_not_mutated",
+          "classname": "tests.test_merge_config_regression",
+          "line": 37,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_result_is_independent_of_inputs",
+          "classname": "tests.test_merge_config_regression",
+          "line": 47,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_merge_config_regression.py",
+          "name": "test_new_keys_from_overrides_are_independent",
+          "classname": "tests.test_merge_config_regression",
+          "line": 65,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "e1c68f096a4b2f60688df91a650b5ba0ecfb745e73654287274950d06cd332d1",
+      "candidate_id": "dfa5d847-32de-4b94-b05f-b2920a810dc9",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

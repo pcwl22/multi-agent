@@ -1,0 +1,294 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug: `get_part` validates the token with `_RE_ARRAY_INDEX.fullmatch(str(part))` and then calls `int(part)`. For a valid numeric token with more digits than Python's `sys.int_info.str_digits_check_threshold` (default 4300), `int(part)` raises `ValueError: Exceeds the limit (4300 digits) for integer string conversion`, which leaks out of `resolve`, `to_last`, and `set` instead of raising `JsonPointerException`. Fix: wrap the `int(part)` conversion in a try/except ValueError and raise `JsonPointerException` with the same message style used for other invalid sequence indices. This preserves ordinary indices, end-of-list handling ('-'), mapping behavior (numeric member keys stay strings because Mapping branch returns `part` unchanged), and mutation behavior. `resolve` with a default already catches `JsonPointerException` and returns the default, so the fix makes the default path work for huge indices too.",
+      "edits": [
+        {
+          "path": "jsonpointer.py",
+          "old": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            return int(part)",
+          "new": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            try:\n                return int(part)\n            except ValueError:\n                # A syntactically valid numeric index may still exceed\n                # Python's integer string conversion digit limit. Treat it\n                # as an invalid sequence index rather than leaking ValueError.\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)"
+        }
+      ],
+      "contract_tests": [
+        "tests/test_huge_index_regression.py::test_resolve_huge_index_raises_jsonpointerexception: JsonPointer('/' + '9'*5000).resolve([1,2,3]) raises JsonPointerException (not ValueError).",
+        "tests/test_huge_index_regression.py::test_resolve_huge_index_with_default_returns_default: JsonPointer('/' + '9'*5000).resolve([1,2,3], 'DEFAULT') returns exactly the string 'DEFAULT'.",
+        "tests/test_huge_index_regression.py::test_resolve_pointer_huge_index_with_default: resolve_pointer([1,2,3], '/' + '9'*5000, None) returns None.",
+        "tests/test_huge_index_regression.py::test_to_last_huge_index_raises_jsonpointerexception: JsonPointer('/' + '9'*5000).to_last([1,2,3]) raises JsonPointerException.",
+        "tests/test_huge_index_regression.py::test_set_huge_index_raises_jsonpointerexception: JsonPointer('/' + '9'*5000).set([1,2,3], 'x') raises JsonPointerException.",
+        "tests/test_huge_index_regression.py::test_set_pointer_huge_index_raises_jsonpointerexception: set_pointer([1,2,3], '/' + '9'*5000, 'x') raises JsonPointerException.",
+        "tests/test_huge_index_regression.py::test_huge_numeric_mapping_key_stays_string: resolve_pointer({'9'*5000: 'v'}, '/' + '9'*5000) == 'v' (numeric object member keys remain strings, however long).",
+        "tests/test_huge_index_regression.py::test_ordinary_array_index_preserved: resolve_pointer(['a','b','c'], '/1') == 'b' and type is str.",
+        "tests/test_huge_index_regression.py::test_end_of_list_preserved: resolve_pointer(['a','b'], '/-') is an EndOfList instance.",
+        "tests/test_huge_index_regression.py::test_set_mutation_preserved: doc = {'a': [1,2]}; set_pointer(doc, '/a/0', 9) mutates doc in place to {'a': [9,2]} and returns the same object.",
+        "tests/test_huge_index_regression.py::test_set_inplace_false_does_not_mutate: doc = {'a': [1,2]}; result = set_pointer(doc, '/a/0', 9, inplace=False); doc unchanged, result == {'a': [9,2]}."
+      ],
+      "changed_files": [
+        "jsonpointer.py"
+      ],
+      "applied": true,
+      "candidate_id": "a6c6d3c9-0813-471d-b910-f45e4c4945d1",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "..........................                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n26 passed in 0.14s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "passed": 26,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.0202901999946334,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests.py",
+          "name": "test_eol",
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "line": 42,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_example",
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "line": 15,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_parts",
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "line": 107,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_round_trip",
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "line": 50,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_str_and_repr",
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "line": 75,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_contains",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 151,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_contains_magic",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 156,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_eq_hash",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 135,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_join",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 161,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_join_magic",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 179,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_join_magic_subclass",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 212,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_join_subclass",
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "line": 195,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_invalid_escape",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 240,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_invalid_index",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 227,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_leading_zero",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 243,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_no_start_slash",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 223,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_oob",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 232,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_string_not_indexable",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 247,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_trailing_escape",
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "line": 237,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_empty_path",
+          "classname": "tests.test_upstream_suite.ToLastTests",
+          "line": 257,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_path",
+          "classname": "tests.test_upstream_suite.ToLastTests",
+          "line": 264,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_set",
+          "classname": "tests.test_upstream_suite.SetTests",
+          "line": 274,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_alttypes",
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "line": 374,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_mock_dict_raises_key_error",
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "line": 423,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_mock_dict_returns_default",
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "line": 411,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests.py",
+          "name": "test_mock_dict_sanity",
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "line": 397,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "2e1d02f11f91184711abb57111b3bd870f66a8c665760a6964f20c14c4fde043",
+      "candidate_id": "a6c6d3c9-0813-471d-b910-f45e4c4945d1",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

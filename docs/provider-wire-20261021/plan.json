@@ -1,0 +1,156 @@
+{
+  "registered_at": "2026-10-21T01:57:57.325599+00:00",
+  "runtime_commit": "610136f4c9faa5005ef7cf7298c633e9866bf507",
+  "runtime_sha256": "e1900b72cba1efe60b54228ea1a4728387104ec2e33bc0657591596f7f0b14a8",
+  "diagnostic_sha256": "e491aec67bae2ca86635c51427586472218e227280b8ee569c9a73c1055b736f",
+  "worker_sha256": "30da880fd62193c95a5633e471dc1d0f00543fbbcb855187c33da934fdd5d3b9",
+  "controller_sha256": "37440111863307d5cc7cfc628420c1247ca40497946ad3bacc136be772c10fd9",
+  "verified_junit_sha256": "1fbceadab8cddb3e774010229f6698c4530a22854da5bd2a73b5efa93a3a8e02",
+  "payload": {
+    "issue_description": "jsonpointer.py leaks ValueError when a valid numeric array index exceeds Python's integer digit conversion limit. All public resolve, to_last and set operations must raise JsonPointerException for invalid sequence indices; resolve with a default must return that exact default. Numeric object member keys remain strings, however long. Preserve ordinary array indices, end-of-list handling and input mutation behavior. Add NEW regression tests.",
+    "repository_path_scope": {
+      "remote_subdirectory": "",
+      "workspace_paths": [
+        ".github/workflows/test.yaml",
+        ".readthedocs.yaml",
+        "LICENSE.txt",
+        "README.md",
+        "doc/conf.py",
+        "jsonpointer.py",
+        "requirements-dev.txt",
+        "setup.py",
+        "tests.py",
+        "tests/test_original_collection.py"
+      ],
+      "paths_truncated": false,
+      "path_mapping": [
+        {
+          "remote_path": ".github/workflows/test.yaml",
+          "workspace_edit_path": ".github/workflows/test.yaml"
+        },
+        {
+          "remote_path": ".readthedocs.yaml",
+          "workspace_edit_path": ".readthedocs.yaml"
+        },
+        {
+          "remote_path": "LICENSE.txt",
+          "workspace_edit_path": "LICENSE.txt"
+        },
+        {
+          "remote_path": "README.md",
+          "workspace_edit_path": "README.md"
+        },
+        {
+          "remote_path": "doc/conf.py",
+          "workspace_edit_path": "doc/conf.py"
+        },
+        {
+          "remote_path": "jsonpointer.py",
+          "workspace_edit_path": "jsonpointer.py"
+        },
+        {
+          "remote_path": "requirements-dev.txt",
+          "workspace_edit_path": "requirements-dev.txt"
+        },
+        {
+          "remote_path": "setup.py",
+          "workspace_edit_path": "setup.py"
+        },
+        {
+          "remote_path": "tests.py",
+          "workspace_edit_path": "tests.py"
+        },
+        {
+          "remote_path": "tests/test_original_collection.py",
+          "workspace_edit_path": "tests/test_original_collection.py"
+        }
+      ],
+      "instruction": "The workspace root is already the configured remote subdirectory. Use workspace_edit_path and FILE markers for suspected_modules and Edit.path. Do not prepend remote_subdirectory. New Python test files use this same root. Existing tests and edit preconditions remain protected."
+    }
+  },
+  "corpus": "E:\\multi-agent\\.repopilot\\connectivity-collection-20261020\\corpus",
+  "lock_sha256": "e4beb9618cca2911356187266b726b8fe4eb618143c46ffa626142b238b4b348",
+  "image": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d",
+  "model_name": "deepseek-4.1-flash-background",
+  "model_base_url": "https://gw.lunaroute.com/v1",
+  "diagnostics": [
+    {
+      "id": "A-nonstream",
+      "profile": "A",
+      "parameter": "max_completion_tokens",
+      "thinking": "provider_default",
+      "streaming": false
+    },
+    {
+      "id": "A-stream",
+      "profile": "A",
+      "parameter": "max_completion_tokens",
+      "thinking": "provider_default",
+      "streaming": true
+    },
+    {
+      "id": "B-nonstream",
+      "profile": "B",
+      "parameter": "max_tokens",
+      "thinking": "provider_default",
+      "streaming": false
+    },
+    {
+      "id": "B-stream",
+      "profile": "B",
+      "parameter": "max_tokens",
+      "thinking": "provider_default",
+      "streaming": true
+    },
+    {
+      "id": "C-nonstream",
+      "profile": "C",
+      "parameter": "max_tokens",
+      "thinking": "disabled",
+      "streaming": false
+    },
+    {
+      "id": "C-stream",
+      "profile": "C",
+      "parameter": "max_tokens",
+      "thinking": "disabled",
+      "streaming": true
+    }
+  ],
+  "pilot": [
+    {
+      "id": "01-jsonpointer-large-index",
+      "phase": "pilot",
+      "case_id": "jsonpointer-large-index",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "02-itsdangerous-date-overflow",
+      "phase": "pilot",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "legacy",
+      "mode": "multi_full"
+    }
+  ],
+  "formal": [],
+  "task_storage": "E:/Agent/w21data",
+  "model_max_output_tokens": 4096,
+  "budget_limits": {
+    "wall_seconds": 360,
+    "model_requests": 8,
+    "observed_tokens": 100000,
+    "sandbox_runs": 10,
+    "artifact_bytes": 268435456,
+    "result_bytes": 8388608
+  },
+  "diagnostic_output_limit": 2048,
+  "diagnostic_request_cap": 6,
+  "diagnostic_observed_tokens_per_cell": 32768,
+  "diagnostic_phase_seconds": 900,
+  "pilot_phase_seconds": 1800,
+  "selection_rule": "Run A/B nonstream+stream pairs on the SAME frozen issue payload. If A passes both select A; otherwise if B passes both select B. Only if neither pair passes, run C pair and select C only if both pass. Remaining C cells are conditional, not failures. Then run two NEW multi_full legacy-policy repairs with selected profile and 4096 output ceiling. No full matrix.",
+  "diagnostic_success": "Schema parsed, explicit complete finish reason stop/tool_calls/function_call, complete usage, exact observed outgoing HTTP dialect/toggle/limit/stream/model/tool binding.",
+  "stop_rules": "Transport/provider error, unknown/pending usage, worker interruption, wire mismatch, sandbox unavailable/timeout, changed config/runtime/corpus, or phase deadline stops the whole experiment. Expected known-usage length/schema failures may advance the preregistered parameter experiment. No automatic fallback or replacement request.",
+  "limitations": "Six short probes cannot establish sustained reliability, proxy forwarding, actual model weights, reasoning content, monetary spend, or repair-quality gain. Output shapes are SDK-visible counts only. Missing reasoning breakdown is not zero. Controls reused from previous immutable 24-run corpus/image evidence; not new executions."
+}

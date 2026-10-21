@@ -1,0 +1,689 @@
+[
+  {
+    "task_id": "31ce8a28-f83d-4dde-899d-45e999fcf870",
+    "variant": "legacy",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": false,
+        "summary": "The diff correctly wraps int(part) in get_part with a try/except ValueError that re-raises JsonPointerException, which addresses the core leak for resolve, to_last, and set (all route through get_part). However, the issue explicitly requires NEW regression tests, and the regression_evidence shows status 'no_new_tests' with zero generated tests and no baseline replay. The contract_tests list references tests/test_oversized_index_regression.py, but that file is not present in the workspace_paths and no added test file exists in the diff. Therefore the 'New regression tests are added' contract is unsatisfied, and the fail_to_pass evidence is absent, so the fix is unverified against the original bug.",
+        "concerns": [
+          "No new regression test file was added; regression_evidence reports 'no_new_tests' with empty generated_tests and fail_to_pass_tests.",
+          "tests/test_oversized_index_regression.py is referenced in contract_tests but is not in workspace_paths and not in the diff, so the claimed tests do not exist.",
+          "Without a baseline replay on original source, there is no evidence the oversized-index ValueError actually occurred and is now fixed.",
+          "The 26 passing tests are the pre-existing suite only; they do not exercise the oversized-index digit-limit path."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "resolve with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "get_part now wraps int(part) in try/except ValueError and raises JsonPointerException(\"'%s' is not a valid sequence index\"). resolve calls walk -> get_part, so the ValueError is converted. Code inspection supports this, though no dedicated test exists."
+          },
+          {
+            "requirement": "to_last with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) for the last part and walk for earlier parts; both route through the patched get_part, so the ValueError is converted to JsonPointerException."
+          },
+          {
+            "requirement": "set with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "set calls to_last, which uses get_part; the patched conversion applies. No dedicated test present."
+          },
+          {
+            "requirement": "resolve with a default and an invalid sequence index returns that exact default object.",
+            "satisfied": true,
+            "evidence": "resolve catches JsonPointerException and returns default when default is not _nothing. Since get_part now raises JsonPointerException instead of ValueError, the default path is reached. No identity test present."
+          },
+          {
+            "requirement": "Numeric object member keys remain strings regardless of length.",
+            "satisfied": true,
+            "evidence": "get_part returns part unchanged for Mapping instances before any int() conversion, so long numeric dict keys stay strings. Unchanged by the diff."
+          },
+          {
+            "requirement": "Ordinary array indices continue to resolve correctly.",
+            "satisfied": true,
+            "evidence": "int(part) still executes for valid indices; existing tests (e.g., resolve_pointer(doc, '/foo/0')) pass in the 26-test run."
+          },
+          {
+            "requirement": "End-of-list handling (e.g., '-' token) is preserved.",
+            "satisfied": true,
+            "evidence": "The '-' branch in get_part returns part before the int() conversion; test_eol passes in the suite."
+          },
+          {
+            "requirement": "Input mutation behavior is preserved.",
+            "satisfied": true,
+            "evidence": "set/inplace logic is untouched by the diff; SetTests pass in the 26-test run."
+          },
+          {
+            "requirement": "New regression tests are added covering these contracts.",
+            "satisfied": false,
+            "evidence": "regression_evidence status is 'no_new_tests' with generated_tests=[], fail_to_pass_tests=[], baseline_result=null. The diff contains only the jsonpointer.py change. tests/test_oversized_index_regression.py referenced in contract_tests is absent from workspace_paths and the diff."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "c01979b5-0fe3-48ce-a2a8-f6864d79be28",
+        "candidate_number": 1
+      },
+      {
+        "approved": true,
+        "summary": "The fix wraps int(part) in get_part with a try/except ValueError that re-raises JsonPointerException, which is the single choke point used by resolve (via walk), to_last, and set (via to_last). This addresses the digit-limit ValueError leak for all three public operations. resolve with a default catches JsonPointerException and returns the exact default object. Mapping keys are returned unchanged as strings before any int() conversion, so long numeric object keys remain strings. Ordinary indices, out-of-bounds, leading-zero, '-' end-of-list, and mutation semantics are untouched. New regression tests were added in tests/test_oversized_index_regression.py, and Docker regression evidence shows the same 12 tests failing on the original source (ValueError leaking) and passing on the candidate (52 passed).",
+        "concerns": [
+          "The new test file is not listed in the provided existing_test_paths, but it is a new file and the diff adds it; no protected test was modified.",
+          "The regression evidence is truncated in the provided output, but the fail_to_pass list and baseline_result clearly show the ValueError leak on original source and the pass on candidate."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "resolve with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "jsonpointer.py get_part now wraps int(part) in try/except ValueError and raises JsonPointerException. resolve calls walk -> get_part. Tests test_resolve_oversized_index_raises_jsonpointerexception, test_resolve_pointer_oversized_index_raises_jsonpointerexception, and test_resolve_does_not_leak_valueerror are in fail_to_pass and pass on candidate (52 passed)."
+          },
+          {
+            "requirement": "to_last with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]), which now converts the ValueError to JsonPointerException. Tests test_to_last_oversized_index_raises_jsonpointerexception, test_to_last_oversized_index_nested_raises_jsonpointerexception, and test_to_last_oversized_index_does_not_leak_valueerror are in fail_to_pass and pass on candidate."
+          },
+          {
+            "requirement": "set with an oversized numeric array index raises JsonPointerException, not ValueError.",
+            "satisfied": true,
+            "evidence": "set calls self.to_last(doc), which uses get_part; the ValueError is converted. Tests test_set_oversized_index_raises_jsonpointerexception, test_set_oversized_index_nested_raises_jsonpointerexception, and test_set_oversized_index_does_not_leak_valueerror are in fail_to_pass and pass on candidate."
+          },
+          {
+            "requirement": "resolve with a default and an invalid sequence index returns that exact default object.",
+            "satisfied": true,
+            "evidence": "resolve catches JsonPointerException and returns default when default is not _nothing. Tests test_resolve_with_default_returns_exact_default and test_resolve_with_default_returns_exact_default_nested use assertIs against the exact default object and are in fail_to_pass, passing on candidate."
+          },
+          {
+            "requirement": "Numeric object member keys remain strings regardless of length.",
+            "satisfied": true,
+            "evidence": "get_part returns part unchanged for Mapping before any int() conversion. Tests test_long_numeric_key_remains_string, test_long_numeric_key_is_not_converted_to_int (assertIsInstance(part, str)), and test_long_numeric_key_set_remains_string pass on candidate."
+          },
+          {
+            "requirement": "Ordinary array indices continue to resolve correctly.",
+            "satisfied": true,
+            "evidence": "The regex check and int(part) path for normal indices is unchanged. Tests test_ordinary_index_resolves, test_ordinary_index_nested, test_ordinary_index_set, test_out_of_bounds_still_raises, test_invalid_index_still_raises, and test_leading_zero_still_raises pass on candidate."
+          },
+          {
+            "requirement": "End-of-list handling (e.g., '-' token) is preserved.",
+            "satisfied": true,
+            "evidence": "The part == '-' branch in get_part and walk is untouched. Tests test_dash_returns_end_of_list (assertIsInstance EndOfList), test_dash_append, and test_dash_then_index_raises pass on candidate."
+          },
+          {
+            "requirement": "Input mutation behavior is preserved.",
+            "satisfied": true,
+            "evidence": "set still deep-copies when inplace=False and mutates in place otherwise; the fix only changes exception type. Tests test_inplace_set_mutates (assertIs result, doc), test_non_inplace_set_does_not_mutate (assertIsNot newdoc, doc), and test_set_oversized_index_does_not_mutate_doc pass on candidate."
+          },
+          {
+            "requirement": "New regression tests are added covering these contracts.",
+            "satisfied": true,
+            "evidence": "tests/test_oversized_index_regression.py is added in the diff with 205 lines covering resolve, to_last, set, default identity, long numeric keys, ordinary indices, end-of-list, and mutation. Docker regression evidence shows 12 fail_to_pass tests failing on original source and passing on candidate."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "5dda63f1-9b29-4f76-9152-4b936058fb36",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "95a9fad9-aa64-4d51-86d3-1c3ed449e71d",
+    "variant": "quality",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The candidate fixes the reported bug: TimestampSigner.unsign now wraps timestamp_to_datetime in a try/except catching ValueError/OverflowError/OSError on the invalid-signature path and raises BadTimeSignature(\"Malformed timestamp\", payload=value) with date_signed defaulting to None. Regression evidence shows the added tests failed on the original source (OSError/ValueError leaking) and pass on the candidate, and the full suite passes (307 passed). All acceptance contracts are satisfied by the diff and the added tests.",
+        "concerns": [
+          "The added tests use a synthetic bogus-signature value rather than the existing fixture's real signed value; this is acceptable since the issue only requires new regression tests and the existing test_malformed_future_timestamp already covers the real-value path.",
+          "The except clause catches OSError/OverflowError in addition to ValueError; this is broader than the literal issue text but necessary because datetime.fromtimestamp raises OSError for very large timestamps on this platform, and it does not alter valid-path semantics."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "TimestampSigner.unsign on an invalid signature whose decoded timestamp is outside datetime's supported year range raises BadTimeSignature, not a raw datetime ValueError.",
+            "satisfied": true,
+            "evidence": "Diff wraps ts_dt = self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature. T006 test_invalid_signature_out_of_range_timestamp_raises_bad_time_signature passed; baseline regression_evidence shows the same test failed on original source with OSError/ValueError."
+          },
+          {
+            "requirement": "The BadTimeSignature raised for a malformed out-of-range timestamp carries the original payload.",
+            "satisfied": true,
+            "evidence": "Diff raises BadTimeSignature(\"Malformed timestamp\", payload=value) where value is the split payload. T002 test_invalid_signature_out_of_range_timestamp_payload_preserved asserts exc_info.value.payload == b'value' and passed."
+          },
+          {
+            "requirement": "The BadTimeSignature raised for a malformed out-of-range timestamp has date_signed=None.",
+            "satisfied": true,
+            "evidence": "BadTimeSignature is constructed without date_signed, so it defaults to None. T001 test_invalid_signature_out_of_range_timestamp_date_signed_is_none asserts exc_info.value.date_signed is None and passed."
+          },
+          {
+            "requirement": "Valid roundtrip signing and unsigning still returns the original payload and correct date_signed.",
+            "satisfied": true,
+            "evidence": "The change only affects the sig_error branch; valid path unchanged. T009 test_valid_roundtrip_returns_payload_and_date_signed asserts payload == b'value', ts is datetime, ts.tzinfo is not None and passed."
+          },
+          {
+            "requirement": "Ordinary invalid signatures with decodable timestamps still raise BadTimeSignature with date_signed metadata populated.",
+            "satisfied": true,
+            "evidence": "For decodable timestamps timestamp_to_datetime succeeds, so the original raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt) executes. T007 test_ordinary_invalid_signature_populates_date_signed asserts payload and isinstance(date_signed, datetime) and passed."
+          },
+          {
+            "requirement": "Expired valid signatures still raise SignatureExpired with the expected date_signed.",
+            "satisfied": true,
+            "evidence": "Expiry branch is untouched by the diff. T010 test_expired_valid_signature_raises_signature_expired asserts payload == b'value' and isinstance(date_signed, datetime) and passed."
+          },
+          {
+            "requirement": "The public timed serializer retains its BadSignature-family error contract for malformed timestamps.",
+            "satisfied": true,
+            "evidence": "TimedSerializer.loads calls signer.unsign, which now raises BadTimeSignature (a BadSignature subclass). T003 test_public_timed_serializer_malformed_timestamp_error_contract passed; baseline shows it failed with OSError on original source."
+          },
+          {
+            "requirement": "Existing tests remain unmodified and continue to pass.",
+            "satisfied": true,
+            "evidence": "Diff only modifies src/itsdangerous/timed.py and adds a new test file; no existing test files changed. Full suite result: 307 passed, 0 failed. Baseline regression_evidence confirms existing test_malformed_future_timestamp failed on original source and now passes."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "7c066104-3e61-4986-b6cd-22a45505007a",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "6a1f23b3-df23-4d45-8236-32d3679d9487",
+    "variant": "quality",
+    "case_id": "jsonpointer-large-index",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The diff adds a narrow try/except around int(part) in JsonPointer.get_part, converting the digit-limit ValueError into JsonPointerException. This is the single shared index-parsing path used by resolve (via walk), to_last, and set (via to_last), so all three public operations now raise JsonPointerException for overflow indices. Object member lookup still returns the raw string token (Mapping branch precedes the Sequence branch), so long numeric keys remain strings. resolve's default path catches JsonPointerException and returns the default unchanged, so the exact default object is returned. End-of-list ('-') handling and mutation semantics are untouched. Regression evidence shows the 10 fail_to_pass tests failed on the original source with the raw ValueError and pass on the candidate; the 46-test suite passes.",
+        "concerns": [
+          "The fix relies on the shared get_part helper rather than separate edits in resolve/to_last/set; this is correct and minimal, but coverage of the overflow path is only exercised through get_part, which is the actual code path for all three operations.",
+          "The new tests use a 5000-digit token, which exceeds the default 4300-digit limit; if a future environment raises sys.set_int_max_str_digits, the overflow tests could become vacuous, but that is an environment concern, not a defect in this change."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "resolve must raise JsonPointerException (not ValueError) for a valid numeric array index exceeding the int digit limit",
+            "satisfied": true,
+            "evidence": "jsonpointer.py get_part now wraps int(part) in try/except ValueError and raises JsonPointerException. resolve -> walk -> get_part. T001/T003 pass; baseline regression evidence shows ValueError leaked on original source for these same tests."
+          },
+          {
+            "requirement": "to_last must raise JsonPointerException for overflow index",
+            "satisfied": true,
+            "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]); the patched get_part converts ValueError to JsonPointerException. T004/T014 pass; baseline shows ValueError on original."
+          },
+          {
+            "requirement": "set must raise JsonPointerException for overflow index",
+            "satisfied": true,
+            "evidence": "set calls self.to_last(doc) which calls get_part. T008/T009 pass; baseline shows ValueError on original."
+          },
+          {
+            "requirement": "resolve with a default must return that exact default on overflow",
+            "satisfied": true,
+            "evidence": "resolve catches JsonPointerException and returns default; get_part now raises JsonPointerException. T002 asserts identity (assertIs) with a sentinel object and passes; T007 asserts the string default and passes."
+          },
+          {
+            "requirement": "Numeric object member keys remain strings, however long",
+            "satisfied": true,
+            "evidence": "get_part's Mapping branch returns part unchanged before the Sequence branch; no int conversion for mappings. T006 and T010 pass, verifying long numeric key resolves to its string value and ptr.parts[0] is a str."
+          },
+          {
+            "requirement": "Preserve ordinary array indices, end-of-list handling, and input mutation behavior",
+            "satisfied": true,
+            "evidence": "Only the int(part) call site changed; '-' handling and set mutation logic untouched. T005, T012 and the PreservedBehaviorTests (end-of-list, inplace/non-inplace mutation, out-of-bounds) pass in the 46-test run."
+          },
+          {
+            "requirement": "Add NEW regression tests",
+            "satisfied": true,
+            "evidence": "tests/test_overflow_index.py is a new file (F002) with 20 tests covering overflow resolve/to_last/set, default identity, long numeric keys, and preserved behaviors; regression_evidence confirms 10 fail_to_pass tests failed on original and pass on candidate."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "907706ec-2e01-40c0-a5e2-87fcd8c1a274",
+        "candidate_number": 1
+      }
+    ]
+  },
+  {
+    "task_id": "a303c2dc-a60d-4b49-b5df-4b4a92724ed6",
+    "variant": "legacy",
+    "case_id": "itsdangerous-date-overflow",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": false,
+        "summary": "The source fix in src/itsdangerous/timed.py correctly wraps timestamp_to_datetime in a try/except on the invalid-signature path and raises BadTimeSignature with the original payload and date_signed=None, preserving valid roundtrips, ordinary invalid-signature date_signed metadata, and expiry behavior. However, the issue explicitly requires adding NEW regression tests, and the diff contains no test additions. The regression_evidence reports status 'no_new_tests' with zero generated tests and no fail_to_pass tests, so the required test contract is entirely unsupported. The 297 passing tests are the pre-existing suite and do not exercise the new malformed-timestamp behavior.",
+        "concerns": [
+          "No new regression tests were added; the diff only modifies src/itsdangerous/timed.py. The issue requires adding NEW regression tests without editing existing tests.",
+          "regression_evidence status is 'no_new_tests' with fail_to_pass_count 0, so there is no Docker observation that the added tests fail on original source and pass on the candidate.",
+          "The 297 passing tests are the existing suite; they do not demonstrate the malformed out-of-range timestamp path is fixed.",
+          "The contract_tests listed reference tests/test_itsdangerous/test_timed_regression.py, but no such file exists in the diff or workspace paths."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "TimestampSigner.unsign raises BadTimeSignature (not datetime ValueError) when an invalid signature decodes to a timestamp outside datetime's supported year range.",
+            "satisfied": true,
+            "evidence": "timed.py now wraps ts_dt = self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature('Malformed timestamp', payload=value, date_signed=None) from None on the sig_error path."
+          },
+          {
+            "requirement": "The BadTimeSignature raised for a malformed timestamp carries the original payload.",
+            "satisfied": true,
+            "evidence": "The new raise passes payload=value, where value is the split payload before the timestamp separator."
+          },
+          {
+            "requirement": "The BadTimeSignature raised for a malformed timestamp has date_signed=None.",
+            "satisfied": true,
+            "evidence": "The new raise explicitly passes date_signed=None."
+          },
+          {
+            "requirement": "Valid TimestampSigner roundtrips continue to return the original value unchanged.",
+            "satisfied": true,
+            "evidence": "The change only affects the sig_error is not None branch; the valid path (ts_int is not None, sig_error None) is untouched and returns value."
+          },
+          {
+            "requirement": "Ordinary invalid signatures with decodable timestamps continue to populate date_signed metadata as before.",
+            "satisfied": true,
+            "evidence": "When timestamp_to_datetime succeeds, ts_dt is set and the existing raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt) still executes."
+          },
+          {
+            "requirement": "Expiry behavior is preserved: valid but expired signatures still raise SignatureExpired with the expected date_signed.",
+            "satisfied": true,
+            "evidence": "The max_age branch is unchanged and still raises SignatureExpired with date_signed=self.timestamp_to_datetime(ts_int)."
+          },
+          {
+            "requirement": "The public timed serializer retains its BadSignature-family error contract and does not leak ValueError for malformed timestamps.",
+            "satisfied": true,
+            "evidence": "TimedSerializer.loads catches BadSignature (BadTimeSignature is a subclass) and re-raises the last exception; since unsign now raises BadTimeSignature instead of ValueError, the serializer surfaces a BadSignature-family error."
+          },
+          {
+            "requirement": "New regression tests are added without modifying existing tests.",
+            "satisfied": false,
+            "evidence": "The diff contains no test file changes. regression_evidence reports status 'no_new_tests', generated_tests [], fail_to_pass_tests [], fail_to_pass_count 0. No tests/test_itsdangerous/test_timed_regression.py exists in workspace_paths."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "ae4a0a27-dd5a-4ea1-abb7-cd2d7e65ecd5",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "5e408a82-ace0-485e-9de1-e6bfd69122a7",
+    "variant": "quality",
+    "case_id": "slugify-uppercase-translations",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": true,
+        "summary": "The fix in slugify/special.py removes the early `return char_list` from inside the loop and iterates over a snapshot (`list(char_list)`), so every original pair now receives an uppercase variant. The snapshot iteration also prevents the newly inserted entries from being re-processed, which preserves the existing capitalization convention and avoids duplicates. Regression evidence is solid: the six fail_to_pass tests failed on the original source and pass on the candidate, and the full suite (106 tests) passes. New tests were added in tests/test_uppercase_translations.py without editing test.py.",
+        "concerns": [
+          "The new test test_pre_translation_uppercase_used_by_slugify iterates PRE_TRANSLATIONS and asserts slugify(char, replacements=[(char, xlate)]) == xlate.lower(); this is a somewhat weak agreement check because it supplies the replacement explicitly rather than relying on PRE_TRANSLATIONS being consumed by slugify. However, the issue's stated contract is that PRE_TRANSLATIONS and replacement-enabled slugify agree, and this test does exercise that agreement for every uppercase entry.",
+          "The candidate's diff only touches slugify/special.py and adds the new test file; no changes were made to slugify/slugify.py or __init__.py, which is consistent with the issue since the bug was localized to add_uppercase_char."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "add_uppercase_char processes every original pair in PRE_TRANSLATIONS, not just the first.",
+            "satisfied": true,
+            "evidence": "F001 shows the loop now iterates over `list(char_list)` with no early return inside the loop. T004 (test_processes_every_original_pair) passes on the candidate and failed on baseline (baseline_result shows AssertionError: ('B', 'Y') not found)."
+          },
+          {
+            "requirement": "Uppercase variants exist for later German and other non-Latin characters after the first pair.",
+            "satisfied": true,
+            "evidence": "T006 (test_german_uppercase_variants_present) and T009 (test_cyrillic_uppercase_variants_present) pass on candidate; both failed on baseline with ('Ö','Oe') and ('Я','Ya') not found respectively. T010 (test_greek_uppercase_variants_present) also passes."
+          },
+          {
+            "requirement": "Existing uppercase entries are retained and not duplicated.",
+            "satisfied": true,
+            "evidence": "T001 (test_existing_uppercase_entries_retained_without_duplicates) passes; T012 (test_no_duplicate_entries) passes, asserting len(PRE_TRANSLATIONS) == len(set(PRE_TRANSLATIONS)). The `if upper_dict not in char_list` guard in F001 preserves this."
+          },
+          {
+            "requirement": "The capitalization convention used for uppercase variants is unchanged.",
+            "satisfied": true,
+            "evidence": "F001 still uses `char.upper(), xlate.capitalize()`. T008 (test_capitalization_convention_unchanged) passes on candidate and failed on baseline."
+          },
+          {
+            "requirement": "PRE_TRANSLATIONS and replacement-enabled slugify agree on translations.",
+            "satisfied": true,
+            "evidence": "T002 (test_pre_translations_contains_later_uppercase_variants) passes; T007 (test_pre_translation_uppercase_used_by_slugify) passes; T005 (test_german_uppercase_replacement) passes."
+          },
+          {
+            "requirement": "Ordinary slugify and smart_truncate behavior is preserved.",
+            "satisfied": true,
+            "evidence": "T011 (test_ordinary_slugify_unchanged) and T014 (test_smart_truncate_unchanged) pass. The diff does not modify slugify.py or smart_truncate."
+          },
+          {
+            "requirement": "New regression tests are added without editing test.py.",
+            "satisfied": true,
+            "evidence": "F002 shows the new file tests/test_uppercase_translations.py; the diff adds only this file and modifies slugify/special.py. test.py is not in the diff."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "86fc4f4e-f61f-4f91-bda1-f9a5476e59c5",
+        "candidate_number": 1
+      }
+    ]
+  },
+  {
+    "task_id": "63051762-8820-4f3b-8217-6ee9723b1a4e",
+    "variant": "legacy",
+    "case_id": "dotenv-empty-comment",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": false,
+        "summary": "The diff modifies src/dotenv/parser.py to handle `KEY= # comment` by checking whether the equal-sign regex consumed trailing whitespace and the next char is `#`. However, the change is incomplete and likely incorrect for the stated contracts, and no new regression tests were added (regression_evidence shows no_new_tests, fail_to_pass_count 0). The existing test suite passing (238 passed) does not exercise the new behavior, so there is no evidence the fix works.",
+        "concerns": [
+          "No new regression tests were added. regression_evidence reports status 'no_new_tests' with empty generated_tests and fail_to_pass_tests, so none of the acceptance contracts are demonstrated by tests. The issue explicitly requires adding NEW regression tests without editing original tests.",
+          "The fix relies on `_equal_sign = make_regex(r\"(=[^\\S\\r\\n]*)\")` capturing trailing whitespace. For `KEY= # comment`, equal_sign would be '= ' (not '='), so the branch triggers and value=''. But for `KEY=#literal`, equal_sign is '=' and peek is '#', so parse_value is called; parse_value sees '#' and calls parse_unquoted_value, which reads '#literal' and applies `re.sub(r\"\\s+#.*\", \"\", part).rstrip()` -> '#literal'. That part seems consistent with the contract.",
+          "For `KEY=\\t# comment`, equal_sign captures '=\\t', branch triggers, value=''. Consistent.",
+          "However, the branch condition `equal_sign != \"=\"` is fragile: it conflates 'whitespace after equals' with 'empty value followed by comment'. Consider `KEY=   value` (spaces then a non-comment value): equal_sign='   ' (whitespace), peek is 'v' not '#', so parse_value is called and works. OK. But consider `KEY= #comment` where the comment has no space after '#': equal_sign=' ', peek='#', value='' — matches contract. Consider `KEY= #` alone: value='' — reasonable.",
+          "Potential regression: `KEY= # comment` previously (per issue) yielded '# comment' as value; now ''. But what about a value that legitimately starts with '#' after whitespace, e.g. `KEY= #notacomment`? The issue says hashes immediately after `=` stay literal (`KEY=#literal`), but does not explicitly say `KEY= #literal` (with space) should be literal. The chosen behavior treats it as a comment. This matches the issue's stated intent ('unquoted empty value followed by whitespace and an inline comment'), but the contract list only names `KEY=#literal` (no space). Ambiguity remains but the implementation choice is defensible.",
+          "No evidence of running the new tests on original source vs candidate (baseline_result null, fail_to_pass_tests empty). Cannot confirm the bug existed or that the fix resolves it.",
+          "The diff does not add any test file, so the 'New regression tests are added without editing any existing test files' contract is unsatisfied.",
+          "The change introduces a type annotation `value: Optional[str] = \"\"` inside a branch and `value = parse_value(reader)` in else; parse_value returns str, so Optional is fine, but the annotation placement is unusual (annotated in one branch only). Not a correctness issue.",
+          "Edge case: `KEY= \\t # comment` (multiple whitespace) — equal_sign captures all whitespace, peek='#', value=''. Fine.",
+          "Edge case: `KEY=#` (hash immediately after equals, no text) — equal_sign='=', peek='#', parse_value -> parse_unquoted_value reads '#' -> re.sub no match -> '#'. So value='#'. Is that intended? Issue says `KEY=#literal` literal; `KEY=#` presumably literal '#'. Consistent.",
+          "Edge case: `KEY= # comment` followed by CRLF — equal_sign=' ', peek='#', value='', then read_regex(_comment) consumes ' # comment', then _end_of_line consumes CRLF. Should work.",
+          "The fix does not handle the case where the value is empty and there is whitespace but the next char is not '#' — that's fine, parse_value handles it.",
+          "Concern: the condition uses `equal_sign != \"=\"` to detect whitespace. But `_equal_sign` regex is `(=[^\\S\\r\\n]*)`, so equal_sign is '=' plus any non-newline whitespace. If there is no whitespace, equal_sign == '='. So `equal_sign != \"=\"` correctly means whitespace was present. Logic is sound for the stated cases.",
+          "Overall: implementation appears to satisfy the parser-level contracts for the named examples, but there are zero added tests and zero regression evidence, so the 'add NEW regression tests' contract and all test-backed contracts are unverified. Per instructions, missing test evidence means I cannot approve."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "`KEY= # comment` parses to value '' (empty string), not '# comment'.",
+            "satisfied": false,
+            "evidence": "Diff logic: equal_sign captures '= ' (whitespace), peek(1)=='#', so value=''. Code path appears correct, but no test was added and regression_evidence shows no_new_tests, so this is unverified by execution. No fail_to_pass test exists."
+          },
+          {
+            "requirement": "`KEY=\\t# comment` (tab-separated inline comment) parses to value '' (empty string).",
+            "satisfied": false,
+            "evidence": "Same branch as above; equal_sign captures '=\\t', peek=='#', value=''. No test added; unverified."
+          },
+          {
+            "requirement": "`KEY=#literal` parses to value '#literal' (hash immediately after `=` is literal).",
+            "satisfied": false,
+            "evidence": "equal_sign=='=', so else branch calls parse_value -> parse_unquoted_value reads '#literal', re.sub(r'\\s+#.*','') does not match, rstrip -> '#literal'. Logic appears correct but no test added; unverified."
+          },
+          {
+            "requirement": "`KEY=value#notcomment` parses to value 'value#notcomment' (hash inside nonempty unquoted value is literal).",
+            "satisfied": false,
+            "evidence": "parse_unquoted_value regex `\\s+#.*` requires whitespace before '#', so 'value#notcomment' is preserved. No test added; unverified."
+          },
+          {
+            "requirement": "Quoted values containing `#` (e.g. `KEY=\"a#b\"` and `KEY='a#b'`) preserve the hash literally.",
+            "satisfied": false,
+            "evidence": "parse_value handles quotes before unquoted path; quoted regexes capture content including '#'. No test added; unverified."
+          },
+          {
+            "requirement": "Keys without `=` still parse to None.",
+            "satisfied": false,
+            "evidence": "Unchanged code path: if peek != '=', value=None. No new test added; existing tests may cover but not confirmed in provided evidence."
+          },
+          {
+            "requirement": "Adjacent lines parse independently and correctly.",
+            "satisfied": false,
+            "evidence": "No new test added; unverified."
+          },
+          {
+            "requirement": "`export KEY=value` bindings still parse correctly.",
+            "satisfied": false,
+            "evidence": "Unchanged export handling; no new test added; unverified."
+          },
+          {
+            "requirement": "CRLF line endings are handled correctly.",
+            "satisfied": false,
+            "evidence": "No new test added; unverified."
+          },
+          {
+            "requirement": "dotenv_values stream parsing behavior is preserved.",
+            "satisfied": false,
+            "evidence": "No new test added; unverified."
+          },
+          {
+            "requirement": "load_dotenv override behavior is preserved.",
+            "satisfied": false,
+            "evidence": "No new test added; unverified."
+          },
+          {
+            "requirement": "New regression tests are added without editing any existing test files.",
+            "satisfied": false,
+            "evidence": "regression_evidence status 'no_new_tests', generated_tests empty, fail_to_pass_count 0. The diff contains only src/dotenv/parser.py changes; no test file added."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "191dad91-c195-439f-a3ed-5996bf9ccda6",
+        "candidate_number": 1
+      },
+      {
+        "approved": true,
+        "summary": "The candidate fixes the parser so that an unquoted empty value followed by whitespace and an inline comment yields an empty string, while preserving literal hashes immediately after `=` and inside nonempty/quoted values. The diff is minimal and confined to src/dotenv/parser.py, plus a new regression test file. Regression evidence shows the 8 new tests fail on the original source and pass on the candidate, and the full suite passes (251 passed, 1 skipped). All acceptance contracts are covered by concrete tests and the implementation logic is consistent with the issue requirements.",
+        "concerns": [
+          "The fix relies on `_equal_sign` capturing the whitespace after `=` (regex `(=[^\\S\\r\\n]*)`), so `equal_sign != \"=\"` detects whitespace. This is correct for the stated cases but is somewhat implicit; a comment explains it.",
+          "The new test file uses `import os` inside a function, which is stylistically minor but not a correctness issue.",
+          "No test explicitly covers `KEY=#literal` with a trailing comment or `KEY= #comment` without space after hash, but the core contracts are covered."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "`KEY= # comment` parses to value '' (empty string), not '# comment'.",
+            "satisfied": true,
+            "evidence": "test_empty_value_with_space_and_inline_comment_is_empty_string asserts bindings[0].value == \"\" and isinstance(..., str). Baseline failed with '# comment', candidate passes."
+          },
+          {
+            "requirement": "`KEY=\\t# comment` (tab-separated inline comment) parses to value '' (empty string).",
+            "satisfied": true,
+            "evidence": "test_empty_value_with_tab_and_inline_comment_is_empty_string asserts bindings[0].value == \"\". Baseline failed with '# comment', candidate passes."
+          },
+          {
+            "requirement": "`KEY=#literal` parses to value '#literal' (hash immediately after `=` is literal).",
+            "satisfied": true,
+            "evidence": "test_hash_immediately_after_equals_is_literal asserts bindings[0].value == \"#literal\". The parser only treats `#` as comment when `equal_sign != \"=\"` (i.e., whitespace present)."
+          },
+          {
+            "requirement": "`KEY=value#notcomment` parses to value 'value#notcomment' (hash inside nonempty unquoted value is literal).",
+            "satisfied": true,
+            "evidence": "test_hash_inside_nonempty_unquoted_value_is_literal asserts bindings[0].value == \"value#notcomment\". parse_unquoted_value only strips `\\s+#.*`, so a hash not preceded by whitespace remains literal."
+          },
+          {
+            "requirement": "Quoted values containing `#` (e.g. `KEY=\"a#b\"` and `KEY='a#b'`) preserve the hash literally.",
+            "satisfied": true,
+            "evidence": "test_hash_inside_double_quoted_value_is_literal asserts \"a#b\"; test_hash_inside_single_quoted_value_is_literal asserts \"a#b\". Quoted parsing paths are unchanged."
+          },
+          {
+            "requirement": "Keys without `=` still parse to None.",
+            "satisfied": true,
+            "evidence": "test_key_without_equals_is_none asserts bindings[0].value is None. The else branch `value = None` is unchanged."
+          },
+          {
+            "requirement": "Adjacent lines parse independently and correctly.",
+            "satisfied": true,
+            "evidence": "test_adjacent_lines_parse_independently asserts exact list [(\"A\", \"\"), (\"B\", \"#lit\"), (\"C\", \"value#x\")]. Baseline failed, candidate passes."
+          },
+          {
+            "requirement": "`export KEY=value` bindings still parse correctly.",
+            "satisfied": true,
+            "evidence": "test_export_binding_with_empty_comment_value asserts key == \"KEY\" and value == \"\" for `export KEY= # comment`. Baseline failed, candidate passes."
+          },
+          {
+            "requirement": "CRLF line endings are handled correctly.",
+            "satisfied": true,
+            "evidence": "test_crlf_empty_comment_value asserts exact tuples for CRLF input. Baseline failed, candidate passes."
+          },
+          {
+            "requirement": "dotenv_values stream parsing behavior is preserved.",
+            "satisfied": true,
+            "evidence": "test_dotenv_values_stream_parsing_empty_comment_value asserts values[\"KEY\"] == \"\" and values[\"OTHER\"] == \"#literal\". Baseline failed, candidate passes."
+          },
+          {
+            "requirement": "load_dotenv override behavior is preserved.",
+            "satisfied": true,
+            "evidence": "test_load_dotenv_override_behavior_preserved asserts os.environ[\"KEY\"] == \"from-env\" with override=False and == \"\" with override=True. Baseline failed, candidate passes."
+          },
+          {
+            "requirement": "New regression tests are added without editing any existing test files.",
+            "satisfied": true,
+            "evidence": "Diff adds only tests/test_parser_empty_comment.py; no existing test file is modified. Full suite passes 251 passed, 1 skipped."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "03c3b6e3-ca56-4473-9193-240d9322802c",
+        "candidate_number": 2
+      }
+    ]
+  },
+  {
+    "task_id": "bc8d75f9-c575-4039-af31-8e0fdbaa8cb3",
+    "variant": "legacy",
+    "case_id": "jsonpointer-assignment-errors",
+    "mode": "multi_full",
+    "repeat": 0,
+    "reviews": [
+      {
+        "approved": false,
+        "summary": "The diff converts TypeError/IndexError from the final item assignment into JsonPointerException, which addresses the core exception-conversion contract for strings, tuple elements, and out-of-range list indices. However, the issue explicitly requires adding NEW regression tests, and the regression_evidence shows status 'no_new_tests' with an empty generated_tests list and no fail_to_pass tests. The 23 passing tests are the pre-existing suite (tests.py + tests/test_original_collection.py), which does not exercise the new invalid-target behavior. Without added tests, the required regression coverage is missing and the fix is unverified against the stated contracts.",
+        "concerns": [
+          "No new regression tests were added; regression_evidence reports 'no_new_tests' with empty generated_tests and fail_to_pass_tests, so the invalid-target behavior is not exercised by any test.",
+          "The 23 passing tests correspond to the existing suite only; they do not cover string/tuple/out-of-range assignment raising JsonPointerException, so passing them is not evidence for the issue's core contracts.",
+          "No baseline comparison on original source is available to demonstrate the bug existed and is now fixed.",
+          "The issue explicitly requires 'Add NEW regression tests; existing tests stay unchanged', which is unmet."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "JsonPointer.set on a string target (e.g. pointer '/0' into 'abc') raises JsonPointerException instead of TypeError.",
+            "satisfied": true,
+            "evidence": "jsonpointer.py set(): parent[part] = value is wrapped in try/except (TypeError, IndexError) raising JsonPointerException. For doc='abc', to_last returns ('abc', 0); 'abc'[0]='x' raises TypeError, now converted. No test exercises this, but the code path is correct."
+          },
+          {
+            "requirement": "JsonPointer.set assigning into an immutable tuple element raises JsonPointerException instead of TypeError.",
+            "satisfied": true,
+            "evidence": "For doc=('a','b'), to_last returns (('a','b'), 0); tuple item assignment raises TypeError, caught and re-raised as JsonPointerException. Code path correct; untested."
+          },
+          {
+            "requirement": "JsonPointer.set with an out-of-range list index raises JsonPointerException instead of IndexError.",
+            "satisfied": true,
+            "evidence": "For doc=[0,1,2] and pointer '/10', get_part returns int 10; parent[10]=value raises IndexError, caught and re-raised as JsonPointerException. Code path correct; untested."
+          },
+          {
+            "requirement": "On any failed assignment, the original document is not mutated (inplace=True leaves it unchanged; inplace=False leaves the source unchanged).",
+            "satisfied": true,
+            "evidence": "For inplace=True, the failing assignment raises before any mutation of the target container (str/tuple are immutable; list index assignment out of range does not mutate). For inplace=False, doc is deep-copied and the copy is discarded on exception, leaving the source unchanged. No dedicated test asserts this."
+          },
+          {
+            "requirement": "set_pointer propagates JsonPointerException for the same invalid targets.",
+            "satisfied": true,
+            "evidence": "set_pointer constructs JsonPointer(pointer) and calls pointer.set(doc, value, inplace); the converted JsonPointerException propagates. Untested."
+          },
+          {
+            "requirement": "Valid mapping updates (dict key assignment) still succeed and mutate as before.",
+            "satisfied": true,
+            "evidence": "The try/except only wraps the assignment; successful dict assignment is unaffected. Existing SetTests.test_set covers valid mapping updates and passes."
+          },
+          {
+            "requirement": "Valid list index updates still succeed and mutate as before.",
+            "satisfied": true,
+            "evidence": "Existing SetTests.test_set exercises set_pointer(doc, '/foo/1', 'cod') and passes; the change does not alter successful list index assignment."
+          },
+          {
+            "requirement": "List append using '-' still appends the value.",
+            "satisfied": true,
+            "evidence": "The '-' branch (isinstance(parent, Sequence) and part == '-': parent.append(value)) is unchanged and covered by existing SetTests.test_set, which passes."
+          },
+          {
+            "requirement": "inplace=False returns a modified copy and does not mutate the original document.",
+            "satisfied": true,
+            "evidence": "copy.deepcopy(doc) path is unchanged; existing SetTests.test_set verifies newdoc differs and original doc equals origdoc, and passes."
+          },
+          {
+            "requirement": "Root replacement (empty pointer) still replaces the whole document.",
+            "satisfied": true,
+            "evidence": "len(self.parts)==0 branch unchanged: inplace=False returns value; inplace=True raises JsonPointerException. Covered by existing SetTests.test_set, which passes."
+          },
+          {
+            "requirement": "Existing tests remain unchanged and continue to pass.",
+            "satisfied": true,
+            "evidence": "test_result shows 23 passed, exit_code 0; diff touches only jsonpointer.py, so tests.py and tests/test_original_collection.py are unchanged."
+          },
+          {
+            "requirement": "Add NEW regression tests covering the invalid-target and preserved-behavior contracts.",
+            "satisfied": false,
+            "evidence": "regression_evidence status is 'no_new_tests' with generated_tests=[] and fail_to_pass_tests=[]. No new test file (e.g. tests/test_set_invalid_targets.py) exists in the diff or workspace paths. The issue explicitly requires adding new regression tests, and none were added."
+          }
+        ],
+        "attempt": 1,
+        "candidate_id": "9534defb-16ce-4041-945c-3e8a91c21052",
+        "candidate_number": 1
+      },
+      {
+        "approved": true,
+        "summary": "The candidate wraps the final item assignment in JsonPointer.set with a try/except converting TypeError and IndexError into JsonPointerException. This addresses all three invalid-target cases (string target, immutable tuple element, out-of-range list index) both for JsonPointer.set and the public set_pointer (which delegates to set). The '-' append branch is untouched, root replacement and inplace=False copy semantics are preserved, and no mutation occurs on failure because the exception is raised at the assignment itself (for inplace=False the deepcopy is discarded). Regression evidence shows the 11 new tests fail on the original source with TypeError/IndexError and pass on the candidate, while the existing 28 tests continue to pass. New tests are in a new file; existing tests are unchanged.",
+        "concerns": [
+          "The except clause catches TypeError/IndexError from the assignment only; this is correct for the stated cases, but a custom __setitem__ raising TypeError for unrelated reasons would also be converted — acceptable given the issue scope.",
+          "The error message uses type(parent) which is informative but not asserted by tests; not a contract violation."
+        ],
+        "contract_checks": [
+          {
+            "requirement": "JsonPointer.set on a string target (pointer '/0' into 'abc') raises JsonPointerException instead of TypeError.",
+            "satisfied": true,
+            "evidence": "jsonpointer.py set() now wraps parent[part] = value in try/except (TypeError, IndexError) -> raise JsonPointerException. Test test_set_string_target_raises (doc='abc', ptr '/0', value 'x') passed on candidate; baseline showed TypeError: 'str' object does not support item assignment."
+          },
+          {
+            "requirement": "JsonPointer.set assigning into an immutable tuple element raises JsonPointerException instead of TypeError.",
+            "satisfied": true,
+            "evidence": "Same try/except covers tuple assignment. test_set_tuple_element_raises (doc=('a','b'), ptr '/0', value 'x') passed on candidate; baseline showed TypeError: 'tuple' object does not support item assignment."
+          },
+          {
+            "requirement": "JsonPointer.set with an out-of-range list index raises JsonPointerException instead of IndexError.",
+            "satisfied": true,
+            "evidence": "IndexError is caught and converted. test_set_out_of_range_list_index_raises (doc=[0,1,2], ptr '/10', value 9) passed on candidate; baseline showed IndexError: list assignment index out of range."
+          },
+          {
+            "requirement": "On any failed assignment, the original document is not mutated (inplace=True leaves it unchanged; inplace=False leaves the source unchanged).",
+            "satisfied": true,
+            "evidence": "The exception is raised by the failing assignment itself before any successful mutation; for inplace=False the deepcopy is discarded. test_no_mutation_on_failure_inplace_true and test_no_mutation_on_failure_inplace_false assert doc == origdoc after failed '/a/10' and '/b/0' assignments; both passed on candidate and failed on baseline."
+          },
+          {
+            "requirement": "set_pointer propagates JsonPointerException for the same invalid targets.",
+            "satisfied": true,
+            "evidence": "set_pointer calls pointer.set(doc, value, inplace), so the converted exception propagates. test_set_pointer_string_target_raises, test_set_pointer_tuple_element_raises, test_set_pointer_out_of_range_list_index_raises all passed on candidate and failed on baseline."
+          },
+          {
+            "requirement": "Valid mapping updates (dict key assignment) still succeed and mutate as before.",
+            "satisfied": true,
+            "evidence": "test_valid_mapping_update asserts doc['foo']['bar'] == 2 and result['foo']['bar'] == 2; passed on candidate (and on baseline, confirming preserved behavior)."
+          },
+          {
+            "requirement": "Valid list index updates still succeed and mutate as before.",
+            "satisfied": true,
+            "evidence": "test_valid_list_index_update asserts doc['foo'][1] == 'cod' and result['foo'][1] == 'cod'; passed on candidate."
+          },
+          {
+            "requirement": "List append using '-' still appends the value.",
+            "satisfied": true,
+            "evidence": "The '-' branch (isinstance(parent, Sequence) and part == '-': parent.append(value)) is unchanged. test_list_append_with_dash asserts doc['foo'] == ['bar','baz','xyz'] and result['foo'] == ['bar','baz','xyz']; passed on candidate."
+          },
+          {
+            "requirement": "inplace=False returns a modified copy and does not mutate the original document.",
+            "satisfied": true,
+            "evidence": "test_inplace_false_returns_copy asserts newdoc['foo'][1] == 'cod', doc == origdoc, and newdoc is not doc; passed on candidate. The deepcopy path is unchanged."
+          },
+          {
+            "requirement": "Root replacement (empty pointer) still replaces the whole document.",
+            "satisfied": true,
+            "evidence": "test_root_replacement asserts set_pointer(doc, '', 9, inplace=False) == 9, doc unchanged, and inplace=True raises JsonPointerException; passed on candidate. The len(self.parts) == 0 branch is unchanged."
+          },
+          {
+            "requirement": "Existing tests remain unchanged and continue to pass.",
+            "satisfied": true,
+            "evidence": "Diff modifies only jsonpointer.py and adds tests/test_set_invalid_targets.py; tests.py and tests/test_original_collection.py are untouched. Full run reports 39 passed, 0 failed."
+          }
+        ],
+        "attempt": 2,
+        "candidate_id": "aca364d1-671b-4858-aab7-d60de4f3d5c5",
+        "candidate_number": 2
+      }
+    ]
+  }
+]

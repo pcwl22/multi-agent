@@ -1,0 +1,23 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,18 @@
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {}
++    for key, value in defaults.items():
++        if isinstance(value, dict):
++            result[key] = merge_config(value, {})
++        else:
++            result[key] = value
++    for key, value in overrides.items():
++        if (
++            isinstance(value, dict)
++            and isinstance(result.get(key), dict)
++        ):
++            result[key] = merge_config(result[key], value)
++        elif isinstance(value, dict):
++            result[key] = merge_config(value, {})
++        else:
++            result[key] = value
+     return result

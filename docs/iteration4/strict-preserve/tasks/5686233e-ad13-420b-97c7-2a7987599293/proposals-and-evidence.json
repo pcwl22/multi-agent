@@ -1,0 +1,160 @@
+{
+  "patches": [
+    {
+      "rationale": "The current export_rows naively joins cells with commas and newlines, which breaks for cells containing commas, quotes, or newlines. Replace it with csv.writer using lineterminator='\\n' and default QUOTE_MINIMAL so special characters are quoted/escaped per RFC-4180, while empty input still yields '' and simple rows are unchanged. Unicode is preserved by writing to a StringIO with newline='' and no encoding coercion. legacy_examples.py is left untouched. New regression tests in tests/test_exporter_csv.py cover each acceptance contract with exact input expressions and result types.",
+      "edits": [
+        {
+          "path": "exporter.py",
+          "old": "def export_rows(rows):\n    return \"\".join(\",\".join(str(cell) for cell in row) + \"\\n\" for row in rows)",
+          "new": "import csv\nimport io\n\n\ndef export_rows(rows):\n    buffer = io.StringIO(newline=\"\")\n    writer = csv.writer(buffer, lineterminator=\"\\n\")\n    for row in rows:\n        writer.writerow([str(cell) for cell in row])\n    return buffer.getvalue()"
+        },
+        {
+          "path": "tests/test_exporter_csv.py",
+          "old": "",
+          "new": "import csv\nimport io\n\nfrom exporter import export_rows\n\n\ndef _round_trip(text):\n    return list(csv.reader(io.StringIO(text, newline=\"\")))\n\n\ndef test_returns_string_type():\n    result = export_rows([[\"a\", 1]])\n    assert isinstance(result, str)\n\n\ndef test_empty_input_unchanged():\n    assert export_rows([]) == \"\"\n\n\ndef test_simple_rows_unchanged():\n    assert export_rows([[\"a\", 1], [\"b\", 2]]) == \"a,1\\nb,2\\n\"\n\n\ndef test_lf_line_endings_only():\n    result = export_rows([[\"a\", 1], [\"b\", 2]])\n    assert \"\\r\" not in result\n    assert result.endswith(\"\\n\")\n\n\ndef test_comma_cell_is_quoted_and_round_trips():\n    rows = [[\"a,b\", \"c\"]]\n    result = export_rows(rows)\n    assert result == '\"a,b\",c\\n'\n    assert _round_trip(result) == [['a,b', 'c']]\n\n\ndef test_quote_cell_is_doubled_and_round_trips():\n    rows = [['he said \"hi\"', \"x\"]]\n    result = export_rows(rows)\n    assert result == '\"he said \"\"hi\"\"\",x\\n'\n    assert _round_trip(result) == [['he said \"hi\"', 'x']]\n\n\ndef test_newline_cell_is_quoted_and_round_trips():\n    rows = [[\"line1\\nline2\", \"z\"]]\n    result = export_rows(rows)\n    assert result == '\"line1\\nline2\",z\\n'\n    assert _round_trip(result) == [['line1\\nline2', 'z']]\n\n\ndef test_unicode_preserved():\n    rows = [[\"caf\\u00e9\", \"\\u4f60\\u597d\", \"\\U0001f600\"]]\n    result = export_rows(rows)\n    assert \"caf\\u00e9\" in result\n    assert \"\\u4f60\\u597d\" in result\n    assert \"\\U0001f600\" in result\n    assert _round_trip(result) == [['caf\\u00e9', '\\u4f60\\u597d', '\\U0001f600']]\n\n\ndef test_round_trip_mixed_rows():\n    rows = [\n        [\"plain\", 1],\n        [\"with,comma\", 2],\n        ['with\"quote', 3],\n        [\"with\\nnewline\", 4],\n        [\"\\u00e9\\u4f60\", 5],\n    ]\n    result = export_rows(rows)\n    expected = [\n        [\"plain\", \"1\"],\n        [\"with,comma\", \"2\"],\n        ['with\"quote', \"3\"],\n        [\"with\\nnewline\", \"4\"],\n        [\"\\u00e9\\u4f60\", \"5\"],\n    ]\n    assert _round_trip(result) == expected\n\n\ndef test_legacy_examples_unused():\n    import legacy_examples\n\n    assert not hasattr(legacy_examples, \"export_rows\")\n"
+        }
+      ],
+      "contract_tests": [
+        "export_rows returns a string of comma-delimited CSV. -> test_returns_string_type asserts isinstance(export_rows([[\"a\", 1]]), str).",
+        "Cells containing commas are quoted so csv.reader returns the original cell. -> test_comma_cell_is_quoted_and_round_trips asserts export_rows([[\"a,b\", \"c\"]]) == '\"a,b\",c\\n' and csv.reader round-trip == [['a,b', 'c']].",
+        "Cells containing double quotes are escaped by doubling and round-trip via csv.reader. -> test_quote_cell_is_doubled_and_round_trips asserts export_rows([['he said \"hi\"', \"x\"]]) == '\"he said \"\"hi\"\"\",x\\n' and round-trip == [['he said \"hi\"', 'x']].",
+        "Cells containing newlines are quoted and round-trip via csv.reader. -> test_newline_cell_is_quoted_and_round_trips asserts export_rows([[\"line1\\nline2\", \"z\"]]) == '\"line1\\nline2\",z\\n' and round-trip == [['line1\\nline2', 'z']].",
+        "Unicode characters in cells are preserved exactly. -> test_unicode_preserved asserts 'caf\\u00e9', '\\u4f60\\u597d', '\\U0001f600' appear in output and round-trip equals the original cells.",
+        "Empty input produces the same output as before the change. -> test_empty_input_unchanged asserts export_rows([]) == \"\".",
+        "Simple rows without special characters produce the same output as before the change. -> test_simple_rows_unchanged asserts export_rows([[\"a\", 1], [\"b\", 2]]) == \"a,1\\nb,2\\n\".",
+        "Output uses LF line endings, not CRLF. -> test_lf_line_endings_only asserts '\\r' not in export_rows([[\"a\", 1], [\"b\", 2]]) and result.endswith('\\n').",
+        "csv.reader can parse the output back to the original rows. -> test_round_trip_mixed_rows asserts csv.reader round-trip of mixed special-character rows equals the stringified originals.",
+        "legacy_examples remains unused and unmodified. -> test_legacy_examples_unused asserts legacy_examples has no export_rows attribute (no production coupling)."
+      ],
+      "changed_files": [
+        "exporter.py",
+        "tests/test_exporter_csv.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "...........                                                              [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n11 passed in 0.08s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 11,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9221674000000348,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_returns_string_type",
+          "classname": "tests.test_exporter_csv",
+          "line": 11,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_empty_input_unchanged",
+          "classname": "tests.test_exporter_csv",
+          "line": 16,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_simple_rows_unchanged",
+          "classname": "tests.test_exporter_csv",
+          "line": 20,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_lf_line_endings_only",
+          "classname": "tests.test_exporter_csv",
+          "line": 24,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_comma_cell_is_quoted_and_round_trips",
+          "classname": "tests.test_exporter_csv",
+          "line": 30,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_quote_cell_is_doubled_and_round_trips",
+          "classname": "tests.test_exporter_csv",
+          "line": 37,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_newline_cell_is_quoted_and_round_trips",
+          "classname": "tests.test_exporter_csv",
+          "line": 44,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_unicode_preserved",
+          "classname": "tests.test_exporter_csv",
+          "line": 51,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_round_trip_mixed_rows",
+          "classname": "tests.test_exporter_csv",
+          "line": 60,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_exporter_csv.py",
+          "name": "test_legacy_examples_unused",
+          "classname": "tests.test_exporter_csv",
+          "line": 79,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "389f5e7a0f468a426d9895af8e3017e9e6c51f42885a23802e24cddf2ea9b89d"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

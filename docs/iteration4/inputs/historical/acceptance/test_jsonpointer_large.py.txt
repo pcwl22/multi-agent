@@ -1,0 +1,39 @@
+import sys
+import pytest
+from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_pointer
+
+@pytest.fixture
+def token():
+    assert sys.get_int_max_str_digits() > 0
+    return "7" * (sys.get_int_max_str_digits() + 7)
+
+def test_resolve_normalizes_error(token):
+    with pytest.raises(JsonPointerException):
+        resolve_pointer(["x"], "/" + token)
+
+def test_default_identity_through_nested_public_api(token):
+    sentinel = object()
+    assert resolve_pointer({"data": ["x"]}, "/data/" + token, sentinel) is sentinel
+
+def test_to_last_normalizes_error(token):
+    with pytest.raises(JsonPointerException):
+        JsonPointer("/" + token).to_last(["x"])
+
+@pytest.mark.parametrize("inplace", [True, False])
+def test_set_does_not_mutate_on_error(token, inplace):
+    document = {"data": ["x"]}
+    with pytest.raises(JsonPointerException):
+        set_pointer(document, "/data/" + token, "new", inplace=inplace)
+    assert document == {"data": ["x"]}
+
+def test_long_object_keys_are_still_strings(token):
+    document = {token: "old"}
+    assert resolve_pointer(document, "/" + token) == "old"
+    set_pointer(document, "/" + token, "new")
+    assert document == {token: "new"}
+
+def test_normal_sequence_operations():
+    document = ["a", "b"]
+    assert resolve_pointer(document, "/1") == "b"
+    set_pointer(document, "/-", "c")
+    assert document == ["a", "b", "c"]

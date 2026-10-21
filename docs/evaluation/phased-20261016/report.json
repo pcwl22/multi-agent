@@ -1,0 +1,71 @@
+{
+  "model_mode": "mock",
+  "model_name": null,
+  "dataset_cases": 3,
+  "repeats": 3,
+  "dataset_sha256": "8470dd1023e1bb2e4f4de13ee57d2576a2a564a86d8f3dadf5d5c847b90b051e",
+  "python_version": "3.13.5",
+  "dependencies": {
+    "langgraph": "1.2.9",
+    "langchain-openai": "1.7.2",
+    "mcp": "1.29.0",
+    "pydantic": "2.13.4",
+    "fastapi": "0.136.3"
+  },
+  "configuration": {
+    "context_chars": 24000,
+    "max_retries": 2,
+    "temperature": 0,
+    "sandbox_image": "repopilot-sandbox:local",
+    "model_timeout": 45.0,
+    "test_timeout": 60
+  },
+  "note": "null means no execution evidence. Mock results do not measure LLM capability.",
+  "modes": {
+    "single": {
+      "runs": 9,
+      "acceptance_evaluated": 9,
+      "repair_evaluated": 9,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 3.338743122222392,
+      "average_model_calls": 0,
+      "average_tokens": 0,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 9
+    },
+    "multi_no_review": {
+      "runs": 9,
+      "acceptance_evaluated": 9,
+      "repair_evaluated": 9,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 3.267039155555823,
+      "average_model_calls": 0,
+      "average_tokens": 0,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 9
+    },
+    "multi_full": {
+      "runs": 9,
+      "acceptance_evaluated": 9,
+      "repair_evaluated": 9,
+      "bug_fix_success_rate": 1.0,
+      "test_pass_rate": 1.0,
+      "task_completion_rate": 1.0,
+      "average_execution_seconds": 3.2595077444445146,
+      "average_model_calls": 0,
+      "average_tokens": 0,
+      "average_retries": 0,
+      "blocked_runs": 0,
+      "invalid_case_runs": 0,
+      "token_observed_runs": 9
+    }
+  }
+}

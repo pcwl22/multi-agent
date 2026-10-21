@@ -1,0 +1,286 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug is `dict(reservations)`, which keeps only the last quantity for a repeated SKU. Accumulate all reservation quantities per SKU, clamp at zero, ignore unknown SKUs, and build a fresh result dict without mutating inputs.",
+      "edits": [
+        {
+          "path": "inventory.py",
+          "old": "def available_units(stock, reservations):\n    reserved = dict(reservations)\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}",
+          "new": "def available_units(stock, reservations):\n    reserved = {}\n    for sku, qty in reservations:\n        reserved[sku] = reserved.get(sku, 0) + qty\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}"
+        },
+        {
+          "path": "tests/test_inventory_regression.py",
+          "old": "",
+          "new": "from inventory import available_units\n\n\ndef test_repeated_sku_reservations_are_all_subtracted():\n    stock = {\"A\": 10}\n    reservations = [(\"A\", 2), (\"A\", 3)]\n    result = available_units(stock, reservations)\n    assert result == {\"A\": 5}\n    assert isinstance(result, dict)\n    assert isinstance(result[\"A\"], int)\n\n\ndef test_clamped_at_zero():\n    result = available_units({\"A\": 1}, [(\"A\", 5)])\n    assert result == {\"A\": 0}\n    assert isinstance(result[\"A\"], int)\n\n\ndef test_unknown_sku_reservations_ignored():\n    result = available_units({\"A\": 10}, [(\"B\", 4)])\n    assert result == {\"A\": 10}\n    assert \"B\" not in result\n\n\ndef test_result_keys_match_stock_keys():\n    result = available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"A\", 3), (\"C\", 7)])\n    assert set(result.keys()) == {\"A\", \"B\"}\n    assert result == {\"A\": 5, \"B\": 5}\n\n\ndef test_inputs_are_not_mutated():\n    stock = {\"A\": 10}\n    reservations = [(\"A\", 2), (\"A\", 3)]\n    stock_copy = dict(stock)\n    reservations_copy = list(reservations)\n    available_units(stock, reservations)\n    assert stock == stock_copy\n    assert reservations == reservations_copy\n\n\ndef test_single_reservation_behavior_preserved():\n    result = available_units({\"A\": 10}, [(\"A\", 4)])\n    assert result == {\"A\": 6}\n\n\ndef test_empty_inputs():\n    assert available_units({}, []) == {}\n"
+        }
+      ],
+      "contract_tests": [],
+      "changed_files": [
+        "inventory.py",
+        "tests/test_inventory_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "4501b5bb-1786-4a8e-8cbe-b81bd6ee9931",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.09s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9320913999981713,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_repeated_sku_reservations_are_all_subtracted",
+          "classname": "tests.test_inventory_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_clamped_at_zero",
+          "classname": "tests.test_inventory_regression",
+          "line": 13,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_unknown_sku_reservations_ignored",
+          "classname": "tests.test_inventory_regression",
+          "line": 19,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_result_keys_match_stock_keys",
+          "classname": "tests.test_inventory_regression",
+          "line": 25,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_inputs_are_not_mutated",
+          "classname": "tests.test_inventory_regression",
+          "line": 31,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_single_reservation_behavior_preserved",
+          "classname": "tests.test_inventory_regression",
+          "line": 41,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_inventory_regression.py",
+          "name": "test_empty_inputs",
+          "classname": "tests.test_inventory_regression",
+          "line": 46,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "d77cc9a04aec6033e1b8e517066302c8007920c73d5af531c0430d1819667e39",
+      "candidate_id": "4501b5bb-1786-4a8e-8cbe-b81bd6ee9931",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [
+    {
+      "approved": true,
+      "summary": "The candidate fixes available_units in inventory.py by accumulating reservation quantities per SKU (reserved.get(sku, 0) + qty) instead of dict(reservations), which previously overwrote repeated SKU entries. The literal example {'A':10} with [('A',2),('A',3)] now yields {'A':5}. Clamping via max(0, ...) is preserved, unknown SKUs are ignored (result keys derive from stock.items()), and inputs are not mutated (a new dict is built). Regression tests cover repeated SKUs, clamping, unknown SKUs, key set, input preservation, single-reservation behavior, and empty inputs. Docker regression evidence shows the two repeated-SKU tests failed on original source ({'A':7}) and pass on the candidate, confirming the fix addresses the reported bug.",
+      "concerns": [
+        "The added test file is named tests/test_inventory_regression.py rather than tests/test_inventory.py as suggested in the plan; this is a non-required stylistic difference and does not affect correctness.",
+        "The issue mentions preserving existing semantics; the return type remains a dict of SKU to numeric value, consistent with prior behavior."
+      ],
+      "contract_checks": [
+        {
+          "requirement": "available_units({'A': 10}, [('A', 2), ('A', 3)]) returns {'A': 5} (all reservation quantities for a SKU are subtracted, including repeated SKU entries).",
+          "satisfied": true,
+          "evidence": "inventory.py now accumulates: reserved[sku] = reserved.get(sku, 0) + qty, so reserved['A']=5 and result {'A':5}. Test test_repeated_sku_reservations_are_all_subtracted asserts result == {'A': 5}; regression evidence shows it failed on original source ({'A':7}) and passes on candidate."
+        },
+        {
+          "requirement": "Result values are clamped at zero: available_units({'A': 1}, [('A', 5)]) returns {'A': 0}.",
+          "satisfied": true,
+          "evidence": "max(0, qty - reserved.get(sku, 0)) is retained in the return expression. Test test_clamped_at_zero asserts result == {'A': 0} and passed."
+        },
+        {
+          "requirement": "Reservations for SKUs not present in stock are ignored: available_units({'A': 10}, [('B', 4)]) returns {'A': 10} with no 'B' key added.",
+          "satisfied": true,
+          "evidence": "Result is built from stock.items(), so unknown SKUs never appear. Test test_unknown_sku_reservations_ignored asserts result == {'A': 10} and 'B' not in result; passed."
+        },
+        {
+          "requirement": "The returned mapping contains exactly the SKUs present in the input stock mapping (no extra keys).",
+          "satisfied": true,
+          "evidence": "Return comprehension iterates stock.items(). Test test_result_keys_match_stock_keys asserts set(result.keys()) == {'A','B'} with a 'C' reservation; passed on candidate (failed on original)."
+        },
+        {
+          "requirement": "The input stock mapping is not mutated by the call.",
+          "satisfied": true,
+          "evidence": "No assignment to stock occurs; a new dict is returned. Test test_inputs_are_not_mutated compares stock to a pre-call copy; passed."
+        },
+        {
+          "requirement": "The input reservations sequence is not mutated by the call.",
+          "satisfied": true,
+          "evidence": "The loop only reads reservations tuples; no mutation. Test test_inputs_are_not_mutated compares reservations to a pre-call copy; passed."
+        },
+        {
+          "requirement": "Single-reservation behavior is preserved: available_units({'A': 10}, [('A', 4)]) returns {'A': 6}.",
+          "satisfied": true,
+          "evidence": "Accumulation with a single entry yields the same value as before. Test test_single_reservation_behavior_preserved asserts {'A': 6}; passed. Existing tests/test_contract.py also asserts available_units({'A': 10}, [('A', 2)]) == {'A': 8}."
+        },
+        {
+          "requirement": "Return type remains a dict mapping SKU to numeric available quantity, preserving existing semantics.",
+          "satisfied": true,
+          "evidence": "Return expression is a dict comprehension; tests assert isinstance(result, dict) and isinstance(result['A'], int)."
+        }
+      ],
+      "attempt": 1,
+      "candidate_id": "4501b5bb-1786-4a8e-8cbe-b81bd6ee9931",
+      "candidate_number": 1
+    }
+  ],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": [
+    {
+      "status": "demonstrated",
+      "generated_tests": [
+        "tests/test_inventory_regression.py"
+      ],
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-isolated-data\\tasks\\1cfdecdd-df5a-4e28-aa73-7d4065090929\\regression\\attempt-1-612febea-02b6-4e6d-8e75-9abb02620dae",
+      "baseline_result": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": ".F..F...                                                                 [100%]\n=================================== FAILURES ===================================\n______________ test_repeated_sku_reservations_are_all_subtracted _______________\n\n    def test_repeated_sku_reservations_are_all_subtracted():\n        stock = {\"A\": 10}\n        reservations = [(\"A\", 2), (\"A\", 3)]\n        result = available_units(stock, reservations)\n>       assert result == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:8: AssertionError\n______________________ test_result_keys_match_stock_keys _______________________\n\n    def test_result_keys_match_stock_keys():\n        result = available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"A\", 3), (\"C\", 7)])\n        assert set(result.keys()) == {\"A\", \"B\"}\n>       assert result == {\"A\": 5, \"B\": 5}\nE       AssertionError: assert {'A': 7, 'B': 5} == {'A': 5, 'B': 5}\nE         \nE         Omitting 1 identical items, use -vv to show\nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:28: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_inventory_regression.py::test_repeated_sku_reservations_are_all_subtracted\nFAILED tests/test_inventory_regression.py::test_result_keys_match_stock_keys\n2 failed, 6 passed in 0.11s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 6,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9395646000011766,
+        "evidence": "docker",
+        "cases": [
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_repeated_sku_reservations_are_all_subtracted",
+            "classname": "tests.test_inventory_regression",
+            "line": 4,
+            "status": "failed",
+            "message": "AssertionError: assert {'A': 7} == {'A': 5}\n  \n  Differing items:\n  {'A': 7} != {'A': 5}\n  Use -v to get more diff",
+            "details": "def test_repeated_sku_reservations_are_all_subtracted():\n        stock = {\"A\": 10}\n        reservations = [(\"A\", 2), (\"A\", 3)]\n        result = available_units(stock, reservations)\n>       assert result == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:8: AssertionError"
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_result_keys_match_stock_keys",
+            "classname": "tests.test_inventory_regression",
+            "line": 25,
+            "status": "failed",
+            "message": "AssertionError: assert {'A': 7, 'B': 5} == {'A': 5, 'B': 5}\n  \n  Omitting 1 identical items, use -vv to show\n  Differing items:\n  {'A': 7} != {'A': 5}\n  Use -v to get more diff",
+            "details": "def test_result_keys_match_stock_keys():\n        result = available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"A\", 3), (\"C\", 7)])\n        assert set(result.keys()) == {\"A\", \"B\"}\n>       assert result == {\"A\": 5, \"B\": 5}\nE       AssertionError: assert {'A': 7, 'B': 5} == {'A': 5, 'B': 5}\nE         \nE         Omitting 1 identical items, use -vv to show\nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:28: AssertionError"
+          },
+          {
+            "file": "tests/test_contract.py",
+            "name": "test_existing_contract",
+            "classname": "tests.test_contract",
+            "line": 4,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_clamped_at_zero",
+            "classname": "tests.test_inventory_regression",
+            "line": 13,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_unknown_sku_reservations_ignored",
+            "classname": "tests.test_inventory_regression",
+            "line": 19,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_inputs_are_not_mutated",
+            "classname": "tests.test_inventory_regression",
+            "line": 31,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_single_reservation_behavior_preserved",
+            "classname": "tests.test_inventory_regression",
+            "line": 41,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_inventory_regression.py",
+            "name": "test_empty_inputs",
+            "classname": "tests.test_inventory_regression",
+            "line": 46,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          }
+        ],
+        "cases_truncated": false
+      },
+      "fail_to_pass_tests": [
+        "tests/test_inventory_regression.py::tests.test_inventory_regression::test_repeated_sku_reservations_are_all_subtracted",
+        "tests/test_inventory_regression.py::tests.test_inventory_regression::test_result_keys_match_stock_keys"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "attempt": 1,
+      "diff_digest": "d77cc9a04aec6033e1b8e517066302c8007920c73d5af531c0430d1819667e39",
+      "candidate_id": "4501b5bb-1786-4a8e-8cbe-b81bd6ee9931",
+      "candidate_number": 1
+    }
+  ]
+}

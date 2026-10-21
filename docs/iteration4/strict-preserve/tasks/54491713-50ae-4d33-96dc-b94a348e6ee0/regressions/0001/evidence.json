@@ -1,0 +1,123 @@
+{
+  "status": "demonstrated",
+  "generated_tests": [
+    "tests/test_export_rows_csv.py"
+  ],
+  "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-preserve-data\\tasks\\54491713-50ae-4d33-96dc-b94a348e6ee0\\regression\\attempt-1-70ede1cd-7d3d-47b6-9614-bd610662861e",
+  "baseline_result": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": "...FFF.F..                                                               [100%]\n=================================== FAILURES ===================================\n________________ test_cell_with_comma_is_quoted_and_round_trips ________________\n\n    def test_cell_with_comma_is_quoted_and_round_trips():\n        rows = [[\"a,b\", \"c\"]]\n        result = export_rows(rows)\n>       assert result == '\"a,b\",c\\n'\nE       assert 'a,b,c\\n' == '\"a,b\",c\\n'\nE         \nE         - \"a,b\",c\nE         ? -   -\nE         + a,b,c\n\ntests/test_export_rows_csv.py:26: AssertionError\n____________ test_cell_with_double_quote_is_escaped_and_round_trips ____________\n\n    def test_cell_with_double_quote_is_escaped_and_round_trips():\n        rows = [['he said \"hi\"', \"x\"]]\n        result = export_rows(rows)\n>       assert result == '\"he said \"\"hi\"\"\",x\\n'\nE       assert 'he said \"hi\",x\\n' == '\"he said \"\"hi\"\"\",x\\n'\nE         \nE         - \"he said \"\"hi\"\"\",x\nE         ? -        -    --\nE         + he said \"hi\",x\n\ntests/test_export_rows_csv.py:33: AssertionError\n_______________ test_cell_with_newline_is_quoted_and_round_trips _______________\n\n    def test_cell_with_newline_is_quoted_and_round_trips():\n        rows = [[\"line1\\nline2\", \"z\"]]\n        result = export_rows(rows)\n>       assert result == '\"line1\\nline2\",z\\n'\nE       assert 'line1\\nline2,z\\n' == '\"line1\\nline2\",z\\n'\nE         \nE         - \"line1\nE         ? -\nE         + line1\nE         - line2\",z\nE         ?      -\nE         + line2,z\n\ntests/test_export_rows_csv.py:40: AssertionError\n_____________________ test_round_trip_mixed_special_cells ______________________\n\n    def test_round_trip_mixed_special_cells():\n        rows = [\n            [\"plain\", \"with,comma\", 'with\"quote', \"with\\nnewline\"],\n            [\"caf\\u00e9\", \"\\u4e2d\\u6587\", \"\\U0001f600\", \"\"],\n        ]\n>       assert _round_trip(rows) == [list(row) for row in rows]\nE       assert [['plain', 'w...中文', '😀', '']] == [['plain', 'w...中文', '😀', '']]\nE         \nE         At index 0 diff: ['plain', 'with', 'comma', 'with\"quote', 'with'] != ['plain', 'with,comma', 'with\"quote', 'with\\nnewline']\nE         Left contains one more item: ['café', '中文', '😀', '']\nE         Use -v to get more diff\n\ntests/test_export_rows_csv.py:58: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_export_rows_csv.py::test_cell_with_comma_is_quoted_and_round_trips\nFAILED tests/test_export_rows_csv.py::test_cell_with_double_quote_is_escaped_and_round_trips\nFAILED tests/test_export_rows_csv.py::test_cell_with_newline_is_quoted_and_round_trips\nFAILED tests/test_export_rows_csv.py::test_round_trip_mixed_special_cells - a...\n4 failed, 6 passed in 0.18s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 6,
+    "failed": 4,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 1.0511931999972148,
+    "evidence": "docker",
+    "cases": [
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_cell_with_comma_is_quoted_and_round_trips",
+        "classname": "tests.test_export_rows_csv",
+        "line": 23,
+        "status": "failed",
+        "message": "assert 'a,b,c\\n' == '\"a,b\",c\\n'\n  \n  - \"a,b\",c\n  ? -   -\n  + a,b,c",
+        "details": "def test_cell_with_comma_is_quoted_and_round_trips():\n        rows = [[\"a,b\", \"c\"]]\n        result = export_rows(rows)\n>       assert result == '\"a,b\",c\\n'\nE       assert 'a,b,c\\n' == '\"a,b\",c\\n'\nE         \nE         - \"a,b\",c\nE         ? -   -\nE         + a,b,c\n\ntests/test_export_rows_csv.py:26: AssertionError"
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_cell_with_double_quote_is_escaped_and_round_trips",
+        "classname": "tests.test_export_rows_csv",
+        "line": 30,
+        "status": "failed",
+        "message": "assert 'he said \"hi\",x\\n' == '\"he said \"\"hi\"\"\",x\\n'\n  \n  - \"he said \"\"hi\"\"\",x\n  ? -        -    --\n  + he said \"hi\",x",
+        "details": "def test_cell_with_double_quote_is_escaped_and_round_trips():\n        rows = [['he said \"hi\"', \"x\"]]\n        result = export_rows(rows)\n>       assert result == '\"he said \"\"hi\"\"\",x\\n'\nE       assert 'he said \"hi\",x\\n' == '\"he said \"\"hi\"\"\",x\\n'\nE         \nE         - \"he said \"\"hi\"\"\",x\nE         ? -        -    --\nE         + he said \"hi\",x\n\ntests/test_export_rows_csv.py:33: AssertionError"
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_cell_with_newline_is_quoted_and_round_trips",
+        "classname": "tests.test_export_rows_csv",
+        "line": 37,
+        "status": "failed",
+        "message": "assert 'line1\\nline2,z\\n' == '\"line1\\nline2\",z\\n'\n  \n  - \"line1\n  ? -\n  + line1\n  - line2\",z\n  ?      -\n  + line2,z",
+        "details": "def test_cell_with_newline_is_quoted_and_round_trips():\n        rows = [[\"line1\\nline2\", \"z\"]]\n        result = export_rows(rows)\n>       assert result == '\"line1\\nline2\",z\\n'\nE       assert 'line1\\nline2,z\\n' == '\"line1\\nline2\",z\\n'\nE         \nE         - \"line1\nE         ? -\nE         + line1\nE         - line2\",z\nE         ?      -\nE         + line2,z\n\ntests/test_export_rows_csv.py:40: AssertionError"
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_round_trip_mixed_special_cells",
+        "classname": "tests.test_export_rows_csv",
+        "line": 53,
+        "status": "failed",
+        "message": "assert [['plain', 'w...中文', '#x1F600', '']] == [['plain', 'w...中文', '#x1F600', '']]\n  \n  At index 0 diff: ['plain', 'with', 'comma', 'with\"quote', 'with'] != ['plain', 'with,comma', 'with\"quote', 'with\\nnewline']\n  Left contains one more item: ['café', '中文', '#x1F600', '']\n  Use -v to get more diff",
+        "details": "def test_round_trip_mixed_special_cells():\n        rows = [\n            [\"plain\", \"with,comma\", 'with\"quote', \"with\\nnewline\"],\n            [\"caf\\u00e9\", \"\\u4e2d\\u6587\", \"\\U0001f600\", \"\"],\n        ]\n>       assert _round_trip(rows) == [list(row) for row in rows]\nE       assert [['plain', 'w...中文', '#x1F600', '']] == [['plain', 'w...中文', '#x1F600', '']]\nE         \nE         At index 0 diff: ['plain', 'with', 'comma', 'with\"quote', 'with'] != ['plain', 'with,comma', 'with\"quote', 'with\\nnewline']\nE         Left contains one more item: ['café', '中文', '#x1F600', '']\nE         Use -v to get more diff\n\ntests/test_export_rows_csv.py:58: AssertionError"
+      },
+      {
+        "file": "tests/test_contract.py",
+        "name": "test_existing_contract",
+        "classname": "tests.test_contract",
+        "line": 4,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_empty_input_preserves_empty_output",
+        "classname": "tests.test_export_rows_csv",
+        "line": 11,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_simple_rows_remain_unquoted_comma_delimited",
+        "classname": "tests.test_export_rows_csv",
+        "line": 17,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_unicode_is_preserved_and_round_trips",
+        "classname": "tests.test_export_rows_csv",
+        "line": 44,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_output_uses_lf_line_endings_only",
+        "classname": "tests.test_export_rows_csv",
+        "line": 61,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_export_rows_csv.py",
+        "name": "test_return_type_is_str",
+        "classname": "tests.test_export_rows_csv",
+        "line": 68,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      }
+    ],
+    "cases_truncated": false
+  },
+  "fail_to_pass_tests": [
+    "tests/test_export_rows_csv.py::tests.test_export_rows_csv::test_cell_with_comma_is_quoted_and_round_trips",
+    "tests/test_export_rows_csv.py::tests.test_export_rows_csv::test_cell_with_double_quote_is_escaped_and_round_trips",
+    "tests/test_export_rows_csv.py::tests.test_export_rows_csv::test_cell_with_newline_is_quoted_and_round_trips",
+    "tests/test_export_rows_csv.py::tests.test_export_rows_csv::test_round_trip_mixed_special_cells"
+  ],
+  "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+  "attempt": 1,
+  "diff_digest": "b9133e2c8b3465f392c5ef22338f48dd33a9966deb847169ee2533f1c83855d1"
+}

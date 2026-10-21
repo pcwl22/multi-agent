@@ -1,0 +1,61 @@
+{
+  "candidate_id": "0a59e3e7-d312-4bd3-b4ee-701af22c4f8c",
+  "candidate_number": 1,
+  "diff": "",
+  "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "execution_status": "running",
+  "matches_recorded": true,
+  "model_calls_total": 1,
+  "patch_feedback": [
+    {
+      "attempt": 1,
+      "candidate_id": "0a59e3e7-d312-4bd3-b4ee-701af22c4f8c",
+      "candidate_number": 1,
+      "error": "Regression tests must pass each literal issue input unchanged to the function under test: range(1,8). Wrapping it in another constructor changes the input contract. Add a NEW test filename; existing tests are immutable."
+    }
+  ],
+  "patches": [
+    {
+      "applied": false,
+      "candidate_id": "0a59e3e7-d312-4bd3-b4ee-701af22c4f8c",
+      "candidate_number": 1,
+      "changed_files": [],
+      "contract_tests": [
+        "paginate(list(range(1, 8)), 2, 2) == [3, 4] (literal issue example, one-based page 2 size 2).",
+        "paginate(list(range(1, 8)), 1, 2) == [1, 2] (page 1 is the first page).",
+        "paginate(list(range(1, 8)), 3, 2) == [5, 6] (last full page).",
+        "paginate(list(range(1, 8)), 4, 2) == [7] (partial final page).",
+        "paginate(list(range(1, 8)), 5, 2) == [] and isinstance(result, list) (beyond last page returns empty list).",
+        "paginate([], 1, 2) == [] and isinstance(result, list) (empty input preserved).",
+        "paginate([1, 2], 0, 2) == [] and paginate([1, 2], -1, 2) == [] (invalid page preserved).",
+        "paginate([1, 2], 1, 0) == [] and paginate([1, 2], 1, -3) == [] (invalid page_size preserved).",
+        "Result is a list and the input list is not mutated (items unchanged after call)."
+      ],
+      "edits": [
+        {
+          "new": "    start = (page - 1) * page_size\n    return items[start : start + page_size]",
+          "old": "    start = page * page_size\n    return items[start : start + page_size]",
+          "path": "pagination.py"
+        },
+        {
+          "new": "from pagination import paginate\n\n\ndef test_page_two_size_two_returns_third_and_fourth():\n    # Literal example from the issue: range(1, 8), page 2, size 2 -> [3, 4].\n    assert paginate(list(range(1, 8)), 2, 2) == [3, 4]\n\n\ndef test_first_page_is_one_based():\n    assert paginate(list(range(1, 8)), 1, 2) == [1, 2]\n\n\ndef test_last_full_page():\n    assert paginate(list(range(1, 8)), 3, 2) == [5, 6]\n\n\ndef test_partial_final_page():\n    assert paginate(list(range(1, 8)), 4, 2) == [7]\n\n\ndef test_beyond_last_page_returns_empty_list():\n    result = paginate(list(range(1, 8)), 5, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_empty_items_returns_empty_list():\n    result = paginate([], 1, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_invalid_page_returns_empty_list():\n    assert paginate([1, 2], 0, 2) == []\n    assert paginate([1, 2], -1, 2) == []\n\n\ndef test_invalid_page_size_returns_empty_list():\n    assert paginate([1, 2], 1, 0) == []\n    assert paginate([1, 2], 1, -3) == []\n\n\ndef test_returns_list_type_and_does_not_mutate_input():\n    items = list(range(1, 8))\n    snapshot = list(items)\n    result = paginate(items, 2, 2)\n    assert isinstance(result, list)\n    assert result == [3, 4]\n    assert items == snapshot\n",
+          "old": "",
+          "path": "tests/test_pagination_regression.py"
+        }
+      ],
+      "rationale": "The bug: `start = page * page_size` treats page numbers as zero-based, so page 2 size 2 on range(1,8) returns items[4:6] == [5,6] instead of [3,4]. Fix: use one-based indexing `start = (page - 1) * page_size`. The guard `page < 1 or page_size < 1` already preserves empty/invalid inputs (returns []), and slicing beyond the last page naturally returns []. No other semantics change."
+    }
+  ],
+  "recorded_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "regression_results": [],
+  "repair_feedback": [],
+  "retry_count": 1,
+  "reviews": [],
+  "tests": [],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pagination.py": "03cbe00df8241c68ceab601fa12256c051b68922fded4e4d9a233adcb3cbfe8f",
+    "tests/test_contract.py": "dd502c4f8354dd9bd8066e2988899c660201b5bc533784087bbcfa119dc7d4f3"
+  }
+}

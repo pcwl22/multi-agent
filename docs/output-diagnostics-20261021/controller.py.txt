@@ -1,0 +1,219 @@
+"""One-shot preregistered pilot and conditional full comparison; never resumes."""
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+from app.evaluation.connectivity import runtime_digest
+from app.evaluation.historical import verify
+from app.services.budget_audit import audit_ledger
+from dotenv import dotenv_values
+
+Q = Path(__file__).parent
+ROOT = Path('E:/multi-agent')
+W = Path('E:/Agent/repopilot-output-diagnostics-20261021')
+CORPUS = ROOT / '.repopilot/connectivity-collection-20261020/corpus'
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save(path, value):
+    tmp = path.with_suffix('.tmp')
+    tmp.write_bytes((json.dumps(value, ensure_ascii=False, indent=2) + '\n').encode())
+    tmp.replace(path)
+
+
+def main():
+    import xml.etree.ElementTree as ET
+    suites = list(ET.parse(Q / 'wheel-full.xml').getroot().iter('testsuite'))
+    assert sum(int(s.get('tests', 0)) for s in suites) == 391
+    assert sum(int(s.get('failures', 0)) + int(s.get('errors', 0)) for s in suites) == 0
+    assert sum(int(s.get('skipped', 0)) for s in suites) == 2
+    preflight = read(Q / 'short-path-preflight.json')
+    assert len(preflight) == 6 and all(r['status'] == 'queued' for r in preflight)
+    assert not (Q / 'plan.json').exists(), 'A sealed batch cannot be resumed or replayed'
+    assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=W).decode().strip() == 'affc36c1eade4a8ac16c2299879ad7b130abd4b3'
+    assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=W).strip()
+    import app
+    installed = Path(app.__file__).parent.parent
+    artifact = read(Q / 'runtime-artifact.json')
+    for row in artifact['files']:
+        assert sha(installed / row['path']) == sha(W / row['path']) == row['sha256']
+    config_bytes = (ROOT / '.env').read_bytes()
+    config = dotenv_values(ROOT / '.env')
+    secrets = [config[x] for x in ['OPENAI_API_KEY', 'DEEPSEEK_API_KEY', 'SOL_API_KEY'] if config.get(x)]
+    assert config['REPOPILOT_MODEL_NAME'] == 'deepseek-4.1-flash-background'
+    assert config['REPOPILOT_MODEL_BASE_URL'] == 'https://gw.lunaroute.com/v1'
+    assert config['OPENAI_API_KEY'] == config['DEEPSEEK_API_KEY']
+    old = read(ROOT / '.repopilot/model-availability-20261021-r2/prior-ledgers.json')
+    for profile, cells in [('deepseek', ['fresh-nonstreaming', 'fresh-streaming']), ('sol', ['fresh-nonstreaming'])]:
+        for cell in cells:
+            path = ROOT / '.repopilot/model-availability-20261021-r2' / profile / 'live-results' / cell
+            old.append({'path': str(path), 'audit': audit_ledger(path)})
+    for ledger in sorted((ROOT / '.repopilot/new-channel-evaluation-20261021/pilot').rglob('budget.sqlite3')):
+        old.append({'path': str(ledger.parent), 'audit': audit_ledger(ledger.parent)})
+    for item in old:
+        assert audit_ledger(Path(item['path'])) == item['audit']
+    save(Q / 'prior-ledgers.json', old)
+    lock_sha = sha(CORPUS / 'lock.json')
+    lock = verify(CORPUS, lock_sha)
+    cases = [c['case']['id'] for c in lock['cases']]
+    assert len(cases) == 6
+    def cells(phase, selected, modes):
+        rows = []
+        for i, case in enumerate(selected):
+            order = ['legacy', 'quality'] if i % 2 == 0 else ['quality', 'legacy']
+            for j, variant in enumerate(order):
+                for mode in modes[j % len(modes):] + modes[:j % len(modes)]:
+                    rows.append({'id': f'{len(rows)+1:02d}-{case}-{mode}-{variant}',
+                                 'phase': phase, 'case_id': case, 'variant': variant, 'mode': mode})
+        return rows
+    plan = {'registered_at': datetime.now(timezone.utc).isoformat(),
+        'runtime_commit': 'affc36c1eade4a8ac16c2299879ad7b130abd4b3',
+        'runtime_sha256': runtime_digest(), 'app_files': artifact['files'],
+        'short_path_preflight_sha256': sha(Q / 'short-path-preflight.json'),
+        'verified_full_junit_sha256': sha(Q / 'wheel-full.xml'),
+        'worker_sha256': sha(Q / 'worker.py'), 'model_max_output_tokens': 8192, 'task_storage': 'E:/Agent/nc21r2', 'controller_sha256': sha(Path(__file__)),
+        'corpus': str(CORPUS), 'lock_sha256': lock_sha,
+        'image': 'sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d',
+        'model_name': config['REPOPILOT_MODEL_NAME'], 'model_base_url': config['REPOPILOT_MODEL_BASE_URL'],
+        'budget_limits': {'wall_seconds': 360, 'model_requests': 8, 'observed_tokens': 100000,
+                         'sandbox_runs': 10, 'artifact_bytes': 268435456, 'result_bytes': 8388608},
+        'pilot': cells('pilot', cases[:2], ['multi_full']),
+        'formal': cells('formal', cases, ['single', 'multi_no_review', 'multi_full']),
+        'pilot_seconds': 1800, 'formal_seconds': 3600, 'hard_cell_seconds': 660,
+        'primary_metric': 'Original tests unchanged, fixed failing baseline, awaiting approval, candidate suite and hidden holdout passed, SAME added test fail-to-pass witness demonstrated for BOTH variants.',
+        'formal_admission': 'All four pilot cells completed; no provider/circuit/unknown-usage/infrastructure stops; at least one strict success per variant.',
+        'stop_rules': 'First provider failure/circuit, unknown or pending usage, worker failure, Docker unavailable, config/runtime/corpus change, or phase deadline stops remaining cells. No replay, retry replacement, publication, or approval.',
+        'limits': 'Observed-token thresholds are not monetary caps. New gateway aliases do not prove weights. Known historical cases measure calibration, not unseen generalization. Formal phase conditional, pilot not pooled into it.'}
+    save(Q / 'plan.json', plan)
+    digest = sha(Q / 'plan.json')
+    (Q / 'plan.sha256').write_text(digest + '\n', encoding='utf-8')
+    env = dict(os.environ, PYTHONIOENCODING='utf-8', HTTPS_PROXY='http://127.0.0.1:7890')
+    def guarded(action, name, seconds, cell=None):
+        assert sha(Q / 'worker.py') == plan['worker_sha256']
+        assert sha(Q / 'plan.json') == digest
+        args = [sys.executable, '-I', str(Q / 'worker.py'), action, '--digest', digest]
+        if cell:
+            args.extend(['--cell', cell])
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=Q, env=env)
+        timeout = False
+        try:
+            out, err = process.communicate(timeout=seconds)
+        except subprocess.TimeoutExpired:
+            timeout = True
+            process.kill()
+            out, err = process.communicate(timeout=15)
+        for channel, raw in [('stdout', out), ('stderr', err)]:
+            value = raw.decode('utf-8', errors='replace')
+            for secret in secrets:
+                value = value.replace(secret, '[REDACTED]')
+            (Q / (name + '-' + channel + '.log')).write_text(value, encoding='utf-8')
+        return {'exit_code': process.returncode, 'hard_timeout': timeout}
+    print(json.dumps({'preregistered': True, 'plan_sha256': digest, 'pilot_tasks': 4,
+                      'conditional_formal_tasks': 36, 'per_task_budget': plan['budget_limits']}), flush=True)
+    prior_controls = ROOT / '.repopilot/new-channel-evaluation-20261021/controls/controls.json'
+    assert sha(prior_controls) == read(ROOT / '.repopilot/new-channel-evaluation-20261021/controls-binding.json')['sha256']
+    (Q / 'controls').mkdir()
+    shutil.copy2(prior_controls, Q / 'controls/controls.json')
+    control_status = {'exit_code': 0, 'hard_timeout': False}
+    save(Q / 'control-process.json', control_status)
+    records = [{**c, 'status': 'not_run', 'reason': 'pending_phase_admission'} for c in plan['pilot'] + plan['formal']]
+    save(Q / 'records.json', records)
+    stop = None
+    formal_admitted = False
+    if control_status != {'exit_code': 0, 'hard_timeout': False}:
+        stop = 'controls_process_failed_or_interrupted'
+    else:
+        controls_doc = read(Q / 'controls/controls.json')
+        assert controls_doc['all_eligible'] and len(controls_doc['cases']) == 6
+        save(Q / 'controls-binding.json', {'sha256': sha(Q / 'controls/controls.json'), 'reused_immutable_controls': 24, 'source': 'new-channel-evaluation-20261021', 'newly_executed': False})
+        print('IMMUTABLE_DOCKER_CONTROLS_REUSED: 24 (not newly executed)', flush=True)
+        for phase in ['pilot', 'formal']:
+            if stop:
+                break
+            if phase == 'formal':
+                pilot = [r for r in records if r['phase'] == 'pilot']
+                formal_admitted = all(r['status'] == 'completed' for r in pilot) and all(
+                    any(r.get('strict_success') for r in pilot if r['variant'] == v)
+                    for v in ['legacy', 'quality'])
+                if not formal_admitted:
+                    stop = 'pilot_strict_success_gate_not_met'
+                    break
+            deadline = time.monotonic() + plan[phase + '_seconds']
+            for cell in plan[phase]:
+                row = next(r for r in records if r['phase'] == phase and r['id'] == cell['id'])
+                if time.monotonic() >= deadline:
+                    stop = 'phase_deadline'
+                    break
+                assert (ROOT / '.env').read_bytes() == config_bytes
+                row.update(status='dispatch_uncertain', reason='owned_worker_running_no_automatic_replay')
+                save(Q / 'records.json', records)
+                status = guarded('cell', phase + '-' + cell['id'], min(plan['hard_cell_seconds'], deadline-time.monotonic()), cell['id'])
+                row['worker'] = status
+                path = Q / phase / cell['id'] / 'result.json'
+                if status != {'exit_code': 0, 'hard_timeout': False} or not path.exists():
+                    stop = 'worker_failed_or_interrupted'
+                    row['reason'] = stop
+                    save(Q / 'records.json', records)
+                    break
+                result = read(path)
+                row.update(result, status='completed', reason=None)
+                leak = any(secret.encode() in f.read_bytes() for f in (Q / phase / cell['id']).rglob('*')
+                           if f.is_file() for secret in secrets)
+                row['credential_found_in_artifacts'] = leak
+                if leak:
+                    stop = 'credential_artifact_scan_failed'
+                elif result['usage_unknown'] or result['ledger']['pending_model_reservations']:
+                    stop = 'usage_unknown_or_dispatch_pending'
+                elif result['provider_failure'] or result['circuit']['opened']:
+                    stop = 'provider_or_circuit_failure'
+                elif (result.get('test_result') or {}).get('status') in {'unavailable', 'timeout'}:
+                    stop = 'sandbox_unavailable_or_timeout'
+                elif result['execution_status'] in {'blocked', 'creation_failed'}:
+                    stop = 'workflow_blocked'
+                save(Q / 'records.json', records)
+                print(json.dumps({'phase': phase, 'cell': cell['id'], 'status': result['execution_status'],
+                                  'strict_success': result['strict_success'], 'model_calls': result['model_calls'],
+                                  'tokens': result['observed_tokens'], 'stop': stop}), flush=True)
+                if stop:
+                    break
+    for row in records:
+        if row['status'] == 'not_run':
+            row['reason'] = stop or 'not_dispatched'
+    save(Q / 'records.json', records)
+    assert (ROOT / '.env').read_bytes() == config_bytes
+    assert runtime_digest() == plan['runtime_sha256']
+    verify(CORPUS, lock_sha)
+    for item in old:
+        assert audit_ledger(Path(item['path'])) == item['audit']
+    summary = {'completed_at': datetime.now(timezone.utc).isoformat(), 'plan_sha256': digest,
+        'stop_reason': stop, 'formal_admitted': formal_admitted, 'prior_ledger_hashes_unchanged': True, 'prior_ledger_count': len(old),
+        'configuration_unchanged': True, 'runtime_unchanged': True, 'github_writes': False,
+        'pilot': {}, 'formal': {}}
+    for phase in ['pilot', 'formal']:
+        for variant in ['legacy', 'quality']:
+            selected = [r for r in records if r['phase'] == phase and r['variant'] == variant]
+            summary[phase][variant] = {'planned': len(selected),
+                'completed': sum(r['status'] == 'completed' for r in selected),
+                'strict_success': sum(bool(r.get('strict_success')) for r in selected),
+                'model_calls': sum(r.get('model_calls', 0) for r in selected),
+                'known_tokens': sum(r.get('observed_tokens', 0) for r in selected),
+                'unknown_usage': sum(bool(r.get('usage_unknown')) for r in selected)}
+    save(Q / 'report.json', summary)
+    print(json.dumps(summary), flush=True)
+
+
+if __name__ == '__main__':
+    main()

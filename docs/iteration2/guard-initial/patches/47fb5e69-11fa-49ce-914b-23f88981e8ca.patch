@@ -1,0 +1,142 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,27 @@
++from collections.abc import Mapping
++
++
++def _deep_copy(value):
++    if isinstance(value, Mapping):
++        return {key: _deep_copy(item) for key, item in value.items()}
++    if isinstance(value, list):
++        return [_deep_copy(item) for item in value]
++    if isinstance(value, tuple):
++        return tuple(_deep_copy(item) for item in value)
++    return value
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {}
++    for key, value in defaults.items():
++        result[key] = _deep_copy(value)
++    for key, value in overrides.items():
++        if (
++            key in result
++            and isinstance(result[key], Mapping)
++            and isinstance(value, Mapping)
++        ):
++            result[key] = merge_config(result[key], value)
++        else:
++            result[key] = _deep_copy(value)
+     return result
+--- a/tests/test_merge_config_regression.py
++++ b/tests/test_merge_config_regression.py
+@@ -0,0 +1,107 @@
++from config import merge_config
++
++
++# Contract: returns a mapping containing all keys from base and override.
++def test_returns_all_keys_from_both_inputs():
++    result = merge_config({"a": 1}, {"b": 2})
++    assert isinstance(result, dict)
++    assert result == {"a": 1, "b": 2}
++
++
++# Contract: keys only in base are preserved; keys only in override are added.
++def test_keys_only_in_base_preserved_and_only_in_override_added():
++    result = merge_config({"only_base": 1, "shared": 0}, {"only_override": 2, "shared": 9})
++    assert result == {"only_base": 1, "only_override": 2, "shared": 9}
++
++
++# Contract: for keys present in both with mapping values, result is a recursive merge.
++def test_nested_mappings_are_recursively_merged():
++    base = {"db": {"host": "localhost", "port": 5432, "opts": {"ssl": False, "retries": 3}}}
++    override = {"db": {"port": 6543, "opts": {"ssl": True}}}
++    result = merge_config(base, override)
++    assert result == {
++        "db": {
++            "host": "localhost",
++            "port": 6543,
++            "opts": {"ssl": True, "retries": 3},
++        }
++    }
++
++
++# Contract: at leaf (non-mapping) conflicts, the override value wins.
++def test_leaf_conflicts_override_wins():
++    result = merge_config({"a": 1, "b": "x"}, {"a": 2, "b": "y"})
++    assert result == {"a": 2, "b": "y"}
++
++
++# Contract: list values are replaced by the override list, not concatenated.
++def test_lists_are_replaced_not_concatenated():
++    result = merge_config({"items": [1, 2, 3]}, {"items": [4, 5]})
++    assert result == {"items": [4, 5]}
++    assert result["items"] != [1, 2, 3, 4, 5]
++
++
++# Contract: list values are replaced, not element-wise merged.
++def test_lists_are_not_element_wise_merged():
++    result = merge_config({"items": [1, 2, 3]}, {"items": [9]})
++    assert result == {"items": [9]}
++
++
++# Contract: base input is not mutated by the call.
++def test_base_input_not_mutated():
++    base = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    override = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    base_snapshot = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    merge_config(base, override)
++    assert base == base_snapshot
++
++
++# Contract: override input is not mutated by the call.
++def test_override_input_not_mutated():
++    base = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    override = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    override_snapshot = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    merge_config(base, override)
++    assert override == override_snapshot
++
++
++# Contract: returned structure shares no nested mutable objects with base or override.
++def test_result_shares_no_nested_objects_with_inputs():
++    base = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    override = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    result = merge_config(base, override)
++    assert result["db"] is not base["db"]
++    assert result["db"] is not override["db"]
++    assert result["db"]["opts"] is not base["db"]["opts"]
++    assert result["db"]["opts"] is not override["db"]["opts"]
++    assert result["items"] is not base["items"]
++    assert result["items"] is not override["items"]
++
++
++# Contract: mutating the result does not affect inputs.
++def test_mutating_result_does_not_affect_inputs():
++    base = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    override = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    base_snapshot = {"db": {"host": "localhost", "opts": {"ssl": False}}, "items": [1, 2]}
++    override_snapshot = {"db": {"opts": {"ssl": True}}, "items": [3]}
++    result = merge_config(base, override)
++    result["db"]["opts"]["ssl"] = "changed"
++    result["db"]["host"] = "changed"
++    result["items"].append(99)
++    assert base == base_snapshot
++    assert override == override_snapshot
++
++
++# Contract: simple (non-nested) overrides continue to work as before.
++def test_simple_overrides_still_work():
++    assert merge_config({"a": 1}, {"a": 2, "b": 3}) == {"a": 2, "b": 3}
++    assert merge_config({}, {}) == {}
++
++
++# Contract: function signature and return type are preserved.
++def test_signature_and_return_type_preserved():
++    import inspect
++
++    params = list(inspect.signature(merge_config).parameters)
++    assert params == ["defaults", "overrides"]
++    assert isinstance(merge_config({}, {}), dict)

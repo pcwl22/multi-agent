@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "enabled": true,
+  "threshold": 3,
+  "opened": false,
+  "consecutive_failures": 1,
+  "failure_signature": "provider_unavailable:response",
+  "triggering_attempt_id": null,
+  "opened_at": null,
+  "admitted": 1,
+  "completed": 1,
+  "in_flight": 0,
+  "evidence_write_failed": false,
+  "ordering": "Completion order across this batch; already admitted calls may finish. Open is latched, with no automatic reset or replay."
+}

@@ -1,0 +1,38 @@
+--- a/slugs.py
++++ b/slugs.py
+@@ -1,5 +1,10 @@
+ import re
++import unicodedata
+ 
+ 
+ def slugify(value):
+-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
++    normalized = unicodedata.normalize("NFKD", value)
++    ascii_text = "".join(
++        ch for ch in normalized if not unicodedata.combining(ch)
++    )
++    return re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
+--- a/tests/test_slugs_regression.py
++++ b/tests/test_slugs_regression.py
+@@ -0,0 +1,21 @@
++from slugs import slugify
++
++
++def test_precomposed_accents_transliterate():
++    assert slugify("Caf\u00e9 d\u00e9j\u00e0 vu") == "cafe-deja-vu"
++
++
++def test_decomposed_matches_precomposed():
++    decomposed = "cafe\u0301 de\u0301ja\u0300 vu"
++    precomposed = "Caf\u00e9 d\u00e9j\u00e0 vu"
++    assert slugify(decomposed) == slugify(precomposed) == "cafe-deja-vu"
++
++
++def test_ascii_word_separation_preserved():
++    assert slugify("Hello, World!") == "hello-world"
++    assert slugify("foo   bar") == "foo-bar"
++
++
++def test_dashes_trimmed():
++    assert slugify("  --Caf\u00e9--  ") == "cafe"
++    assert slugify("") == ""

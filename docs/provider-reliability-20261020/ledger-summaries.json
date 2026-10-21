@@ -1,0 +1,40 @@
+[
+  {
+    "id": "probe-01",
+    "binding": {
+      "deadline": 1792466000.7846942,
+      "limits": {
+        "artifact_bytes": 268435456,
+        "model_requests": 1,
+        "observed_tokens": 20000,
+        "result_bytes": 8388608,
+        "sandbox_runs": 1,
+        "wall_seconds": 150.0
+      },
+      "task_id": "probe-01"
+    },
+    "model_request_reservations": 1,
+    "observed_tokens": 0,
+    "usage_incomplete_flag": true,
+    "pending_reservations": 0
+  },
+  {
+    "id": "probe-02",
+    "binding": {
+      "deadline": 1792466068.8233979,
+      "limits": {
+        "artifact_bytes": 268435456,
+        "model_requests": 1,
+        "observed_tokens": 20000,
+        "result_bytes": 8388608,
+        "sandbox_runs": 1,
+        "wall_seconds": 150.0
+      },
+      "task_id": "probe-02"
+    },
+    "model_request_reservations": 1,
+    "observed_tokens": 0,
+    "usage_incomplete_flag": false,
+    "pending_reservations": 1
+  }
+]

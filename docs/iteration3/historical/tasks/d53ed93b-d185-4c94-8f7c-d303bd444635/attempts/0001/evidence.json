@@ -1,0 +1,72 @@
+{
+  "candidate_id": "bfcfa50a-fdfb-4e3a-a8da-a2974a3c1468",
+  "candidate_number": 1,
+  "diff": "--- a/jsonpointer.py\n+++ b/jsonpointer.py\n@@ -239,7 +239,10 @@\n             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                 raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n-            return int(part)\n+            try:\n+                return int(part)\n+            except ValueError:\n+                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n         elif hasattr(doc, '__getitem__'):\n             # Allow indexing via ducktyping\n",
+  "diff_digest": "24a8982c124e5ddec9edc5db0503ccae4ee643d7435c0dd9c94bb817f1aa2f41",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 1,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "bfcfa50a-fdfb-4e3a-a8da-a2974a3c1468",
+      "candidate_number": 1,
+      "changed_files": [
+        "jsonpointer.py"
+      ],
+      "contract_tests": [
+        "tests/test_long_index_regression.py::test_resolve_long_numeric_index_raises_jsonpointerexception: JsonPointer('/' + '9'*5000).resolve([1,2,3]) raises JsonPointerException (not ValueError).",
+        "tests/test_long_index_regression.py::test_resolve_with_default_returns_exact_default: JsonPointer('/' + '9'*5000).resolve([1,2,3], 'DEFAULT') returns the exact string 'DEFAULT'.",
+        "tests/test_long_index_regression.py::test_to_last_long_numeric_index_raises_jsonpointerexception: JsonPointer('/' + '9'*5000).to_last([1,2,3]) raises JsonPointerException.",
+        "tests/test_long_index_regression.py::test_set_long_numeric_index_raises_jsonpointerexception: JsonPointer('/' + '9'*5000).set([1,2,3], 'x') raises JsonPointerException.",
+        "tests/test_long_index_regression.py::test_long_numeric_mapping_key_is_string: JsonPointer('/' + '9'*5000).resolve({'9'*5000: 'v'}) == 'v' (key stays a string).",
+        "tests/test_long_index_regression.py::test_ordinary_index_still_works: JsonPointer('/1').resolve([10,20,30]) == 20 (int index preserved).",
+        "tests/test_long_index_regression.py::test_end_of_list_preserved: resolve_pointer({'foo':['bar','baz']}, '/foo/-') is an EndOfList instance.",
+        "tests/test_long_index_regression.py::test_set_mutation_preserved: set_pointer({'a':[1,2,3]}, '/a/1', 99) mutates in place to {'a':[1,99,3]}."
+      ],
+      "edits": [
+        {
+          "new": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            try:\n                return int(part)\n            except ValueError:\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)",
+          "old": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            return int(part)",
+          "path": "jsonpointer.py"
+        }
+      ],
+      "rationale": "The bug: `get_part` calls `int(part)` on a numeric string that passes the regex `_RE_ARRAY_INDEX`, but if the digit count exceeds Python's `sys.set_int_max_str_digits` limit (default 4300), `int()` raises `ValueError`, which leaks out of `resolve`, `to_last`, and `set`. Fix: wrap the `int(part)` conversion in a try/except ValueError and raise `JsonPointerException` instead. This preserves ordinary indices, end-of-list handling, and mutation behavior. Numeric object member keys are unaffected because `get_part` returns `part` unchanged for `Mapping` before reaching the sequence branch. New regression tests cover resolve, to_last, set, resolve-with-default, and long numeric mapping keys."
+    }
+  ],
+  "recorded_digest": "24a8982c124e5ddec9edc5db0503ccae4ee643d7435c0dd9c94bb817f1aa2f41",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "bfcfa50a-fdfb-4e3a-a8da-a2974a3c1468",
+      "candidate_number": 1,
+      "duration_seconds": 1.0565797000017483,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "output_truncated": false,
+      "passed": 26,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "..........................                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n26 passed in 0.16s\n"
+    }
+  ],
+  "workspace_manifest": {
+    ".github/workflows/test.yaml": "c9707120d99cb87316dfe450b6dacd9c58db362a0e5e902c7fb6a77f056c1020",
+    ".readthedocs.yaml": "5b5c9335d6fa7ff57c3c847a057db901372e2083f259a801046acf5018f544a4",
+    "LICENSE.txt": "d8b24f15d472885f788a2d6e985850f264627b86012a17bb242c83f310d907e5",
+    "README.md": "5cbc1356d894dad09d85160bdeb9743aad94fc5ef66d8b4165b057e4794904fc",
+    "doc/conf.py": "29948433491bf1f630becf275c954520f9af944dcc5199946efac7cd698d928a",
+    "jsonpointer.py": "136b9a226a360e21d5dd6a9122fd10bd49ecd258406ec183a912eb57d3a29d49",
+    "requirements-dev.txt": "7272ab2b29dd3ce79746f9128e68956407cfe60543ed4b6d6ed4cb2847fa0723",
+    "setup.py": "718a22267b266bea2ac81135c5f6c888eb581858e3e5b2d2e2012a606d28a6a9",
+    "tests.py": "99300a74a31a1321515782334cd68e21b2558f3d1e934b558c3675673375c06f",
+    "tests/test_upstream_suite.py": "ed9d1f6ccefaac11626f4744d3764f893bf62d61492fbba670710152948f21c6"
+  }
+}

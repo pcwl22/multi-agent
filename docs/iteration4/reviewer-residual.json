@@ -1,0 +1,67 @@
+{
+  "task_id": "34158c43-f402-4def-8489-27544eb830a3",
+  "case_id": "itsdangerous-date-overflow",
+  "mode": "multi_full",
+  "execution_status": "failed",
+  "independent_acceptance": "passed",
+  "current_workspace_test": "passed",
+  "regression_evidence_statuses": [
+    "no_new_tests",
+    "no_new_tests"
+  ],
+  "last_review": {
+    "approved": false,
+    "summary": "The diff fixes the core leak in TimestampSigner.unsign by catching datetime range errors on the invalid-signature path and raising BadTimeSignature with the original payload and date_signed=None. However, the issue explicitly requires adding NEW regression tests, and no test files were added (regression_evidence reports no_new_tests, fail_to_pass_count 0). The 297 passing tests are the pre-existing suite and provide no evidence for the new malformed-timestamp behavior. Several acceptance contracts (malformed out-of-range timestamp raising BadTimeSignature, payload preservation, date_signed=None, TimedSerializer.loads contract) are therefore unverified by any added test.",
+    "concerns": [
+      "No new regression tests were added despite the explicit requirement 'Add NEW regression tests; do not edit existing tests.'",
+      "regression_evidence shows no_new_tests with empty fail_to_pass_tests, so the fix is not demonstrated by any test that fails on original source and passes on the candidate.",
+      "The malformed out-of-range timestamp path (BadTimeSignature with payload=value, date_signed=None) is not exercised by any test.",
+      "The TimedSerializer.loads BadSignature-family contract for malformed timestamps is not exercised by any added test."
+    ],
+    "contract_checks": [
+      {
+        "requirement": "TimestampSigner.unsign with an invalid signature whose decoded timestamp is outside datetime's supported year range raises BadTimeSignature instead of leaking a datetime ValueError.",
+        "satisfied": true,
+        "evidence": "timed.py invalid-signature branch now wraps self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature('Malformed timestamp', payload=value, date_signed=None) from None. This converts the leaked datetime error into BadTimeSignature. No added test exercises it, but the code path is present and correct."
+      },
+      {
+        "requirement": "The BadTimeSignature raised for a malformed out-of-range timestamp on the invalid-signature path carries the original payload.",
+        "satisfied": true,
+        "evidence": "The new raise passes payload=value, where value is result.rsplit(sep, 1)[0], i.e. the original payload portion of the signed value. Matches the requirement."
+      },
+      {
+        "requirement": "The BadTimeSignature raised for a malformed out-of-range timestamp on the invalid-signature path has date_signed=None.",
+        "satisfied": true,
+        "evidence": "The new raise explicitly passes date_signed=None."
+      },
+      {
+        "requirement": "Valid TimestampSigner sign/unsign roundtrips still return the original payload and a correct date_signed.",
+        "satisfied": true,
+        "evidence": "The change only affects the sig_error is not None branch; the valid path (ts_int not None, sig_error None) still computes date_signed via self.timestamp_to_datetime(ts_int) and returns value. Existing suite (297 passed) covers roundtrips."
+      },
+      {
+        "requirement": "Ordinary invalid signatures with in-range decoded timestamps still raise BadTimeSignature with the decoded date_signed metadata.",
+        "satisfied": true,
+        "evidence": "For in-range ts_int, timestamp_to_datetime succeeds, ts_dt is set, and the subsequent raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt) is unchanged."
+      },
+      {
+        "requirement": "Expired valid signatures still raise SignatureExpired.",
+        "satisfied": true,
+        "evidence": "The max_age branch is untouched; SignatureExpired is still raised with payload and date_signed for age > max_age and age < 0."
+      },
+      {
+        "requirement": "TimedSerializer.loads retains its BadSignature-family error contract for malformed and invalid inputs.",
+        "satisfied": true,
+        "evidence": "TimedSerializer.loads catches BadSignature (BadTimeSignature is a subclass) and re-raises the last exception; the new BadTimeSignature is a BadSignature subclass, so the contract is preserved. No added test exercises this."
+      },
+      {
+        "requirement": "Add NEW regression tests; do not edit existing tests.",
+        "satisfied": false,
+        "evidence": "regression_evidence reports status 'no_new_tests', generated_tests [], fail_to_pass_tests [], fail_to_pass_count 0. No test files were added in the diff (diff only touches src/itsdangerous/timed.py). The explicit requirement to add new regression tests is unmet."
+      }
+    ],
+    "attempt": 3
+  },
+  "no_override_or_posthoc_rerun": true,
+  "interpretation": "Recorded reviewer rejection is preserved separately from Docker/holdout acceptance. Test passing never forces approval; this is not adjudicated as a confirmed reviewer defect."
+}

@@ -1,0 +1,14 @@
+--- a/slugs.py
++++ b/slugs.py
+@@ -1,5 +1,10 @@
+ import re
++import unicodedata
+ 
+ 
+ def slugify(value):
+-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
++    normalized = unicodedata.normalize("NFKD", value)
++    ascii_text = "".join(
++        ch for ch in normalized if not unicodedata.combining(ch)
++    )
++    return re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")

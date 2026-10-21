@@ -1,8 +1,22 @@
-include README.md AGENTS.md .env.example requirements.lock Dockerfile docker-compose.yml
+include README.md CHANGELOG.md AGENTS.md .env.example requirements.lock Dockerfile docker-compose.yml
 recursive-include frontend *.py
 recursive-include demo_repository *.py *.txt
 recursive-include sandbox Dockerfile Dockerfile.offline
-recursive-include docs *.md *.json *.jsonl *.txt
+include sandbox/Dockerfile.pilots
+recursive-include docs *.md *.json *.jsonl *.txt *.patch *.png *.webm
 recursive-include scripts *.py *.ps1
 recursive-include tests *.py
 global-exclude *.py[cod]
+# Checksums are companion artifacts and must not include their own archive hash.
+exclude docs/next-stage/release-artifacts.json
+exclude docs/iteration2/release-artifacts.json
+exclude docs/iteration3/release-artifacts.json
+exclude docs/iteration4/release-artifacts.json
+
+recursive-include test_fixtures *.py *.txt *.json *.md
+
+exclude docs/ci-isolation-stage-20261018/release-artifacts.json
+
+include sandbox/Dockerfile.historical sandbox/historical_dotenv.py
+
+include docs/historical-evaluation-20261019/reproduction.env.example

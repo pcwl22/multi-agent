@@ -1,0 +1,26 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,20 @@
++import copy
++from collections.abc import Mapping
++
++
++def _merge(base, override):
++    if isinstance(base, Mapping) and isinstance(override, Mapping):
++        result = {}
++        for key in base:
++            result[key] = copy.deepcopy(base[key])
++        for key in override:
++            if key in result and isinstance(result[key], Mapping) and isinstance(override[key], Mapping):
++                result[key] = _merge(result[key], override[key])
++            else:
++                result[key] = copy.deepcopy(override[key])
++        return result
++    return copy.deepcopy(override)
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
+-    return result
++    return _merge(defaults, overrides)

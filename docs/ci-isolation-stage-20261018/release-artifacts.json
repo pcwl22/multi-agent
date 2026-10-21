@@ -1,0 +1,31 @@
+{
+  "runtime_commit": "9c8f535bb8b94690876278fe5eb798811b517f2f",
+  "artifacts": [
+    {
+      "name": "repopilot-0.1.0-py3-none-any.whl",
+      "path": "E:\\multi-agent\\.repopilot\\ci-stage-dist\\repopilot-0.1.0-py3-none-any.whl",
+      "bytes": 88874,
+      "sha256": "956bb42d139f7ccda0ee969a13dc8cfcd3afb5076821ffb319e54d195f07f8ec"
+    },
+    {
+      "name": "repopilot-0.1.0.tar.gz",
+      "path": "E:\\multi-agent\\.repopilot\\ci-stage-dist\\repopilot-0.1.0.tar.gz",
+      "bytes": 3402002,
+      "sha256": "b05e034ae4c3baab1b60ee3700d0146cfa8ac2312551fcf58d44e2e631da7fb4"
+    }
+  ],
+  "wheel_tests": {
+    "tests": 168,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 167,
+    "docker_opt_in": true,
+    "editable_demo_already_repaired": true,
+    "application_origin": "E:/multi-agent/.repopilot/ci-isolation-venv/Lib/site-packages/app/__init__.py",
+    "python": "3.13.5"
+  },
+  "sdist_fixture_manifest_verified": true,
+  "runtime_modules_match_wheel": true,
+  "note": "Artifacts were built before final documentation; application code matches the frozen runtime commit. This companion file is excluded from its own source archive."
+}

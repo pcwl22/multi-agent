@@ -1,0 +1,34 @@
+--- a/checkout.py
++++ b/checkout.py
+@@ -3,4 +3,4 @@
+ 
+ def invoice_total(amount, discount_percent, tax_rate):
+     subtotal = discounted(amount, discount_percent)
+-    return round(subtotal + amount * tax_rate, 2)
++    return round(subtotal + subtotal * tax_rate, 2)
+--- a/money.py
++++ b/money.py
+@@ -1,2 +1,2 @@
+ def discounted(amount, percent):
+-    return amount * (1 - percent)
++    return amount * (1 - percent / 100)
+--- a/tests/test_regression_totals.py
++++ b/tests/test_regression_totals.py
+@@ -0,0 +1,17 @@
++from checkout import invoice_total
++from money import discounted
++
++
++def test_discount_percent_interpreted_as_percentage():
++    assert discounted(100, 20) == 80
++    assert discounted(100, 0) == 100
++
++
++def test_tax_applied_to_discounted_subtotal():
++    assert invoice_total(100, 20, 0.1) == 88
++
++
++def test_no_discount_no_tax_behavior_preserved():
++    assert invoice_total(100, 0, 0) == 100
++    assert invoice_total(100, 0, 0.1) == 110
++    assert invoice_total(0, 20, 0.1) == 0

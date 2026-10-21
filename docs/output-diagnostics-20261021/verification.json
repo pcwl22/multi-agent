@@ -1,0 +1,129 @@
+{
+  "installed_full_suite": {
+    "tests": 391,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 389,
+    "sha256": "be9f86cb1e0d966523103f6a1afd0884c1ae9969ee001ec41d96262b36aa9b86"
+  },
+  "initial_source_suite": {
+    "tests": 391,
+    "failures": 7,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 382,
+    "sha256": "02eac4f44a391f564958eec92a53e347b6dc544f108e75f60ebf4c6ea73623c3"
+  },
+  "initial_isolated_collection": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 1,
+    "skipped": 0,
+    "passed": 0,
+    "sha256": "79b2de6385bec2c33762f9266a6c50a0ceb6e3c19f108dd6efc7cfcbb37a5f2c"
+  },
+  "existing_test_files_unchanged": 91,
+  "new_test_cases": 14,
+  "package_app_files": 119,
+  "source_wheel_install_match": true,
+  "checked_cells": [
+    {
+      "id": "01-jsonpointer-large-index-multi_full-legacy",
+      "phase": "pilot",
+      "ledger": {
+        "version": 1,
+        "ledger_sha256": "df9925b0132219dbae51168b696c656746594e9d088264a020dc5c2c08fc25c3",
+        "binding_sha256": "9fb852f01e95c7bdf0527608c139d500340745337f035def01615f9874644517",
+        "model_request_reservations": 1,
+        "sandbox_run_reservations": 0,
+        "pending_model_reservations": 0,
+        "pending_sandbox_reservations": 0,
+        "observed_tokens": 9288,
+        "usage_status": "complete",
+        "usage_unknown": false,
+        "billing_status": "not_reconciled",
+        "automatic_replay_allowed": false,
+        "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+      },
+      "original_tests_unchanged": true,
+      "strict_success": false
+    },
+    {
+      "id": "02-jsonpointer-large-index-multi_full-quality",
+      "phase": "pilot",
+      "ledger": {
+        "version": 1,
+        "ledger_sha256": "3a31786f7df4078b02ae12da1cc15737e6f4bb5011c334030927bb56d416a44d",
+        "binding_sha256": "96e4bdc96d6aa3bbf3b21955104823c0e3815d91b542e835a7421287be9cc2be",
+        "model_request_reservations": 1,
+        "sandbox_run_reservations": 0,
+        "pending_model_reservations": 0,
+        "pending_sandbox_reservations": 0,
+        "observed_tokens": 9288,
+        "usage_status": "complete",
+        "usage_unknown": false,
+        "billing_status": "not_reconciled",
+        "automatic_replay_allowed": false,
+        "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+      },
+      "original_tests_unchanged": true,
+      "strict_success": false
+    },
+    {
+      "id": "03-itsdangerous-date-overflow-multi_full-quality",
+      "phase": "pilot",
+      "ledger": {
+        "version": 1,
+        "ledger_sha256": "486b281fea876305228db8e1d917839d406380c95a7d1968187502bac256910c",
+        "binding_sha256": "a9b70281effa74f2ef67b87b8bd5a5ea2598f077e42bd3ce48dc6c2db6f0fce8",
+        "model_request_reservations": 1,
+        "sandbox_run_reservations": 0,
+        "pending_model_reservations": 0,
+        "pending_sandbox_reservations": 0,
+        "observed_tokens": 10193,
+        "usage_status": "complete",
+        "usage_unknown": false,
+        "billing_status": "not_reconciled",
+        "automatic_replay_allowed": false,
+        "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+      },
+      "original_tests_unchanged": true,
+      "strict_success": false
+    },
+    {
+      "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+      "phase": "pilot",
+      "ledger": {
+        "version": 1,
+        "ledger_sha256": "c682d8ea283d3fed4f6b4ed53d32d6f5a44fff4209b894f91db6216af7963fae",
+        "binding_sha256": "d041d083cf8a3e73d45bfbc2f9129c210be6254c75b3d9041bea91ea951f12c6",
+        "model_request_reservations": 2,
+        "sandbox_run_reservations": 0,
+        "pending_model_reservations": 0,
+        "pending_sandbox_reservations": 0,
+        "observed_tokens": 23396,
+        "usage_status": "complete",
+        "usage_unknown": false,
+        "billing_status": "not_reconciled",
+        "automatic_replay_allowed": false,
+        "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+      },
+      "original_tests_unchanged": true,
+      "strict_success": false
+    }
+  ],
+  "interrupted_ledgers": [],
+  "prior_ledger_count": 12,
+  "prior_ledgers_unchanged": true,
+  "configuration_unchanged": true,
+  "credentials_scan_passed": true,
+  "finish_reasons": {
+    "length": 4,
+    "stop": 1
+  },
+  "output_failures": {
+    "output_truncated": 4
+  },
+  "parsed_but_length_reported": 1
+}

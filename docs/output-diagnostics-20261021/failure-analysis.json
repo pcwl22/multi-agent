@@ -1,0 +1,58 @@
+[
+  {
+    "id": "01-jsonpointer-large-index-multi_full-legacy",
+    "phase": "pilot",
+    "status": "failed",
+    "error": "Model response reached its output limit; no automatic parse retry",
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_feedback": [],
+    "repair_feedback": [],
+    "review_results": [],
+    "regression_results": [],
+    "test_status": null,
+    "holdout_status": null
+  },
+  {
+    "id": "02-jsonpointer-large-index-multi_full-quality",
+    "phase": "pilot",
+    "status": "failed",
+    "error": "Model response reached its output limit; no automatic parse retry",
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_feedback": [],
+    "repair_feedback": [],
+    "review_results": [],
+    "regression_results": [],
+    "test_status": null,
+    "holdout_status": null
+  },
+  {
+    "id": "03-itsdangerous-date-overflow-multi_full-quality",
+    "phase": "pilot",
+    "status": "failed",
+    "error": "Model response reached its output limit; no automatic parse retry",
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_feedback": [],
+    "repair_feedback": [],
+    "review_results": [],
+    "regression_results": [],
+    "test_status": null,
+    "holdout_status": null
+  },
+  {
+    "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+    "phase": "pilot",
+    "status": "failed",
+    "error": "Model response reached its output limit; no automatic parse retry",
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_feedback": [],
+    "repair_feedback": [],
+    "review_results": [],
+    "regression_results": [],
+    "test_status": null,
+    "holdout_status": null
+  }
+]

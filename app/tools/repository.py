@@ -26,6 +26,15 @@ IGNORED = {
 SUFFIXES = {".py", ".toml", ".txt", ".md", ".json", ".yaml", ".yml", ".js", ".ts"}
 
 
+def is_test_file(relative: str | Path) -> bool:
+    parts = str(relative).replace("\\", "/").casefold().split("/")
+    name = parts[-1]
+    return (
+        "tests" in parts or name in {"test.py", "tests.py", "conftest.py"}
+        or name.startswith("test_") or name.endswith("_test.py")
+    )
+
+
 class Repository:
     """Bounded text operations; never import or execute target repository code."""
 
@@ -148,7 +157,7 @@ class Repository:
             if p in {"pyproject.toml", "requirements.txt", "package.json"}
         }
 
-    def apply(self, patch: Patch) -> list[str]:
+    def stage(self, patch: Patch) -> dict[Path, str]:
         staged: dict[Path, str] = {}
         for edit in patch.edits:
             p = self.path(edit.path, existing=False)
@@ -156,19 +165,14 @@ class Repository:
                 raise ValueError("One edit per file is required")
             if p.suffix != ".py":
                 raise ValueError("MVP permits Python source and new Python tests only")
-            parts = [part.casefold() for part in p.relative_to(self.root).parts]
-            is_test = (
-                "tests" in parts
-                or p.name.casefold().startswith("test_")
-                or p.name.casefold().endswith("_test.py")
-            )
+            is_test = is_test_file(p.relative_to(self.root))
             if p.name.casefold() == "conftest.py":
                 raise ValueError("Pytest configuration is immutable")
             if is_test and p.exists():
                 raise ValueError("Existing tests are immutable")
-            original = p.read_text(encoding="utf-8") if p.exists() else ""
-            if len(original) > 100000:
+            if p.exists() and p.stat().st_size > 100000:
                 raise ValueError("File exceeds edit limit")
+            original = p.read_text(encoding="utf-8") if p.exists() else ""
             if edit.old:
                 if original.count(edit.old) != 1:
                     raise ValueError("Edit precondition must match exactly once")
@@ -179,8 +183,14 @@ class Repository:
                 updated = edit.new
             if updated == original or not updated.strip():
                 raise ValueError("Empty or no-op edit")
+            if len(updated.encode("utf-8")) > 100000:
+                raise ValueError("Updated file exceeds 100000-byte edit limit")
             ast.parse(updated)
             staged[p] = updated
+        return staged
+
+    def apply(self, patch: Patch) -> list[str]:
+        staged = self.stage(patch)
         for p, updated in staged.items():
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(updated, encoding="utf-8", newline="\n")

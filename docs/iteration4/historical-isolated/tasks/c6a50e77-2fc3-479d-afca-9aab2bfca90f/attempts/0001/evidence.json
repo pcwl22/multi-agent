@@ -1,0 +1,988 @@
+{
+  "candidate_id": "a02af98b-1717-4175-8516-724e91b6bfe5",
+  "candidate_number": 1,
+  "diff": "--- a/jsonpointer.py\n+++ b/jsonpointer.py\n@@ -239,7 +239,13 @@\n             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                 raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n-            return int(part)\n+            try:\n+                return int(part)\n+            except ValueError:\n+                # int() raises ValueError for digit strings exceeding\n+                # sys.int_info.str_digits_check_threshold; treat such\n+                # tokens as invalid sequence indices.\n+                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n         elif hasattr(doc, '__getitem__'):\n             # Allow indexing via ducktyping\n--- a/tests/test_long_index_regression.py\n+++ b/tests/test_long_index_regression.py\n@@ -0,0 +1,141 @@\n+#!/usr/bin/env python\n+\n+import unittest\n+\n+from jsonpointer import (\n+    JsonPointer,\n+    JsonPointerException,\n+    EndOfList,\n+    resolve_pointer,\n+    set_pointer,\n+)\n+\n+\n+# A digit string longer than Python's default int-string conversion limit\n+# (sys.int_info.str_digits_check_threshold, 4300 on CPython).\n+LONG_INDEX = '1' + '0' * 5000\n+\n+\n+class LongNumericIndexTests(unittest.TestCase):\n+    \"\"\"Regression tests: over-limit numeric indices must raise\n+    JsonPointerException, never leak ValueError.\"\"\"\n+\n+    def test_resolve_long_index_raises_jsonpointerexception(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        ptr = JsonPointer('/foo/' + LONG_INDEX)\n+        with self.assertRaises(JsonPointerException):\n+            ptr.resolve(doc)\n+\n+    def test_resolve_long_index_does_not_leak_valueerror(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        ptr = JsonPointer('/foo/' + LONG_INDEX)\n+        try:\n+            ptr.resolve(doc)\n+        except JsonPointerException:\n+            pass\n+        except ValueError as exc:  # pragma: no cover - failure path\n+            self.fail('ValueError leaked instead of JsonPointerException: %r' % (exc,))\n+        else:  # pragma: no cover - failure path\n+            self.fail('Expected JsonPointerException for over-limit index')\n+\n+    def test_to_last_long_index_raises_jsonpointerexception(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        ptr = JsonPointer('/foo/' + LONG_INDEX)\n+        with self.assertRaises(JsonPointerException):\n+            ptr.to_last(doc)\n+\n+    def test_set_long_index_raises_jsonpointerexception(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        ptr = JsonPointer('/foo/' + LONG_INDEX)\n+        with self.assertRaises(JsonPointerException):\n+            ptr.set(doc, 'new')\n+\n+    def test_set_pointer_long_index_raises_jsonpointerexception(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        with self.assertRaises(JsonPointerException):\n+            set_pointer(doc, '/foo/' + LONG_INDEX, 'new')\n+\n+    def test_resolve_long_index_returns_exact_default(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        default = object()\n+        ptr = JsonPointer('/foo/' + LONG_INDEX)\n+        result = ptr.resolve(doc, default)\n+        self.assertIs(result, default)\n+\n+    def test_resolve_pointer_long_index_returns_exact_default(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        default = object()\n+        result = resolve_pointer(doc, '/foo/' + LONG_INDEX, default)\n+        self.assertIs(result, default)\n+\n+    def test_long_numeric_object_key_stays_string(self):\n+        doc = {LONG_INDEX: 'value'}\n+        ptr = JsonPointer('/' + LONG_INDEX)\n+        self.assertEqual(ptr.resolve(doc), 'value')\n+        self.assertIsInstance(ptr.resolve(doc), str)\n+\n+    def test_long_numeric_object_key_via_resolve_pointer(self):\n+        doc = {LONG_INDEX: 'value'}\n+        self.assertEqual(resolve_pointer(doc, '/' + LONG_INDEX), 'value')\n+\n+    def test_long_numeric_object_key_set(self):\n+        doc = {LONG_INDEX: 'old'}\n+        ptr = JsonPointer('/' + LONG_INDEX)\n+        ptr.set(doc, 'new')\n+        self.assertEqual(doc[LONG_INDEX], 'new')\n+\n+\n+class PreservedBehaviorTests(unittest.TestCase):\n+    \"\"\"Ordinary indices, end-of-list handling and mutation must be unchanged.\"\"\"\n+\n+    def test_ordinary_index_resolve(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        self.assertEqual(resolve_pointer(doc, '/foo/0'), 'bar')\n+        self.assertEqual(resolve_pointer(doc, '/foo/1'), 'baz')\n+\n+    def test_ordinary_index_to_last(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        parent, part = JsonPointer('/foo/1').to_last(doc)\n+        self.assertIs(parent, doc['foo'])\n+        self.assertEqual(part, 1)\n+        self.assertIsInstance(part, int)\n+\n+    def test_ordinary_index_set(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        JsonPointer('/foo/0').set(doc, 'qux')\n+        self.assertEqual(doc['foo'], ['qux', 'baz'])\n+\n+    def test_end_of_list_resolve(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        self.assertIsInstance(resolve_pointer(doc, '/foo/-'), EndOfList)\n+\n+    def test_end_of_list_set_appends(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        JsonPointer('/foo/-').set(doc, 'qux')\n+        self.assertEqual(doc['foo'], ['bar', 'baz', 'qux'])\n+\n+    def test_set_mutates_in_place(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        result = JsonPointer('/foo/0').set(doc, 'qux')\n+        self.assertIs(result, doc)\n+        self.assertEqual(doc['foo'], ['qux', 'baz'])\n+\n+    def test_set_not_inplace_does_not_mutate(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        result = JsonPointer('/foo/0').set(doc, 'qux', inplace=False)\n+        self.assertEqual(doc['foo'], ['bar', 'baz'])\n+        self.assertEqual(result['foo'], ['qux', 'baz'])\n+\n+    def test_invalid_non_numeric_index_raises(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        with self.assertRaises(JsonPointerException):\n+            resolve_pointer(doc, '/foo/bar')\n+\n+    def test_out_of_bounds_index_raises(self):\n+        doc = {'foo': ['bar', 'baz']}\n+        with self.assertRaises(JsonPointerException):\n+            resolve_pointer(doc, '/foo/5')\n+\n+\n+if __name__ == '__main__':\n+    unittest.main()\n",
+  "diff_digest": "97fb8ac0634bf0d371168037e2cd11310e0abc541f9ab12c8b9c7720a9374524",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 3,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "a02af98b-1717-4175-8516-724e91b6bfe5",
+      "candidate_number": 1,
+      "changed_files": [
+        "jsonpointer.py",
+        "tests/test_long_index_regression.py"
+      ],
+      "contract_tests": [
+        "resolve with a numeric array index exceeding Python's int digit limit raises JsonPointerException, not ValueError. -> tests/test_long_index_regression.py::LongNumericIndexTests::test_resolve_long_index_raises_jsonpointerexception and ::test_resolve_long_index_does_not_leak_valueerror (input: JsonPointer('/foo/' + '1'+'0'*5000), doc={'foo': ['bar','baz']}; asserts JsonPointerException raised and no ValueError).",
+        "to_last with a numeric array index exceeding Python's int digit limit raises JsonPointerException, not ValueError. -> tests/test_long_index_regression.py::LongNumericIndexTests::test_to_last_long_index_raises_jsonpointerexception (input: JsonPointer('/foo/' + LONG_INDEX).to_last({'foo': ['bar','baz']}); asserts JsonPointerException).",
+        "set with a numeric array index exceeding Python's int digit limit raises JsonPointerException, not ValueError. -> tests/test_long_index_regression.py::LongNumericIndexTests::test_set_long_index_raises_jsonpointerexception and ::test_set_pointer_long_index_raises_jsonpointerexception (input: JsonPointer('/foo/' + LONG_INDEX).set(doc,'new') and set_pointer(doc,'/foo/'+LONG_INDEX,'new'); asserts JsonPointerException).",
+        "resolve with a default returns that exact default object when the sequence index is invalid. -> tests/test_long_index_regression.py::LongNumericIndexTests::test_resolve_long_index_returns_exact_default and ::test_resolve_pointer_long_index_returns_exact_default (input: resolve(doc, default) / resolve_pointer(doc, '/foo/'+LONG_INDEX, default) with default=object(); asserts result is default via assertIs).",
+        "Numeric object member keys remain strings and resolve correctly however long the digit string is. -> tests/test_long_index_regression.py::LongNumericIndexTests::test_long_numeric_object_key_stays_string, ::test_long_numeric_object_key_via_resolve_pointer, ::test_long_numeric_object_key_set (input: doc={LONG_INDEX: 'value'}, pointer '/'+LONG_INDEX; asserts result == 'value' and isinstance(result, str); set updates doc[LONG_INDEX]).",
+        "Ordinary valid array indices continue to resolve, to_last, and set as before. -> tests/test_long_index_regression.py::PreservedBehaviorTests::test_ordinary_index_resolve, ::test_ordinary_index_to_last, ::test_ordinary_index_set (input: '/foo/0', '/foo/1' on {'foo': ['bar','baz']}; asserts 'bar'/'baz', part == 1 and isinstance(part, int), and doc['foo'] == ['qux','baz']).",
+        "End-of-list handling (e.g. '-' or equivalent) is preserved. -> tests/test_long_index_regression.py::PreservedBehaviorTests::test_end_of_list_resolve and ::test_end_of_list_set_appends (input: '/foo/-' on {'foo': ['bar','baz']}; asserts isinstance(result, EndOfList) and append yields ['bar','baz','qux']).",
+        "Input mutation behavior of set is preserved. -> tests/test_long_index_regression.py::PreservedBehaviorTests::test_set_mutates_in_place and ::test_set_not_inplace_does_not_mutate (input: JsonPointer('/foo/0').set(doc,'qux') and set(..., inplace=False); asserts result is doc and doc mutated in place, while inplace=False leaves doc unchanged and returns a modified copy)."
+      ],
+      "edits": [
+        {
+          "new": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            try:\n                return int(part)\n            except ValueError:\n                # int() raises ValueError for digit strings exceeding\n                # sys.int_info.str_digits_check_threshold; treat such\n                # tokens as invalid sequence indices.\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)",
+          "old": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            return int(part)",
+          "path": "jsonpointer.py"
+        },
+        {
+          "new": "#!/usr/bin/env python\n\nimport unittest\n\nfrom jsonpointer import (\n    JsonPointer,\n    JsonPointerException,\n    EndOfList,\n    resolve_pointer,\n    set_pointer,\n)\n\n\n# A digit string longer than Python's default int-string conversion limit\n# (sys.int_info.str_digits_check_threshold, 4300 on CPython).\nLONG_INDEX = '1' + '0' * 5000\n\n\nclass LongNumericIndexTests(unittest.TestCase):\n    \"\"\"Regression tests: over-limit numeric indices must raise\n    JsonPointerException, never leak ValueError.\"\"\"\n\n    def test_resolve_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n            ptr.resolve(doc)\n\n    def test_resolve_long_index_does_not_leak_valueerror(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        try:\n            ptr.resolve(doc)\n        except JsonPointerException:\n            pass\n        except ValueError as exc:  # pragma: no cover - failure path\n            self.fail('ValueError leaked instead of JsonPointerException: %r' % (exc,))\n        else:  # pragma: no cover - failure path\n            self.fail('Expected JsonPointerException for over-limit index')\n\n    def test_to_last_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n            ptr.to_last(doc)\n\n    def test_set_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n            ptr.set(doc, 'new')\n\n    def test_set_pointer_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        with self.assertRaises(JsonPointerException):\n            set_pointer(doc, '/foo/' + LONG_INDEX, 'new')\n\n    def test_resolve_long_index_returns_exact_default(self):\n        doc = {'foo': ['bar', 'baz']}\n        default = object()\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        result = ptr.resolve(doc, default)\n        self.assertIs(result, default)\n\n    def test_resolve_pointer_long_index_returns_exact_default(self):\n        doc = {'foo': ['bar', 'baz']}\n        default = object()\n        result = resolve_pointer(doc, '/foo/' + LONG_INDEX, default)\n        self.assertIs(result, default)\n\n    def test_long_numeric_object_key_stays_string(self):\n        doc = {LONG_INDEX: 'value'}\n        ptr = JsonPointer('/' + LONG_INDEX)\n        self.assertEqual(ptr.resolve(doc), 'value')\n        self.assertIsInstance(ptr.resolve(doc), str)\n\n    def test_long_numeric_object_key_via_resolve_pointer(self):\n        doc = {LONG_INDEX: 'value'}\n        self.assertEqual(resolve_pointer(doc, '/' + LONG_INDEX), 'value')\n\n    def test_long_numeric_object_key_set(self):\n        doc = {LONG_INDEX: 'old'}\n        ptr = JsonPointer('/' + LONG_INDEX)\n        ptr.set(doc, 'new')\n        self.assertEqual(doc[LONG_INDEX], 'new')\n\n\nclass PreservedBehaviorTests(unittest.TestCase):\n    \"\"\"Ordinary indices, end-of-list handling and mutation must be unchanged.\"\"\"\n\n    def test_ordinary_index_resolve(self):\n        doc = {'foo': ['bar', 'baz']}\n        self.assertEqual(resolve_pointer(doc, '/foo/0'), 'bar')\n        self.assertEqual(resolve_pointer(doc, '/foo/1'), 'baz')\n\n    def test_ordinary_index_to_last(self):\n        doc = {'foo': ['bar', 'baz']}\n        parent, part = JsonPointer('/foo/1').to_last(doc)\n        self.assertIs(parent, doc['foo'])\n        self.assertEqual(part, 1)\n        self.assertIsInstance(part, int)\n\n    def test_ordinary_index_set(self):\n        doc = {'foo': ['bar', 'baz']}\n        JsonPointer('/foo/0').set(doc, 'qux')\n        self.assertEqual(doc['foo'], ['qux', 'baz'])\n\n    def test_end_of_list_resolve(self):\n        doc = {'foo': ['bar', 'baz']}\n        self.assertIsInstance(resolve_pointer(doc, '/foo/-'), EndOfList)\n\n    def test_end_of_list_set_appends(self):\n        doc = {'foo': ['bar', 'baz']}\n        JsonPointer('/foo/-').set(doc, 'qux')\n        self.assertEqual(doc['foo'], ['bar', 'baz', 'qux'])\n\n    def test_set_mutates_in_place(self):\n        doc = {'foo': ['bar', 'baz']}\n        result = JsonPointer('/foo/0').set(doc, 'qux')\n        self.assertIs(result, doc)\n        self.assertEqual(doc['foo'], ['qux', 'baz'])\n\n    def test_set_not_inplace_does_not_mutate(self):\n        doc = {'foo': ['bar', 'baz']}\n        result = JsonPointer('/foo/0').set(doc, 'qux', inplace=False)\n        self.assertEqual(doc['foo'], ['bar', 'baz'])\n        self.assertEqual(result['foo'], ['qux', 'baz'])\n\n    def test_invalid_non_numeric_index_raises(self):\n        doc = {'foo': ['bar', 'baz']}\n        with self.assertRaises(JsonPointerException):\n            resolve_pointer(doc, '/foo/bar')\n\n    def test_out_of_bounds_index_raises(self):\n        doc = {'foo': ['bar', 'baz']}\n        with self.assertRaises(JsonPointerException):\n            resolve_pointer(doc, '/foo/5')\n\n\nif __name__ == '__main__':\n    unittest.main()\n",
+          "old": "",
+          "path": "tests/test_long_index_regression.py"
+        }
+      ],
+      "rationale": "The bug: `JsonPointer.get_part` calls `int(part)` on a validated numeric token. For a digit string longer than Python's `sys.int_info.str_digits_check_threshold` (default 4300), `int()` raises `ValueError: Exceeds the limit (4300 digits) for integer string conversion`, which leaks out of `resolve`, `to_last`, and `set` instead of `JsonPointerException`. Fix: wrap the conversion in try/except ValueError and re-raise as JsonPointerException. This single shared helper is used by `walk` (resolve/to_last) and `set` (via `to_last`), so all three public operations are covered. Mapping lookups return `part` unchanged before any int conversion, so long numeric object keys stay strings. `resolve` already catches JsonPointerException and returns the default, so the default-identity contract holds once the exception type is correct. Ordinary indices, '-' end-of-list, and in-place mutation are untouched. New regression tests are added in a fresh file `tests/test_long_index_regression.py`."
+    }
+  ],
+  "recorded_digest": "97fb8ac0634bf0d371168037e2cd11310e0abc541f9ab12c8b9c7720a9374524",
+  "regression_results": [
+    {
+      "attempt": 1,
+      "baseline_result": {
+        "cases": [
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_does_not_leak_valueerror>\n\n    def test_resolve_long_index_does_not_leak_valueerror(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        try:\n>           ptr.resolve(doc)\n\ntests/test_long_index_regression.py:33: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncls = <class 'jsonpointer.JsonPointer'>, doc = ['bar', 'baz']\npart = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n\nDuring handling of the above exception, another exception occurred:\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_does_not_leak_valueerror>\n\n    def test_resolve_long_index_does_not_leak_valueerror(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        try:\n            ptr.resolve(doc)\n        except JsonPointerException:\n            pass\n        except ValueError as exc:  # pragma: no cover - failure path\n>           self.fail('ValueError leaked instead of JsonPointerException: %r' % (exc,))\nE           AssertionError: ValueError leaked instead of JsonPointerException: ValueError('Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit')\n\ntests/test_long_index_regression.py:37: AssertionError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 29,
+            "message": "AssertionError: ValueError leaked instead of JsonPointerException: ValueError('Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit')",
+            "name": "test_resolve_long_index_does_not_leak_valueerror",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_raises_jsonpointerexception>\n\n    def test_resolve_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n>           ptr.resolve(doc)\n\ntests/test_long_index_regression.py:27: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 23,
+            "message": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit",
+            "name": "test_resolve_long_index_raises_jsonpointerexception",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_returns_exact_default>\n\n    def test_resolve_long_index_returns_exact_default(self):\n        doc = {'foo': ['bar', 'baz']}\n        default = object()\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n>       result = ptr.resolve(doc, default)\n\ntests/test_long_index_regression.py:62: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncls = <class 'jsonpointer.JsonPointer'>, doc = ['bar', 'baz']\npart = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 58,
+            "message": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit",
+            "name": "test_resolve_long_index_returns_exact_default",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_pointer_long_index_returns_exact_default>\n\n    def test_resolve_pointer_long_index_returns_exact_default(self):\n        doc = {'foo': ['bar', 'baz']}\n        default = object()\n>       result = resolve_pointer(doc, '/foo/' + LONG_INDEX, default)\n\ntests/test_long_index_regression.py:68: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:110: in resolve_pointer\n    return pointer.resolve(doc, default)\njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncls = <class 'jsonpointer.JsonPointer'>, doc = ['bar', 'baz']\npart = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 65,
+            "message": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit",
+            "name": "test_resolve_pointer_long_index_returns_exact_default",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_set_long_index_raises_jsonpointerexception>\n\n    def test_set_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n>           ptr.set(doc, 'new')\n\ntests/test_long_index_regression.py:51: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:210: in set\n    (parent, part) = self.to_last(doc)\njsonpointer.py:180: in to_last\n    return doc, JsonPointer.get_part(doc, self.parts[-1])\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 47,
+            "message": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit",
+            "name": "test_set_long_index_raises_jsonpointerexception",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_set_pointer_long_index_raises_jsonpointerexception>\n\n    def test_set_pointer_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        with self.assertRaises(JsonPointerException):\n>           set_pointer(doc, '/foo/' + LONG_INDEX, 'new')\n\ntests/test_long_index_regression.py:56: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:70: in set_pointer\n    return pointer.set(doc, value, inplace)\njsonpointer.py:210: in set\n    (parent, part) = self.to_last(doc)\njsonpointer.py:180: in to_last\n    return doc, JsonPointer.get_part(doc, self.parts[-1])\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 53,
+            "message": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit",
+            "name": "test_set_pointer_long_index_raises_jsonpointerexception",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "self = <test_long_index_regression.LongNumericIndexTests testMethod=test_to_last_long_index_raises_jsonpointerexception>\n\n    def test_to_last_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n>           ptr.to_last(doc)\n\ntests/test_long_index_regression.py:45: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:180: in to_last\n    return doc, JsonPointer.get_part(doc, self.parts[-1])\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError",
+            "file": "tests/test_long_index_regression.py",
+            "line": 41,
+            "message": "ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit",
+            "name": "test_to_last_long_index_raises_jsonpointerexception",
+            "status": "failed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 81,
+            "message": "",
+            "name": "test_long_numeric_object_key_set",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 71,
+            "message": "",
+            "name": "test_long_numeric_object_key_stays_string",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 77,
+            "message": "",
+            "name": "test_long_numeric_object_key_via_resolve_pointer",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 108,
+            "message": "",
+            "name": "test_end_of_list_resolve",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 112,
+            "message": "",
+            "name": "test_end_of_list_set_appends",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 129,
+            "message": "",
+            "name": "test_invalid_non_numeric_index_raises",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 91,
+            "message": "",
+            "name": "test_ordinary_index_resolve",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 103,
+            "message": "",
+            "name": "test_ordinary_index_set",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 96,
+            "message": "",
+            "name": "test_ordinary_index_to_last",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 134,
+            "message": "",
+            "name": "test_out_of_bounds_index_raises",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 117,
+            "message": "",
+            "name": "test_set_mutates_in_place",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+            "details": "",
+            "file": "tests/test_long_index_regression.py",
+            "line": 123,
+            "message": "",
+            "name": "test_set_not_inplace_does_not_mutate",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.SpecificationTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 42,
+            "message": "",
+            "name": "test_eol",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.SpecificationTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 15,
+            "message": "",
+            "name": "test_example",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.SpecificationTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 107,
+            "message": "",
+            "name": "test_parts",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.SpecificationTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 50,
+            "message": "",
+            "name": "test_round_trip",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.SpecificationTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 75,
+            "message": "",
+            "name": "test_str_and_repr",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 151,
+            "message": "",
+            "name": "test_contains",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 156,
+            "message": "",
+            "name": "test_contains_magic",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 135,
+            "message": "",
+            "name": "test_eq_hash",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 161,
+            "message": "",
+            "name": "test_join",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 179,
+            "message": "",
+            "name": "test_join_magic",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 212,
+            "message": "",
+            "name": "test_join_magic_subclass",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ComparisonTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 195,
+            "message": "",
+            "name": "test_join_subclass",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 240,
+            "message": "",
+            "name": "test_invalid_escape",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 227,
+            "message": "",
+            "name": "test_invalid_index",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 243,
+            "message": "",
+            "name": "test_leading_zero",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 223,
+            "message": "",
+            "name": "test_no_start_slash",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 232,
+            "message": "",
+            "name": "test_oob",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 247,
+            "message": "",
+            "name": "test_string_not_indexable",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.WrongInputTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 237,
+            "message": "",
+            "name": "test_trailing_escape",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ToLastTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 257,
+            "message": "",
+            "name": "test_empty_path",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.ToLastTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 264,
+            "message": "",
+            "name": "test_path",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.SetTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 274,
+            "message": "",
+            "name": "test_set",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.AltTypesTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 374,
+            "message": "",
+            "name": "test_alttypes",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.AltTypesTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 423,
+            "message": "",
+            "name": "test_mock_dict_raises_key_error",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.AltTypesTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 411,
+            "message": "",
+            "name": "test_mock_dict_returns_default",
+            "status": "passed"
+          },
+          {
+            "classname": "tests.test_upstream_suite.AltTypesTests",
+            "details": "",
+            "file": "tests.py",
+            "line": 397,
+            "message": "",
+            "name": "test_mock_dict_sanity",
+            "status": "passed"
+          }
+        ],
+        "cases_truncated": false,
+        "duration_seconds": 1.157941400000709,
+        "errors": 0,
+        "evidence": "docker",
+        "exit_code": 1,
+        "failed": 7,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "output_truncated": false,
+        "passed": 38,
+        "skipped": 0,
+        "status": "failed",
+        "stderr": "",
+        "stdout": "...FFFFFFF...................................                            [100%]\n=================================== FAILURES ===================================\n____ LongNumericIndexTests.test_resolve_long_index_does_not_leak_valueerror ____\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_does_not_leak_valueerror>\n\n    def test_resolve_long_index_does_not_leak_valueerror(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        try:\n>           ptr.resolve(doc)\n\ntests/test_long_index_regression.py:33: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncls = <class 'jsonpointer.JsonPointer'>, doc = ['bar', 'baz']\npart = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n\nDuring handling of the above exception, another exception occurred:\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_does_not_leak_valueerror>\n\n    def test_resolve_long_index_does_not_leak_valueerror(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        try:\n            ptr.resolve(doc)\n        except JsonPointerException:\n            pass\n        except ValueError as exc:  # pragma: no cover - failure path\n>           self.fail('ValueError leaked instead of JsonPointerException: %r' % (exc,))\nE           AssertionError: ValueError leaked instead of JsonPointerException: ValueError('Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit')\n\ntests/test_long_index_regression.py:37: AssertionError\n__ LongNumericIndexTests.test_resolve_long_index_raises_jsonpointerexception ___\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_raises_jsonpointerexception>\n\n    def test_resolve_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n>           ptr.resolve(doc)\n\ntests/test_long_index_regression.py:27: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n_____ LongNumericIndexTests.test_resolve_long_index_returns_exact_default ______\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_long_index_returns_exact_default>\n\n    def test_resolve_long_index_returns_exact_default(self):\n        doc = {'foo': ['bar', 'baz']}\n        default = object()\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n>       result = ptr.resolve(doc, default)\n\ntests/test_long_index_regression.py:62: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncls = <class 'jsonpointer.JsonPointer'>, doc = ['bar', 'baz']\npart = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n_ LongNumericIndexTests.test_resolve_pointer_long_index_returns_exact_default __\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_resolve_pointer_long_index_returns_exact_default>\n\n    def test_resolve_pointer_long_index_returns_exact_default(self):\n        doc = {'foo': ['bar', 'baz']}\n        default = object()\n>       result = resolve_pointer(doc, '/foo/' + LONG_INDEX, default)\n\ntests/test_long_index_regression.py:68: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:110: in resolve_pointer\n    return pointer.resolve(doc, default)\njsonpointer.py:188: in resolve\n    doc = self.walk(doc, part)\njsonpointer.py:261: in walk\n    part = JsonPointer.get_part(doc, part)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncls = <class 'jsonpointer.JsonPointer'>, doc = ['bar', 'baz']\npart = '100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000...0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n____ LongNumericIndexTests.test_set_long_index_raises_jsonpointerexception _____\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_set_long_index_raises_jsonpointerexception>\n\n    def test_set_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n>           ptr.set(doc, 'new')\n\ntests/test_long_index_regression.py:51: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:210: in set\n    (parent, part) = self.to_last(doc)\njsonpointer.py:180: in to_last\n    return doc, JsonPointer.get_part(doc, self.parts[-1])\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n_ LongNumericIndexTests.test_set_pointer_long_index_raises_jsonpointerexception _\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_set_pointer_long_index_raises_jsonpointerexception>\n\n    def test_set_pointer_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        with self.assertRaises(JsonPointerException):\n>           set_pointer(doc, '/foo/' + LONG_INDEX, 'new')\n\ntests/test_long_index_regression.py:56: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:70: in set_pointer\n    return pointer.set(doc, value, inplace)\njsonpointer.py:210: in set\n    (parent, part) = self.to_last(doc)\njsonpointer.py:180: in to_last\n    return doc, JsonPointer.get_part(doc, self.parts[-1])\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n__ LongNumericIndexTests.test_to_last_long_index_raises_jsonpointerexception ___\n\nself = <test_long_index_regression.LongNumericIndexTests testMethod=test_to_last_long_index_raises_jsonpointerexception>\n\n    def test_to_last_long_index_raises_jsonpointerexception(self):\n        doc = {'foo': ['bar', 'baz']}\n        ptr = JsonPointer('/foo/' + LONG_INDEX)\n        with self.assertRaises(JsonPointerException):\n>           ptr.to_last(doc)\n\ntests/test_long_index_regression.py:45: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \njsonpointer.py:180: in to_last\n    return doc, JsonPointer.get_part(doc, self.parts[-1])\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    @classmethod\n    def get_part(cls, doc, part):\n        \"\"\"Returns the next step in the correct type\"\"\"\n    \n        if isinstance(doc, Mapping):\n            return part\n    \n        elif isinstance(doc, str):\n            raise JsonPointerException(\"Cannot apply token '%s' to non-container type %s\" % (part, type(doc)))\n    \n        elif isinstance(doc, Sequence):\n    \n            if part == '-':\n                return part\n    \n            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n    \n>           return int(part)\nE           ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5001 digits; use sys.set_int_max_str_digits() to increase the limit\n\njsonpointer.py:242: ValueError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_resolve_long_index_does_not_leak_valueerror\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_resolve_long_index_raises_jsonpointerexception\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_resolve_long_index_returns_exact_default\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_resolve_pointer_long_index_returns_exact_default\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_set_long_index_raises_jsonpointerexception\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_set_pointer_long_index_raises_jsonpointerexception\nFAILED tests/test_long_index_regression.py::LongNumericIndexTests::test_to_last_long_index_raises_jsonpointerexception\n7 failed, 38 passed in 0.32s\n"
+      },
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-historical-isolated-data\\tasks\\c6a50e77-2fc3-479d-afca-9aab2bfca90f\\regression\\attempt-1-ea0811cc-56dd-45b5-9d08-2a692f4ab2ae",
+      "candidate_id": "a02af98b-1717-4175-8516-724e91b6bfe5",
+      "candidate_number": 1,
+      "diff_digest": "97fb8ac0634bf0d371168037e2cd11310e0abc541f9ab12c8b9c7720a9374524",
+      "fail_to_pass_tests": [
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_resolve_long_index_does_not_leak_valueerror",
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_resolve_long_index_raises_jsonpointerexception",
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_resolve_long_index_returns_exact_default",
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_resolve_pointer_long_index_returns_exact_default",
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_set_long_index_raises_jsonpointerexception",
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_set_pointer_long_index_raises_jsonpointerexception",
+        "tests/test_long_index_regression.py::tests.test_long_index_regression.LongNumericIndexTests::test_to_last_long_index_raises_jsonpointerexception"
+      ],
+      "generated_tests": [
+        "tests/test_long_index_regression.py"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "status": "demonstrated"
+    }
+  ],
+  "repair_feedback": [],
+  "retry_count": 0,
+  "reviews": [
+    {
+      "approved": true,
+      "attempt": 1,
+      "candidate_id": "a02af98b-1717-4175-8516-724e91b6bfe5",
+      "candidate_number": 1,
+      "concerns": [
+        "The except ValueError block re-raises without 'from None', so the JsonPointerException will chain the original ValueError as __context__; this is cosmetic and does not affect the required exception type.",
+        "The new tests live in tests/test_long_index_regression.py rather than the existing tests.py; this is acceptable since the issue only requires NEW regression tests."
+      ],
+      "contract_checks": [
+        {
+          "evidence": "get_part now catches ValueError from int(part) and raises JsonPointerException. resolve calls walk -> get_part. Baseline evidence shows the original leaked ValueError('Exceeds the limit (4300 digits)...') at jsonpointer.py:242; candidate passes test_resolve_long_index_raises_jsonpointerexception and test_resolve_long_index_does_not_leak_valueerror.",
+          "requirement": "resolve with a numeric array index exceeding Python's int digit limit raises JsonPointerException, not ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "to_last calls JsonPointer.get_part(doc, self.parts[-1]) directly, which now raises JsonPointerException. Baseline failed test_to_last_long_index_raises_jsonpointerexception with ValueError; candidate passes.",
+          "requirement": "to_last with a numeric array index exceeding Python's int digit limit raises JsonPointerException, not ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "set calls to_last -> get_part. Baseline failed test_set_long_index_raises_jsonpointerexception and test_set_pointer_long_index_raises_jsonpointerexception with ValueError; candidate passes both.",
+          "requirement": "set with a numeric array index exceeding Python's int digit limit raises JsonPointerException, not ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "resolve catches JsonPointerException and returns default when default is not _nothing. Since get_part now raises JsonPointerException, the default path is taken. Tests test_resolve_long_index_returns_exact_default and test_resolve_pointer_long_index_returns_exact_default use assertIs(result, default) and pass on candidate (failed on baseline).",
+          "requirement": "resolve with a default returns that exact default object when the sequence index is invalid.",
+          "satisfied": true
+        },
+        {
+          "evidence": "get_part returns part unchanged for Mapping before any int() conversion, so long numeric keys are never converted. Tests test_long_numeric_object_key_stays_string, test_long_numeric_object_key_via_resolve_pointer, and test_long_numeric_object_key_set pass on candidate.",
+          "requirement": "Numeric object member keys remain strings and resolve correctly however long the digit string is.",
+          "satisfied": true
+        },
+        {
+          "evidence": "int(part) still returns the integer for normal indices; only the ValueError path changed. Tests test_ordinary_index_resolve, test_ordinary_index_to_last (asserts part == 1 and isinstance int), test_ordinary_index_set pass; full suite 45 passed.",
+          "requirement": "Ordinary valid array indices continue to resolve, to_last, and set as before.",
+          "satisfied": true
+        },
+        {
+          "evidence": "The '-' branch in get_part is unchanged and returns before the int() conversion. Tests test_end_of_list_resolve (EndOfList) and test_end_of_list_set_appends pass.",
+          "requirement": "End-of-list handling (e.g. '-' or equivalent) is preserved.",
+          "satisfied": true
+        },
+        {
+          "evidence": "set's inplace/deepcopy logic is untouched by the diff. Tests test_set_mutates_in_place (result is doc) and test_set_not_inplace_does_not_mutate pass.",
+          "requirement": "Input mutation behavior of set is preserved.",
+          "satisfied": true
+        }
+      ],
+      "summary": "The diff wraps the sequence-index int() conversion in get_part with a try/except ValueError that re-raises JsonPointerException. This is the single shared helper used by resolve (via walk), to_last, and set, so all three public operations now translate the int_max_str_digits ValueError into JsonPointerException. resolve's existing except JsonPointerException path returns the exact default object. Mapping lookups return the part unchanged before any int() conversion, so long numeric object keys remain strings. Ordinary indices, '-' end-of-list handling, and inplace/deepcopy mutation semantics are untouched. Regression evidence is strong: the 7 added fail_to_pass tests failed on the original source with the exact ValueError leak and pass on the candidate (45 passed)."
+    }
+  ],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "a02af98b-1717-4175-8516-724e91b6bfe5",
+      "candidate_number": 1,
+      "cases": [
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 81,
+          "message": "",
+          "name": "test_long_numeric_object_key_set",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 71,
+          "message": "",
+          "name": "test_long_numeric_object_key_stays_string",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 77,
+          "message": "",
+          "name": "test_long_numeric_object_key_via_resolve_pointer",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 29,
+          "message": "",
+          "name": "test_resolve_long_index_does_not_leak_valueerror",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 23,
+          "message": "",
+          "name": "test_resolve_long_index_raises_jsonpointerexception",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 58,
+          "message": "",
+          "name": "test_resolve_long_index_returns_exact_default",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 65,
+          "message": "",
+          "name": "test_resolve_pointer_long_index_returns_exact_default",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 47,
+          "message": "",
+          "name": "test_set_long_index_raises_jsonpointerexception",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 53,
+          "message": "",
+          "name": "test_set_pointer_long_index_raises_jsonpointerexception",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.LongNumericIndexTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 41,
+          "message": "",
+          "name": "test_to_last_long_index_raises_jsonpointerexception",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 108,
+          "message": "",
+          "name": "test_end_of_list_resolve",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 112,
+          "message": "",
+          "name": "test_end_of_list_set_appends",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 129,
+          "message": "",
+          "name": "test_invalid_non_numeric_index_raises",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 91,
+          "message": "",
+          "name": "test_ordinary_index_resolve",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 103,
+          "message": "",
+          "name": "test_ordinary_index_set",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 96,
+          "message": "",
+          "name": "test_ordinary_index_to_last",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 134,
+          "message": "",
+          "name": "test_out_of_bounds_index_raises",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 117,
+          "message": "",
+          "name": "test_set_mutates_in_place",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_long_index_regression.PreservedBehaviorTests",
+          "details": "",
+          "file": "tests/test_long_index_regression.py",
+          "line": 123,
+          "message": "",
+          "name": "test_set_not_inplace_does_not_mutate",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 42,
+          "message": "",
+          "name": "test_eol",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 15,
+          "message": "",
+          "name": "test_example",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 107,
+          "message": "",
+          "name": "test_parts",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 50,
+          "message": "",
+          "name": "test_round_trip",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.SpecificationTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 75,
+          "message": "",
+          "name": "test_str_and_repr",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 151,
+          "message": "",
+          "name": "test_contains",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 156,
+          "message": "",
+          "name": "test_contains_magic",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 135,
+          "message": "",
+          "name": "test_eq_hash",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 161,
+          "message": "",
+          "name": "test_join",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 179,
+          "message": "",
+          "name": "test_join_magic",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 212,
+          "message": "",
+          "name": "test_join_magic_subclass",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ComparisonTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 195,
+          "message": "",
+          "name": "test_join_subclass",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 240,
+          "message": "",
+          "name": "test_invalid_escape",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 227,
+          "message": "",
+          "name": "test_invalid_index",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 243,
+          "message": "",
+          "name": "test_leading_zero",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 223,
+          "message": "",
+          "name": "test_no_start_slash",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 232,
+          "message": "",
+          "name": "test_oob",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 247,
+          "message": "",
+          "name": "test_string_not_indexable",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.WrongInputTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 237,
+          "message": "",
+          "name": "test_trailing_escape",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ToLastTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 257,
+          "message": "",
+          "name": "test_empty_path",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.ToLastTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 264,
+          "message": "",
+          "name": "test_path",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.SetTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 274,
+          "message": "",
+          "name": "test_set",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 374,
+          "message": "",
+          "name": "test_alttypes",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 423,
+          "message": "",
+          "name": "test_mock_dict_raises_key_error",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 411,
+          "message": "",
+          "name": "test_mock_dict_returns_default",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_upstream_suite.AltTypesTests",
+          "details": "",
+          "file": "tests.py",
+          "line": 397,
+          "message": "",
+          "name": "test_mock_dict_sanity",
+          "status": "passed"
+        }
+      ],
+      "cases_truncated": false,
+      "diff_digest": "97fb8ac0634bf0d371168037e2cd11310e0abc541f9ab12c8b9c7720a9374524",
+      "duration_seconds": 1.0592146000053617,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "output_truncated": false,
+      "passed": 45,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".............................................                            [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n45 passed in 0.20s\n"
+    }
+  ],
+  "workspace_manifest": {
+    ".github/workflows/test.yaml": "c9707120d99cb87316dfe450b6dacd9c58db362a0e5e902c7fb6a77f056c1020",
+    ".readthedocs.yaml": "5b5c9335d6fa7ff57c3c847a057db901372e2083f259a801046acf5018f544a4",
+    "LICENSE.txt": "d8b24f15d472885f788a2d6e985850f264627b86012a17bb242c83f310d907e5",
+    "README.md": "5cbc1356d894dad09d85160bdeb9743aad94fc5ef66d8b4165b057e4794904fc",
+    "doc/conf.py": "29948433491bf1f630becf275c954520f9af944dcc5199946efac7cd698d928a",
+    "jsonpointer.py": "f195ebce136cb216fc33975791d998d3d677de9f895f4edc3ab57dddaaeeb088",
+    "requirements-dev.txt": "7272ab2b29dd3ce79746f9128e68956407cfe60543ed4b6d6ed4cb2847fa0723",
+    "setup.py": "718a22267b266bea2ac81135c5f6c888eb581858e3e5b2d2e2012a606d28a6a9",
+    "tests.py": "99300a74a31a1321515782334cd68e21b2558f3d1e934b558c3675673375c06f",
+    "tests/test_long_index_regression.py": "1f39811aac3518154d2a9a8b776c60039dd46c3755080f3eb654a6d99e0a20ef",
+    "tests/test_upstream_suite.py": "ed9d1f6ccefaac11626f4744d3764f893bf62d61492fbba670710152948f21c6"
+  }
+}

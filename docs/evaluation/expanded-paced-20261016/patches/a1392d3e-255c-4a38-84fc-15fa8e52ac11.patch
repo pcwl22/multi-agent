@@ -1,0 +1,38 @@
+--- a/events.py
++++ b/events.py
+@@ -3,4 +3,6 @@
+ 
+ def parse_event_time(value):
+     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+-    return parsed.replace(tzinfo=timezone.utc)
++    if parsed.tzinfo is None:
++        return parsed.replace(tzinfo=timezone.utc)
++    return parsed.astimezone(timezone.utc)
+--- a/tests/test_event_time_regression.py
++++ b/tests/test_event_time_regression.py
+@@ -0,0 +1,25 @@
++from datetime import datetime, timezone
++
++from events import parse_event_time
++
++
++def test_offset_is_converted_to_utc():
++    result = parse_event_time("2026-04-01T12:00:00+02:00")
++    assert result == datetime(2026, 4, 1, 10, 0, tzinfo=timezone.utc)
++    assert result.isoformat() == "2026-04-01T10:00:00+00:00"
++
++
++def test_negative_offset_is_converted_to_utc():
++    result = parse_event_time("2026-04-01T12:00:00-05:00")
++    assert result == datetime(2026, 4, 1, 17, 0, tzinfo=timezone.utc)
++
++
++def test_naive_is_treated_as_utc():
++    result = parse_event_time("2026-04-01T12:00:00")
++    assert result == datetime(2026, 4, 1, 12, 0, tzinfo=timezone.utc)
++
++
++def test_z_suffix_still_supported():
++    result = parse_event_time("2026-04-01T12:00:00Z")
++    assert result == datetime(2026, 4, 1, 12, 0, tzinfo=timezone.utc)
++    assert result.isoformat() == "2026-04-01T12:00:00+00:00"

@@ -1,0 +1,14 @@
+{
+  "validation": "Streamlit AppTest + local FastAPI TestClient + real Docker; mock adapter only supports documented demo auth repair",
+  "task_id": "9b78c234-1b04-4bdb-9d83-fba996bc10e2",
+  "candidate_id": "db600bf1-52ce-429b-915c-dc8204eb3d02",
+  "creation_policy_forwarded": true,
+  "candidate_identity_rendered": true,
+  "approval_digest_and_candidate_id_forwarded": true,
+  "execution_status": "approved",
+  "docker_test_status": "passed",
+  "docker_evidence": "docker",
+  "external_writes": 0,
+  "real_model_calls": 0,
+  "actual_browser_session": false
+}

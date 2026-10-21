@@ -1,0 +1,65 @@
+--- a/slugs.py
++++ b/slugs.py
+@@ -1,5 +1,10 @@
+ import re
++import unicodedata
+ 
+ 
+ def slugify(value):
+-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
++    normalized = unicodedata.normalize("NFKD", value)
++    ascii_text = "".join(
++        char for char in normalized if not unicodedata.combining(char)
++    )
++    return re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
+--- a/tests/test_slugify_unicode.py
++++ b/tests/test_slugify_unicode.py
+@@ -0,0 +1,48 @@
++from slugs import slugify
++
++
++COMBINING_ACUTE = "\u0301"
++
++
++def test_precomposed_accented_phrase():
++    assert slugify("Caf\u00e9 d\u00e9j\u00e0 vu") == "cafe-deja-vu"
++
++
++def test_decomposed_combining_acute_stripped():
++    assert slugify("cafe" + COMBINING_ACUTE) == "cafe"
++
++
++def test_precomposed_and_decomposed_match():
++    assert slugify("caf\u00e9") == slugify("cafe" + COMBINING_ACUTE)
++
++
++def test_returns_str_for_str_input():
++    result = slugify("Caf\u00e9")
++    assert isinstance(result, str)
++    assert result == "cafe"
++
++
++def test_ascii_word_separation_preserved():
++    assert slugify("Hello World") == "hello-world"
++
++
++def test_dash_trimming_preserved():
++    result = slugify("  Hello World  ")
++    assert result == "hello-world"
++    assert not result.startswith("-")
++    assert not result.endswith("-")
++
++
++def test_empty_and_whitespace_only_input():
++    assert slugify("") == ""
++    assert slugify("   ") == ""
++
++
++def test_non_alphanumeric_ascii_maps_to_dashes():
++    assert slugify("Hello, World!") == "hello-world"
++    assert slugify("a---b") == "a-b"
++    assert slugify("---a---") == "a"
++
++
++def test_signature_unchanged_single_positional_arg():
++    assert slugify("Hello, World!") == "hello-world"

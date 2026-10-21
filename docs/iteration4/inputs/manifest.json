@@ -1,0 +1,29 @@
+[
+  {
+    "name": "diagnostic",
+    "original_directory": ".repopilot/iteration4-diagnostic",
+    "sha256": {
+      "dataset.json": "41664765276ba398a1fe54bb826b47d3760ecb84f803c75b235e0cee524d2123",
+      "acceptance/test_pagination_sequence_acceptance.py": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676",
+      "acceptance/test_recursive_config.py": "5d61ceb5fc01100e365bdb8c323249cfbecd54afbb5f483c041e7afc8a969181",
+      "acceptance/test_itsdangerous_overflow.py": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d"
+    }
+  },
+  {
+    "name": "pagination",
+    "original_directory": ".repopilot/guard-target",
+    "sha256": {
+      "dataset.json": "7d00f1241601c25d5dce824fa74fac51631237482933d7d2e9545cdd6acc1c2d",
+      "acceptance/test_pagination_sequence_acceptance.py": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676"
+    }
+  },
+  {
+    "name": "historical",
+    "original_directory": ".repopilot/pilots/corpus",
+    "sha256": {
+      "dataset.json": "b7e04741ba6d84c5e99f2da9ffc3a844e00fb3178051ca110083899462901466",
+      "acceptance/test_jsonpointer_large.py": "3ec0d2b162d9f464cf9ea715b66e0ad04e6e646bfa0dade71e4da7b2b30971e2",
+      "acceptance/test_itsdangerous_overflow.py": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d"
+    }
+  }
+]

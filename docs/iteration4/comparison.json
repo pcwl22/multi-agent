@@ -1,0 +1,54 @@
+{
+  "formal_tasks": 90,
+  "diagnostic_tasks_separate": 9,
+  "totals": {
+    "preserve": {
+      "runs": 45,
+      "accepted": 41,
+      "ready_and_accepted": 40,
+      "logical_model_calls": 115,
+      "tokens_reported": 463869,
+      "unknown_usage_runs": 0,
+      "repair_retries": 25,
+      "demonstrated_witnesses": 12,
+      "creation_failure_records": 0,
+      "structured_feedback_records": 21,
+      "repeated_candidate_failures": 0
+    },
+    "isolated": {
+      "runs": 45,
+      "accepted": 41,
+      "ready_and_accepted": 41,
+      "logical_model_calls": 110,
+      "tokens_reported": 462946,
+      "unknown_usage_runs": 0,
+      "repair_retries": 20,
+      "demonstrated_witnesses": 15,
+      "creation_failure_records": 0,
+      "structured_feedback_records": 17,
+      "repeated_candidate_failures": 0
+    }
+  },
+  "paired_independent_acceptance": {
+    "strict": {
+      "both_accepted": 25,
+      "preserve_only": 1,
+      "isolated_only": 3,
+      "neither_accepted": 1
+    },
+    "pagination": {
+      "both_accepted": 7,
+      "preserve_only": 2,
+      "isolated_only": 0,
+      "neither_accepted": 0
+    },
+    "historical": {
+      "both_accepted": 6,
+      "preserve_only": 0,
+      "isolated_only": 0,
+      "neither_accepted": 0
+    }
+  },
+  "runtime_code_commit": "2e6b0f2d5e7619be6bce91849ea741f82a7986d1",
+  "default_policy_unchanged": "preserve"
+}

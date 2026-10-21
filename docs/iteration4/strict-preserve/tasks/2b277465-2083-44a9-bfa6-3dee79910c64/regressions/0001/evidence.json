@@ -1,0 +1,105 @@
+{
+  "status": "demonstrated",
+  "generated_tests": [
+    "tests/test_regression_checkout_totals.py"
+  ],
+  "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-preserve-data\\tasks\\2b277465-2083-44a9-bfa6-3dee79910c64\\regression\\attempt-3-434c0549-f093-4d53-88e2-c1738d938e68",
+  "baseline_result": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": ".F.FF.F.                                                                 [100%]\n=================================== FAILURES ===================================\n____________________ test_discount_treats_value_as_percent _____________________\n\n    def test_discount_treats_value_as_percent():\n        # 20 means 20%, so 100 -> 80\n        result = discounted(100, 20)\n>       assert result == 80\nE       assert -1900 == 80\n\ntests/test_regression_checkout_totals.py:8: AssertionError\n____________ test_invoice_total_applies_tax_to_discounted_subtotal _____________\n\n    def test_invoice_total_applies_tax_to_discounted_subtotal():\n        # 100, 20% discount -> 80 subtotal; 10% tax on 80 -> 88\n        result = invoice_total(100, 20, 0.1)\n>       assert result == 88\nE       assert -1890.0 == 88\n\ntests/test_regression_checkout_totals.py:20: AssertionError\n_____________________ test_invoice_total_combined_example ______________________\n\n    def test_invoice_total_combined_example():\n>       assert invoice_total(100, 20, 10) == 88\nE       assert -900 == 88\nE        +  where -900 = invoice_total(100, 20, 10)\n\ntests/test_regression_checkout_totals.py:25: AssertionError\n_________________ test_invoice_total_no_tax_preserves_behavior _________________\n\n    def test_invoice_total_no_tax_preserves_behavior():\n>       assert invoice_total(100, 20, 0) == 80\nE       assert -1900 == 80\nE        +  where -1900 = invoice_total(100, 20, 0)\n\ntests/test_regression_checkout_totals.py:33: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_regression_checkout_totals.py::test_discount_treats_value_as_percent\nFAILED tests/test_regression_checkout_totals.py::test_invoice_total_applies_tax_to_discounted_subtotal\nFAILED tests/test_regression_checkout_totals.py::test_invoice_total_combined_example\nFAILED tests/test_regression_checkout_totals.py::test_invoice_total_no_tax_preserves_behavior\n4 failed, 4 passed in 0.18s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 4,
+    "failed": 4,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 1.0487216999972588,
+    "evidence": "docker",
+    "cases": [
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_discount_treats_value_as_percent",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 5,
+        "status": "failed",
+        "message": "assert -1900 == 80",
+        "details": "def test_discount_treats_value_as_percent():\n        # 20 means 20%, so 100 -> 80\n        result = discounted(100, 20)\n>       assert result == 80\nE       assert -1900 == 80\n\ntests/test_regression_checkout_totals.py:8: AssertionError"
+      },
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_invoice_total_applies_tax_to_discounted_subtotal",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 17,
+        "status": "failed",
+        "message": "assert -1890.0 == 88",
+        "details": "def test_invoice_total_applies_tax_to_discounted_subtotal():\n        # 100, 20% discount -> 80 subtotal; 10% tax on 80 -> 88\n        result = invoice_total(100, 20, 0.1)\n>       assert result == 88\nE       assert -1890.0 == 88\n\ntests/test_regression_checkout_totals.py:20: AssertionError"
+      },
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_invoice_total_combined_example",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 24,
+        "status": "failed",
+        "message": "assert -900 == 88\n +  where -900 = invoice_total(100, 20, 10)",
+        "details": "def test_invoice_total_combined_example():\n>       assert invoice_total(100, 20, 10) == 88\nE       assert -900 == 88\nE        +  where -900 = invoice_total(100, 20, 10)\n\ntests/test_regression_checkout_totals.py:25: AssertionError"
+      },
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_invoice_total_no_tax_preserves_behavior",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 32,
+        "status": "failed",
+        "message": "assert -1900 == 80\n +  where -1900 = invoice_total(100, 20, 0)",
+        "details": "def test_invoice_total_no_tax_preserves_behavior():\n>       assert invoice_total(100, 20, 0) == 80\nE       assert -1900 == 80\nE        +  where -1900 = invoice_total(100, 20, 0)\n\ntests/test_regression_checkout_totals.py:33: AssertionError"
+      },
+      {
+        "file": "tests/test_contract.py",
+        "name": "test_existing_contract",
+        "classname": "tests.test_contract",
+        "line": 5,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_discount_zero_preserves_amount",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 12,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_invoice_total_no_discount_preserves_behavior",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 28,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_regression_checkout_totals.py",
+        "name": "test_invoice_total_zero_amount",
+        "classname": "tests.test_regression_checkout_totals",
+        "line": 36,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      }
+    ],
+    "cases_truncated": false
+  },
+  "fail_to_pass_tests": [
+    "tests/test_regression_checkout_totals.py::tests.test_regression_checkout_totals::test_discount_treats_value_as_percent",
+    "tests/test_regression_checkout_totals.py::tests.test_regression_checkout_totals::test_invoice_total_applies_tax_to_discounted_subtotal",
+    "tests/test_regression_checkout_totals.py::tests.test_regression_checkout_totals::test_invoice_total_combined_example",
+    "tests/test_regression_checkout_totals.py::tests.test_regression_checkout_totals::test_invoice_total_no_tax_preserves_behavior"
+  ],
+  "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+  "attempt": 3,
+  "diff_digest": "3a7dac538ac721af21bcc222f3a089634bb236ff8bf1b806e5216118a26aaf0b"
+}

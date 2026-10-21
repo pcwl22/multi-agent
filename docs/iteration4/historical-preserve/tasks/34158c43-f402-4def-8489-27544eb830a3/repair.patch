@@ -1,0 +1,19 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -124,7 +124,15 @@
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OverflowError, OSError):
++                    # The decoded timestamp is outside the range that
++                    # datetime can represent. Treat it as a malformed
++                    # timestamp rather than leaking the conversion error.
++                    raise BadTimeSignature(
++                        "Malformed timestamp", payload=value, date_signed=None
++                    ) from None
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 

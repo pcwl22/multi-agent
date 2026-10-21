@@ -1,0 +1,153 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug is in cache.py: `is_expired` uses `now > inserted_at + ttl`, which keeps an entry alive at the exact boundary `inserted_at + ttl`. The issue requires expiry exactly at that boundary, including ttl == 0. Changing to `now >= inserted_at + ttl` makes the boundary expired while preserving strictly-before (alive) and strictly-after (expired) semantics, and handles ttl == 0 (now == inserted_at -> expired). No mutation or type changes are introduced. New regression tests in a fresh file cover before/boundary/after and zero-TTL cases, plus purity and public-caller consistency.",
+      "edits": [
+        {
+          "path": "cache.py",
+          "old": "def is_expired(inserted_at, ttl, now):\n    return now > inserted_at + ttl",
+          "new": "def is_expired(inserted_at, ttl, now):\n    return now >= inserted_at + ttl"
+        },
+        {
+          "path": "tests/test_cache_expiry_boundary.py",
+          "old": "",
+          "new": "from cache import is_expired\n\n\ndef test_alive_strictly_before_boundary():\n    # now < inserted_at + ttl -> not expired\n    assert is_expired(10, 5, 14) is False\n\n\ndef test_expired_exactly_at_boundary():\n    # now == inserted_at + ttl -> expired\n    assert is_expired(10, 5, 15) is True\n\n\ndef test_expired_strictly_after_boundary():\n    # now > inserted_at + ttl -> expired\n    assert is_expired(10, 5, 16) is True\n\n\ndef test_zero_ttl_expired_at_insertion_time():\n    # ttl == 0, now == inserted_at -> expired\n    assert is_expired(10, 0, 10) is True\n\n\ndef test_zero_ttl_expired_after_insertion_time():\n    # ttl == 0, now > inserted_at -> expired\n    assert is_expired(10, 0, 11) is True\n\n\ndef test_zero_ttl_never_alive():\n    # ttl == 0, any now >= inserted_at -> expired\n    for now in (10, 11, 100):\n        assert is_expired(10, 0, now) is True\n\n\ndef test_negative_ttl_expired_at_insertion_time():\n    # ttl < 0, now == inserted_at -> expired (boundary already passed)\n    assert is_expired(10, -1, 10) is True\n\n\ndef test_is_expired_is_pure_predicate():\n    inserted_at = 10\n    ttl = 5\n    now = 15\n    assert is_expired(inserted_at, ttl, now) is True\n    # inputs unchanged (ints are immutable; assert values preserved)\n    assert inserted_at == 10\n    assert ttl == 5\n    assert now == 15\n\n\ndef test_boundary_consistency_across_ttls():\n    # For a range of ttl values, boundary is expired and one before is alive.\n    for ttl in (0, 1, 5, 60):\n        inserted_at = 100\n        boundary = inserted_at + ttl\n        assert is_expired(inserted_at, ttl, boundary) is True\n        assert is_expired(inserted_at, ttl, boundary - 1) is False\n        assert is_expired(inserted_at, ttl, boundary + 1) is True\n"
+        }
+      ],
+      "contract_tests": [
+        "is_expired(now) returns False when now < inserted_at + ttl: tests/test_cache_expiry_boundary.py::test_alive_strictly_before_boundary asserts is_expired(10, 5, 14) is False.",
+        "is_expired(now) returns True when now == inserted_at + ttl: tests/test_cache_expiry_boundary.py::test_expired_exactly_at_boundary asserts is_expired(10, 5, 15) is True.",
+        "is_expired(now) returns True when now > inserted_at + ttl: tests/test_cache_expiry_boundary.py::test_expired_strictly_after_boundary asserts is_expired(10, 5, 16) is True.",
+        "With ttl == 0, is_expired(inserted_at) returns True: tests/test_cache_expiry_boundary.py::test_zero_ttl_expired_at_insertion_time asserts is_expired(10, 0, 10) is True.",
+        "With ttl == 0, is_expired(now) returns True for any now >= inserted_at: tests/test_cache_expiry_boundary.py::test_zero_ttl_expired_after_insertion_time and test_zero_ttl_never_alive assert True for now in {10, 11, 100}.",
+        "Existing behavior for non-boundary times preserved: tests/test_cache_expiry_boundary.py::test_alive_strictly_before_boundary (14 -> False) and test_expired_strictly_after_boundary (16 -> True) match the original contract in tests/test_contract.py.",
+        "No mutation of inserted_at or ttl during is_expired; pure predicate: tests/test_cache_expiry_boundary.py::test_is_expired_is_pure_predicate asserts inputs retain values 10, 5, 15 after the call.",
+        "Public callers using is_expired reflect new boundary behavior consistently: tests/test_cache_expiry_boundary.py::test_boundary_consistency_across_ttls asserts boundary expired, boundary-1 alive, boundary+1 expired for ttl in {0,1,5,60}."
+      ],
+      "changed_files": [
+        "cache.py",
+        "tests/test_cache_expiry_boundary.py"
+      ],
+      "applied": true,
+      "candidate_id": "b335e88f-362f-489e-ab8d-efa3939b3b87",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "..........                                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n10 passed in 0.11s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 10,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.0170660999974643,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_alive_strictly_before_boundary",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_expired_exactly_at_boundary",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 9,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_expired_strictly_after_boundary",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 14,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_zero_ttl_expired_at_insertion_time",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 19,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_zero_ttl_expired_after_insertion_time",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 24,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_zero_ttl_never_alive",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 29,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_negative_ttl_expired_at_insertion_time",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 35,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_is_expired_is_pure_predicate",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 40,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry_boundary.py",
+          "name": "test_boundary_consistency_across_ttls",
+          "classname": "tests.test_cache_expiry_boundary",
+          "line": 51,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "f9c9c8482c642af9ac05aecc351b13bb8b57a71f08135a5c6a1023a9f75ccdd2",
+      "candidate_id": "b335e88f-362f-489e-ab8d-efa3939b3b87",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

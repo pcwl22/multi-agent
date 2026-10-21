@@ -1,0 +1,130 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,25 @@
++from collections.abc import Mapping
++
++
++def _merge_values(base_value, override_value):
++    if isinstance(base_value, Mapping) and isinstance(override_value, Mapping):
++        return merge_config(base_value, override_value)
++    return _copy_value(override_value)
++
++
++def _copy_value(value):
++    if isinstance(value, Mapping):
++        return {key: _copy_value(item) for key, item in value.items()}
++    if isinstance(value, list):
++        return [_copy_value(item) for item in value]
++    return value
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {key: _copy_value(value) for key, value in defaults.items()}
++    for key, override_value in overrides.items():
++        if key in result:
++            result[key] = _merge_values(result[key], override_value)
++        else:
++            result[key] = _copy_value(override_value)
+     return result
+--- a/tests/test_merge_config_regression.py
++++ b/tests/test_merge_config_regression.py
+@@ -0,0 +1,97 @@
++from config import merge_config
++
++
++def test_returns_mapping_with_all_keys_from_both_inputs():
++    base = {"a": 1, "b": 2}
++    overrides = {"b": 20, "c": 3}
++    result = merge_config(base, overrides)
++    assert isinstance(result, dict)
++    assert result == {"a": 1, "b": 20, "c": 3}
++
++
++def test_nested_mappings_are_merged_recursively():
++    base = {"outer": {"inner": {"a": 1, "b": 2}, "keep": 5}}
++    overrides = {"outer": {"inner": {"b": 20, "c": 30}}}
++    result = merge_config(base, overrides)
++    assert result == {"outer": {"inner": {"a": 1, "b": 20, "c": 30}, "keep": 5}}
++
++
++def test_override_wins_at_leaf_keys():
++    base = {"a": 1, "nested": {"x": "base"}}
++    overrides = {"a": 2, "nested": {"x": "override"}}
++    result = merge_config(base, overrides)
++    assert result["a"] == 2
++    assert result["nested"]["x"] == "override"
++
++
++def test_keys_only_in_base_are_preserved():
++    base = {"only_base": 1, "shared": 1}
++    overrides = {"shared": 2}
++    result = merge_config(base, overrides)
++    assert result["only_base"] == 1
++    assert result["shared"] == 2
++
++
++def test_keys_only_in_overrides_are_added():
++    base = {"shared": 1}
++    overrides = {"shared": 2, "only_override": 3}
++    result = merge_config(base, overrides)
++    assert result["only_override"] == 3
++    assert result["shared"] == 2
++
++
++def test_lists_are_replaced_not_concatenated():
++    base = {"items": [1, 2, 3]}
++    overrides = {"items": [4, 5]}
++    result = merge_config(base, overrides)
++    assert result["items"] == [4, 5]
++
++
++def test_list_replacement_does_not_share_identity_with_override():
++    base = {"items": [1]}
++    override_list = [4, 5]
++    overrides = {"items": override_list}
++    result = merge_config(base, overrides)
++    assert result["items"] == [4, 5]
++    assert result["items"] is not override_list
++
++
++def test_result_is_a_new_object_not_either_input():
++    base = {"a": 1}
++    overrides = {"b": 2}
++    result = merge_config(base, overrides)
++    assert result is not base
++    assert result is not overrides
++
++
++def test_nested_result_is_independent_of_base():
++    base = {"nested": {"a": 1}}
++    overrides = {}
++    result = merge_config(base, overrides)
++    assert result["nested"] is not base["nested"]
++    result["nested"]["a"] = 999
++    assert base["nested"]["a"] == 1
++
++
++def test_nested_result_is_independent_of_overrides():
++    base = {}
++    overrides = {"nested": {"a": 1}}
++    result = merge_config(base, overrides)
++    assert result["nested"] is not overrides["nested"]
++    result["nested"]["a"] = 999
++    assert overrides["nested"]["a"] == 1
++
++
++def test_neither_input_is_mutated():
++    base = {"a": 1, "nested": {"x": 1}, "items": [1, 2]}
++    overrides = {"a": 2, "nested": {"y": 2}, "items": [3]}
++    base_snapshot = {"a": 1, "nested": {"x": 1}, "items": [1, 2]}
++    overrides_snapshot = {"a": 2, "nested": {"y": 2}, "items": [3]}
++    merge_config(base, overrides)
++    assert base == base_snapshot
++    assert overrides == overrides_snapshot
++
++
++def test_simple_overrides_still_work():
++    assert merge_config({"a": 1}, {"a": 2, "b": 3}) == {"a": 2, "b": 3}
++    assert merge_config({}, {}) == {}

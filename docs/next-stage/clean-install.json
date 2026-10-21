@@ -1,0 +1,24 @@
+{
+  "python": "3.13.5",
+  "environment": "fresh venv, include-system-site-packages=false",
+  "installation": "requirements.lock then --no-deps local wheel",
+  "requirements_lock_sha256": "eeb64b218cff59378a19222b132e52af9d330c1d34f3058f2e5a786a92ff096c",
+  "wheel_sha256": "9682dc670b8e5759902e567734313cc97299ffa2af730309f96c9e9b06c66da7",
+  "app_import": "isolated Python imports installed site-packages, not checkout",
+  "test_command": "python -I -m pytest -q --import-mode=importlib (REPOPILOT_RUN_DOCKER_TESTS=1)",
+  "tests": {
+    "passed": 99,
+    "skipped": 1,
+    "skip_reason": "Windows symlink permission",
+    "warnings": 11,
+    "seconds": 102.89
+  },
+  "pip_check": "No broken requirements found.",
+  "packaged_cases": 10,
+  "launcher_preflight": "API/UI start, screenshot/video capture, Ctrl+C closes both owned children; no task or PR created",
+  "source_tree_tests": {
+    "passed": 99,
+    "skipped": 1,
+    "seconds": 103.69
+  }
+}

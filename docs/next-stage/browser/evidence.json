@@ -1,0 +1,127 @@
+{
+  "task_id": "b14fc4d1-90de-46b9-afbf-138a622dd7f0",
+  "operator": "automated local browser acceptance, not human authorization for remote writes",
+  "model": "deepseek-v4.1-flash",
+  "model_calls": 3,
+  "tokens": 4098,
+  "execution_status": "approved",
+  "diff_digest": "6b780e3407737a74481a55d2e4b20f17817ca54994ff015c23100aad8f8a2b8f",
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "....                                                                     [100%]\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n-------------------- generated xml file: /results/junit.xml --------------------\n4 passed, 1 warning in 0.46s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 4,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 1.3509880999990855,
+      "evidence": "docker",
+      "attempt": 1
+    }
+  ],
+  "review": [
+    {
+      "approved": true,
+      "summary": "The patch directly addresses the reported issue: an expired token previously raised HTTPException with status_code=500, and the fix changes it to 401. The change is minimal, targeted, and consistent with the existing 401 path for unauthorized tokens. A new regression test file (tests/test_auth_expired.py) was added asserting both the 401 status code and the expected detail body, which matches the issue's requirement to add tests. Test evidence shows 4 passed, 0 failed, confirming the fix works and no regressions occurred.",
+      "concerns": [
+        "The fix is a hardcoded status-code change rather than catching a real token-expiry exception (e.g., ExpiredSignatureError) and mapping it to 401; if the real codebase decodes JWTs, the underlying exception handling may still need attention. However, within the scope of the provided repository code, the change is correct.",
+        "The new tests only cover the expired-token case; the validation strategy mentioned verifying valid tokens return 200 and malformed tokens return 401, which are not explicitly covered by the added tests (though existing tests may cover them, as 4 tests passed total)."
+      ],
+      "attempt": 1
+    }
+  ],
+  "model_events": [
+    {
+      "node": "model",
+      "timestamp": 1792125919.255893,
+      "schema": "Plan",
+      "calls": 1,
+      "input_tokens": 508,
+      "output_tokens": 413,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-v4.1-flash",
+      "rate_limit_wait_seconds": 0.0,
+      "model_reported": "deepseek-v4.1-flash",
+      "provider_response_id": "chatcmpl-6ad1abdf5c5ce",
+      "duration_seconds": 5.867636500001026
+    },
+    {
+      "node": "model",
+      "timestamp": 1792125925.1269257,
+      "schema": "Patch",
+      "calls": 1,
+      "input_tokens": 1183,
+      "output_tokens": 299,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-v4.1-flash",
+      "rate_limit_wait_seconds": 1.532495100000233,
+      "model_reported": "deepseek-v4.1-flash",
+      "provider_response_id": "chatcmpl-6ad1abe55c022",
+      "duration_seconds": 5.771184699999139
+    },
+    {
+      "node": "model",
+      "timestamp": 1792125931.7714365,
+      "schema": "Review",
+      "calls": 1,
+      "input_tokens": 1434,
+      "output_tokens": 261,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-v4.1-flash",
+      "rate_limit_wait_seconds": 1.7211704999990616,
+      "model_reported": "deepseek-v4.1-flash",
+      "provider_response_id": "chatcmpl-6ad1abec5ccd1",
+      "duration_seconds": 5.104242699999304
+    }
+  ],
+  "independent_before": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": "F..                                                                      [100%]\n=================================== FAILURES ===================================\n_________________________ test_expired_token_contract __________________________\n\n    def test_expired_token_contract():\n        response = TestClient(app).get(\"/profile\", headers={\"Authorization\": \"Bearer expired\"})\n>       assert response.status_code == 401\nE       assert 500 == 401\nE        +  where 500 = <Response [500 Internal Server Error]>.status_code\n\ntests/test_acceptance.py:9: AssertionError\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_acceptance.py::test_expired_token_contract - assert 500 == 401\n1 failed, 2 passed, 1 warning in 0.63s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 2,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 1.6672636000002967,
+    "evidence": "docker"
+  },
+  "independent_after": {
+    "status": "passed",
+    "exit_code": 0,
+    "stdout": "...                                                                      [100%]\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n-------------------- generated xml file: /results/junit.xml --------------------\n3 passed, 1 warning in 0.45s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 3,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 1.3241173999995226,
+    "evidence": "docker"
+  },
+  "wrong_digest_status": 409,
+  "wrong_digest_detail": {
+    "detail": "Diff has changed; approval rejected"
+  },
+  "publication_status": 409,
+  "publication_detail": {
+    "detail": "GITHUB_TOKEN is required for PR publication"
+  },
+  "publication_rows": 0,
+  "remote_writes": 0,
+  "original_tests_unchanged": true,
+  "source_unchanged": true,
+  "user_decision": "keep draft; subsequent validation local only",
+  "screenshot_followup": "Historical approved task readback without live credentials or new model calls; summary and diff captured separately.",
+  "ui_error_followup": "Updated UI renders backend rejection detail and HTTP 409; captured in error-detail.png."
+}

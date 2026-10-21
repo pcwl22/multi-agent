@@ -1,0 +1,47 @@
+--- a/inventory.py
++++ b/inventory.py
+@@ -1,3 +1,6 @@
+ def available_units(stock, reservations):
+-    reserved = dict(reservations)
+-    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}
++    result = dict(stock)
++    for sku, qty in reservations:
++        if sku in result:
++            result[sku] = max(0, result[sku] - qty)
++    return result
+--- a/tests/test_available_units_regression.py
++++ b/tests/test_available_units_regression.py
+@@ -0,0 +1,33 @@
++from inventory import available_units
++
++
++def test_repeated_sku_reservations_all_subtracted():
++    assert available_units({"A": 10}, [("A", 2), ("A", 3)]) == {"A": 5}
++
++
++def test_clamps_at_zero():
++    assert available_units({"A": 3}, [("A", 5)]) == {"A": 0}
++    assert available_units({"A": 3}, [("A", 2), ("A", 2)]) == {"A": 0}
++
++
++def test_unknown_skus_ignored():
++    assert available_units({"A": 10}, [("B", 4), ("A", 1)]) == {"A": 9}
++    assert available_units({}, [("A", 1)]) == {}
++
++
++def test_inputs_preserved():
++    stock = {"A": 10, "B": 5}
++    reservations = [("A", 2), ("A", 3), ("B", 1)]
++    stock_copy = dict(stock)
++    reservations_copy = list(reservations)
++    result = available_units(stock, reservations)
++    assert result == {"A": 5, "B": 4}
++    assert stock == stock_copy
++    assert reservations == reservations_copy
++
++
++def test_multiple_skus_and_repeats():
++    assert available_units({"A": 10, "B": 7}, [("A", 2), ("B", 3), ("A", 3)]) == {
++        "A": 5,
++        "B": 4,
++    }

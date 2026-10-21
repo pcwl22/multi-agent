@@ -1,0 +1,37 @@
+"""Evaluator-only oracle: never included in the repair workspace."""
+from pathlib import Path
+
+import pytest
+import slugify as package
+from slugify import PRE_TRANSLATIONS, slugify, smart_truncate
+from slugify.special import add_uppercase_char
+
+
+def test_source_is_workspace():
+    assert Path(package.__file__).resolve().is_relative_to(Path(__file__).resolve().parents[1])
+
+
+@pytest.mark.parametrize('char,value', [('ä','ae'), ('ö','oe'), ('ü','ue'), ('я','ya'), ('щ','sch')])
+def test_all_public_uppercase_pairs(char, value):
+    assert (char.upper(), value.capitalize()) in PRE_TRANSLATIONS
+    assert (char, value) in PRE_TRANSLATIONS
+
+
+def test_every_original_pair_is_processed():
+    original = [('ä','ae'), ('ö','oe'), ('ü','ue'), ('x','x')]
+    result = add_uppercase_char(list(original))
+    for char, value in original:
+        assert (char.upper(), value.capitalize()) in result
+    assert len(set(result)) == len(result)
+
+
+def test_existing_uppercase_is_not_duplicated():
+    result = add_uppercase_char([('Ä','Ae'), ('ä','ae'), ('ö','oe')])
+    assert result.count(('Ä','Ae')) == 1
+    assert ('Ö','Oe') in result
+
+
+def test_replacement_enabled_slugify():
+    assert slugify('Ä Ö Ü', replacements=PRE_TRANSLATIONS) == 'ae-oe-ue'
+    assert slugify('already simple') == 'already-simple'
+    assert smart_truncate('alpha beta gamma', max_length=10, word_boundary=True) == 'alpha beta'

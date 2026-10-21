@@ -1,0 +1,24 @@
+{
+  "complete_matrix": true,
+  "tasks": 36,
+  "all_created_tasks_all_candidates_preserve_original_tests": true,
+  "all_approvals_pending": true,
+  "quality_successes_have_current_fail_to_pass_witness": true,
+  "upstream_extra_load_tests_doctests_executed": false,
+  "evidence_source_digests_match": true,
+  "app_source_and_install_match": 111,
+  "previous_tests_helpers_unchanged": 78,
+  "old_17_of_24_unchanged": true,
+  "full_installed_wheel_suite": {
+    "tests": 306,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 304
+  },
+  "formal_evaluator_probes": 25,
+  "reused_control_probes": 24,
+  "fresh_control_probes": 0,
+  "github_writes": false,
+  "source_distribution_tested": false
+}

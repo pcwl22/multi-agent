@@ -1,0 +1,86 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_exporter_regression.py
++++ b/tests/test_exporter_regression.py
+@@ -0,0 +1,69 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def test_empty_input_returns_empty_string():
++    result = export_rows([])
++    assert result == ""
++    assert isinstance(result, str)
++
++
++def test_simple_rows_preserved_with_lf():
++    result = export_rows([["a", 1], ["b", 2]])
++    assert result == "a,1\nb,2\n"
++    assert isinstance(result, str)
++    assert "\r" not in result
++
++
++def test_cell_with_comma_is_quoted():
++    result = export_rows([["a,b", "c"]])
++    assert result == '"a,b",c\n'
++    assert "\r" not in result
++
++
++def test_cell_with_double_quote_is_escaped():
++    result = export_rows([['say "hi"', "x"]])
++    assert result == '"say ""hi""",x\n'
++    assert "\r" not in result
++
++
++def test_cell_with_newline_is_quoted():
++    result = export_rows([["line1\nline2", "z"]])
++    assert result == '"line1\nline2",z\n'
++    assert "\r" not in result
++
++
++def test_unicode_preserved_verbatim():
++    result = export_rows([["caf\u00e9", "\u65e5\u672c\u8a9e"]])
++    assert result == "caf\u00e9,\u65e5\u672c\u8a9e\n"
++    assert "caf\u00e9" in result
++    assert "\u65e5\u672c\u8a9e" in result
++    assert "\\u" not in result
++
++
++def test_round_trip_with_csv_reader():
++    cases = [
++        [],
++        [["a", 1], ["b", 2]],
++        [["a,b", "c"]],
++        [['say "hi"', "x"]],
++        [["line1\nline2", "z"]],
++        [["caf\u00e9", "\u65e5\u672c\u8a9e"]],
++        [["a,b", 'q"q', "n\nn", "\u00e9"]],
++    ]
++    for rows in cases:
++        output = export_rows(rows)
++        assert isinstance(output, str)
++        assert "\r" not in output
++        parsed = list(csv.reader(io.StringIO(output)))
++        expected = [[str(cell) for cell in row] for row in rows]
++        assert parsed == expected
++
++
++def test_legacy_examples_not_imported_by_exporter():
++    import exporter
++
++    source = open(exporter.__file__, "r", encoding="utf-8").read()
++    assert "legacy_examples" not in source

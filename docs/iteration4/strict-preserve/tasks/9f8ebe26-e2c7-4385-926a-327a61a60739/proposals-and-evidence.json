@@ -1,0 +1,62 @@
+{
+  "patches": [
+    {
+      "rationale": "The current slugify lowercases then strips non-alphanumerics, so accented characters like é are dropped entirely (Café -> caf, déjà -> dj). The issue requires transliterating Unicode combining accents to their ASCII base letters before slugging, so precomposed 'é' and decomposed 'e' + combining acute both map to 'e'. I'll add unicodedata.normalize('NFKD', ...) to decompose accents, then drop combining marks (category 'Mn'), then lowercase and apply the existing regex. This preserves ASCII word separation and dash trimming, and keeps existing behavior for plain ASCII inputs.",
+      "edits": [
+        {
+          "path": "slugs.py",
+          "old": "import re\n\n\ndef slugify(value):\n    return re.sub(r\"[^a-z0-9]+\", \"-\", value.lower()).strip(\"-\")",
+          "new": "import re\nimport unicodedata\n\n\ndef slugify(value):\n    decomposed = unicodedata.normalize(\"NFKD\", value)\n    without_marks = \"\".join(\n        ch for ch in decomposed if not unicodedata.combining(ch)\n    )\n    return re.sub(r\"[^a-z0-9]+\", \"-\", without_marks.lower()).strip(\"-\")"
+        }
+      ],
+      "contract_tests": [
+        "tests/test_contract.py::test_existing_contract - slugify('Hello, World!') == 'hello-world' and slugify('') == '' (preserved ASCII behavior and empty input).",
+        "NEW tests/test_slugify_unicode.py::test_precomposed_accent - slugify('Café déjà vu') == 'cafe-deja-vu' (precomposed accented input transliterated to ASCII).",
+        "NEW tests/test_slugify_unicode.py::test_decomposed_matches_precomposed - slugify('cafe\\u0301 de\\u0300ja\\u0300 vu') == slugify('Café déjà vu') == 'cafe-deja-vu' (decomposed combining acute/grave matches precomposed).",
+        "NEW tests/test_slugify_unicode.py::test_combining_acute_only - slugify('cafe\\u0301') == 'cafe' (combining mark removed, base letter kept).",
+        "NEW tests/test_slugify_unicode.py::test_ascii_word_separation_preserved - slugify('Hello, World!') == 'hello-world' (ASCII word separation unchanged).",
+        "NEW tests/test_slugify_unicode.py::test_dash_trimming_preserved - slugify('--Café--') == 'cafe' and slugify('  déjà  ') == 'deja' (leading/trailing dashes and whitespace trimmed).",
+        "NEW tests/test_slugify_unicode.py::test_return_type_is_str - isinstance(slugify('Café déjà vu'), str) is True (output type is str).",
+        "NEW tests/test_slugify_unicode.py::test_empty_and_non_accented_unchanged - slugify('') == '' and slugify('abc123') == 'abc123' (empty and plain ASCII unchanged)."
+      ],
+      "changed_files": [
+        "slugs.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".                                                                        [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n1 passed in 0.05s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.890138200000365,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "810dc7a9fd68a90acfdd0ce3edb2f75a0678fe7e82f39babfca538a811f7e6c8"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

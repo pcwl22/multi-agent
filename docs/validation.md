@@ -2,7 +2,25 @@
 
 验证日期：2026-10-16（Asia/Shanghai）。项目根目录：`E:/multi-agent`。
 
-## 已实际通过
+## 最新：真实 DeepSeek 与 PR
+
+后续五阶段已继续推进，最新记录见 [后续本地验收](next-stage/validation.md)。本地回归 99 passed、1 skipped；十案例冻结评测 90/90，补充遗漏的 range 输入契约后，同一批保存修复为 **84/90**。两轮原始生成记录、事后复验和失败均分开保留。PR #2 依用户选择保持草稿；本轮没有远端写入。以下为此前三案例验收的历史记录。
+
+完整记录见 [联网与实际 PR 验收](live-validation.md)。请求与响应模型标识 `deepseek-v4.1-flash`，兼容服务为用户指定的 `muyuan.do`。首轮真实评测 6/9 成功、3 次被不可变测试门禁拒绝；新增拒绝反馈并改进提示后复跑 9/9 成功，18 次调用、25013 Token。两轮所有原始结果均保留。
+
+真实模型生成的另一个 Token 修复经 5 项回归和 3 项独立验收后，已实际创建 [草稿 PR #1](https://github.com/pcwl22/multi-agent/pull/1)，最新 CI 的 Python 3.11 / 3.13、Docker 及专用契约检查通过。新增文件的导入排序曾导致 lint 失败，格式化后复验并更新同一 PR；没有改变测试断言或应用修复。凭据未写入项目文件，短期凭据进程已关闭。
+
+最新本地全量回归 **78 passed、1 skipped**，Ruff 通过。下面保留前两轮的历史验证范围，历史“未验收”不代表当前状态。LangSmith 上传依然未验收。
+
+## 本轮分阶段补齐
+
+Phase 1→4 顺序的完整说明见 [分阶段记录](phases.md)。本轮完整回归 **67 passed、1 skipped**（Docker 测试开启），Ruff 通过。新增真实失败反馈重试、预算终止、空仓库终止、输出截断和审批后幂等发布门禁验证。所有原有测试保持不变。
+
+三个独立 Bug（Token 状态码、分页偏移、折扣换算）的失败基线已实际建立。3 个案例 × 3 个模式 × 3 次重复，共 **27 次真实容器修复与独立验收通过**。记录使用同一镜像 ID，最大上下文 2177 字符；Mock 模型调用和 Token 均为 0。数据与环境信息见 [本轮 report.json](evaluation/phased-20261016/report.json)、[report.md](evaluation/phased-20261016/report.md) 与 [runs.jsonl](evaluation/phased-20261016/runs.jsonl)。完整本地状态和补丁位于 `.repopilot/evaluations/phased-20261016/tasks`。
+
+本轮变更在本地工作区验证，尚未执行新的远端 CI。下文的 GitHub CI 与单案例数据属于此前提交的验证历史，不代表本轮远端验收。真实 LLM 与实际远端 PR 写入仍未验收。
+
+## 前一轮验证历史
 
 - `python -m pytest -q`（设置 `REPOPILOT_RUN_DOCKER_TESTS=1`）：**49 passed, 1 skipped**。跳过项为本机不允许创建符号链接；对应路径校验代码和其他 Windows 逃逸检查已测试。Streamlit HTTP 桥接测试产生 11 条 Starlette TestClient timeout 参数弃用警告，不影响结果。
 - `python -m ruff check .`：通过。
@@ -26,7 +44,7 @@ Docker 启动前还运行过三模式评测，三次均如实记录为 blocked�
 
 首次标准 Docker 构建因 Docker Hub 网络不可达失败。最终使用本机已有基础镜像和宿主 Python 下载的 Linux wheels，采用 `sandbox/Dockerfile.offline` 成功构建。未修改全局网络代理或 Docker 设置。
 
-## 未验证与后续
+## 前一轮当时未验证的范围（历史快照）
 
 - 未配置 OPENAI_API_KEY：真实 LLM 联网修复与 LangSmith 上传未验证。
 - GitHub PR 模块通过 HTTP 合约测试，但没有向真实远端创建测试 PR；真实写入仍需维护者明确授权测试任务。

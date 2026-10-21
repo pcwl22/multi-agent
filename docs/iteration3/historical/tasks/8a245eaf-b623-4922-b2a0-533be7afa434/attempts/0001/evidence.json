@@ -1,0 +1,80 @@
+{
+  "candidate_id": "94b02c26-f1fc-47c2-ad75-01ab59567796",
+  "candidate_number": 1,
+  "diff": "--- a/jsonpointer.py\n+++ b/jsonpointer.py\n@@ -239,7 +239,14 @@\n             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                 raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n-            return int(part)\n+            try:\n+                return int(part)\n+            except ValueError:\n+                # int() can raise ValueError for numeric strings that exceed\n+                # Python's integer digit conversion limit (see\n+                # sys.set_int_max_str_digits). Such an index is not a usable\n+                # sequence index, so surface it as a JsonPointerException.\n+                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n \n         elif hasattr(doc, '__getitem__'):\n             # Allow indexing via ducktyping\n--- a/tests/test_long_index_regression.py\n+++ b/tests/test_long_index_regression.py\n@@ -0,0 +1,118 @@\n+import sys\n+\n+import pytest\n+\n+from jsonpointer import (\n+    JsonPointer,\n+    JsonPointerException,\n+    resolve_pointer,\n+    set_pointer,\n+)\n+\n+\n+# A numeric string long enough to exceed CPython's default integer digit\n+# conversion limit (sys.get_int_max_str_digits(), default 4300).\n+LONG_INDEX = '1' * 5000\n+\n+\n+def test_resolve_long_numeric_index_raises_jsonpointerexception():\n+    doc = [1, 2, 3]\n+    ptr = JsonPointer('/' + LONG_INDEX)\n+    with pytest.raises(JsonPointerException):\n+        ptr.resolve(doc)\n+\n+\n+def test_resolve_pointer_long_numeric_index_raises_jsonpointerexception():\n+    doc = [1, 2, 3]\n+    with pytest.raises(JsonPointerException):\n+        resolve_pointer(doc, '/' + LONG_INDEX)\n+\n+\n+def test_to_last_long_numeric_index_raises_jsonpointerexception():\n+    doc = [1, 2, 3]\n+    ptr = JsonPointer('/' + LONG_INDEX)\n+    with pytest.raises(JsonPointerException):\n+        ptr.to_last(doc)\n+\n+\n+def test_set_long_numeric_index_raises_jsonpointerexception():\n+    doc = [1, 2, 3]\n+    ptr = JsonPointer('/' + LONG_INDEX)\n+    with pytest.raises(JsonPointerException):\n+        ptr.set(doc, 'x')\n+\n+\n+def test_set_pointer_long_numeric_index_raises_jsonpointerexception():\n+    doc = [1, 2, 3]\n+    with pytest.raises(JsonPointerException):\n+        set_pointer(doc, '/' + LONG_INDEX, 'x')\n+\n+\n+def test_resolve_with_default_returns_exact_default():\n+    doc = [1, 2, 3]\n+    default = object()\n+    ptr = JsonPointer('/' + LONG_INDEX)\n+    result = ptr.resolve(doc, default)\n+    assert result is default\n+\n+\n+def test_resolve_pointer_with_default_returns_exact_default():\n+    doc = [1, 2, 3]\n+    default = object()\n+    result = resolve_pointer(doc, '/' + LONG_INDEX, default)\n+    assert result is default\n+\n+\n+def test_long_numeric_object_member_key_remains_string():\n+    key = '1' * 5000\n+    doc = {key: 'value'}\n+    ptr = JsonPointer('/' + key)\n+    assert ptr.resolve(doc) == 'value'\n+\n+\n+def test_long_numeric_object_member_key_set_remains_string():\n+    key = '1' * 5000\n+    doc = {key: 'value'}\n+    ptr = JsonPointer('/' + key)\n+    ptr.set(doc, 'new')\n+    assert doc == {key: 'new'}\n+\n+\n+def test_ordinary_array_index_resolves():\n+    doc = [10, 20, 30]\n+    assert JsonPointer('/1').resolve(doc) == 20\n+\n+\n+def test_ordinary_array_index_sets():\n+    doc = [10, 20, 30]\n+    JsonPointer('/1').set(doc, 99)\n+    assert doc == [10, 99, 30]\n+\n+\n+def test_end_of_list_dash_resolves_to_end_of_list():\n+    from jsonpointer import EndOfList\n+\n+    doc = [1, 2, 3]\n+    result = JsonPointer('/-').resolve(doc)\n+    assert isinstance(result, EndOfList)\n+    assert result.list_ is doc\n+\n+\n+def test_end_of_list_dash_appends_on_set():\n+    doc = [1, 2, 3]\n+    JsonPointer('/-').set(doc, 4)\n+    assert doc == [1, 2, 3, 4]\n+\n+\n+def test_set_mutates_original_document_in_place():\n+    doc = {'foo': {'bar': 1}}\n+    result = JsonPointer('/foo/bar').set(doc, 2)\n+    assert result is doc\n+    assert doc == {'foo': {'bar': 2}}\n+\n+\n+def test_set_not_inplace_does_not_mutate_original():\n+    doc = {'foo': {'bar': 1}}\n+    result = JsonPointer('/foo/bar').set(doc, 2, inplace=False)\n+    assert result == {'foo': {'bar': 2}}\n+    assert doc == {'foo': {'bar': 1}}\n",
+  "diff_digest": "e9ca937a47d26e36cf21546d2ffba063b587a5739c81714a2895fa8a08d020a8",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "94b02c26-f1fc-47c2-ad75-01ab59567796",
+      "candidate_number": 1,
+      "changed_files": [
+        "jsonpointer.py",
+        "tests/test_long_index_regression.py"
+      ],
+      "contract_tests": [
+        "resolve on a pointer with a numeric array index exceeding Python's int digit-conversion limit raises JsonPointerException (not ValueError): test_resolve_long_numeric_index_raises_jsonpointerexception, test_resolve_pointer_long_numeric_index_raises_jsonpointerexception.",
+        "to_last on a pointer with such an invalid sequence index raises JsonPointerException: test_to_last_long_numeric_index_raises_jsonpointerexception.",
+        "set on a pointer with such an invalid sequence index raises JsonPointerException: test_set_long_numeric_index_raises_jsonpointerexception, test_set_pointer_long_numeric_index_raises_jsonpointerexception.",
+        "resolve with a default returns that exact default object (identity) when the sequence index is invalid: test_resolve_with_default_returns_exact_default, test_resolve_pointer_with_default_returns_exact_default (assert result is default).",
+        "Numeric object member keys remain strings regardless of length and resolve to the corresponding member: test_long_numeric_object_member_key_remains_string, test_long_numeric_object_member_key_set_remains_string.",
+        "Ordinary valid array indices continue to resolve/set correctly: test_ordinary_array_index_resolves, test_ordinary_array_index_sets.",
+        "End-of-list handling ('-') is preserved: test_end_of_list_dash_resolves_to_end_of_list, test_end_of_list_dash_appends_on_set.",
+        "Input mutation behavior of set is preserved (original document mutated in place): test_set_mutates_original_document_in_place, test_set_not_inplace_does_not_mutate_original.",
+        "New regression tests are added covering the above contracts: tests/test_long_index_regression.py."
+      ],
+      "edits": [
+        {
+          "new": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            try:\n                return int(part)\n            except ValueError:\n                # int() can raise ValueError for numeric strings that exceed\n                # Python's integer digit conversion limit (see\n                # sys.set_int_max_str_digits). Such an index is not a usable\n                # sequence index, so surface it as a JsonPointerException.\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)",
+          "old": "            if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):\n                raise JsonPointerException(\"'%s' is not a valid sequence index\" % part)\n\n            return int(part)",
+          "path": "jsonpointer.py"
+        },
+        {
+          "new": "import sys\n\nimport pytest\n\nfrom jsonpointer import (\n    JsonPointer,\n    JsonPointerException,\n    resolve_pointer,\n    set_pointer,\n)\n\n\n# A numeric string long enough to exceed CPython's default integer digit\n# conversion limit (sys.get_int_max_str_digits(), default 4300).\nLONG_INDEX = '1' * 5000\n\n\ndef test_resolve_long_numeric_index_raises_jsonpointerexception():\n    doc = [1, 2, 3]\n    ptr = JsonPointer('/' + LONG_INDEX)\n    with pytest.raises(JsonPointerException):\n        ptr.resolve(doc)\n\n\ndef test_resolve_pointer_long_numeric_index_raises_jsonpointerexception():\n    doc = [1, 2, 3]\n    with pytest.raises(JsonPointerException):\n        resolve_pointer(doc, '/' + LONG_INDEX)\n\n\ndef test_to_last_long_numeric_index_raises_jsonpointerexception():\n    doc = [1, 2, 3]\n    ptr = JsonPointer('/' + LONG_INDEX)\n    with pytest.raises(JsonPointerException):\n        ptr.to_last(doc)\n\n\ndef test_set_long_numeric_index_raises_jsonpointerexception():\n    doc = [1, 2, 3]\n    ptr = JsonPointer('/' + LONG_INDEX)\n    with pytest.raises(JsonPointerException):\n        ptr.set(doc, 'x')\n\n\ndef test_set_pointer_long_numeric_index_raises_jsonpointerexception():\n    doc = [1, 2, 3]\n    with pytest.raises(JsonPointerException):\n        set_pointer(doc, '/' + LONG_INDEX, 'x')\n\n\ndef test_resolve_with_default_returns_exact_default():\n    doc = [1, 2, 3]\n    default = object()\n    ptr = JsonPointer('/' + LONG_INDEX)\n    result = ptr.resolve(doc, default)\n    assert result is default\n\n\ndef test_resolve_pointer_with_default_returns_exact_default():\n    doc = [1, 2, 3]\n    default = object()\n    result = resolve_pointer(doc, '/' + LONG_INDEX, default)\n    assert result is default\n\n\ndef test_long_numeric_object_member_key_remains_string():\n    key = '1' * 5000\n    doc = {key: 'value'}\n    ptr = JsonPointer('/' + key)\n    assert ptr.resolve(doc) == 'value'\n\n\ndef test_long_numeric_object_member_key_set_remains_string():\n    key = '1' * 5000\n    doc = {key: 'value'}\n    ptr = JsonPointer('/' + key)\n    ptr.set(doc, 'new')\n    assert doc == {key: 'new'}\n\n\ndef test_ordinary_array_index_resolves():\n    doc = [10, 20, 30]\n    assert JsonPointer('/1').resolve(doc) == 20\n\n\ndef test_ordinary_array_index_sets():\n    doc = [10, 20, 30]\n    JsonPointer('/1').set(doc, 99)\n    assert doc == [10, 99, 30]\n\n\ndef test_end_of_list_dash_resolves_to_end_of_list():\n    from jsonpointer import EndOfList\n\n    doc = [1, 2, 3]\n    result = JsonPointer('/-').resolve(doc)\n    assert isinstance(result, EndOfList)\n    assert result.list_ is doc\n\n\ndef test_end_of_list_dash_appends_on_set():\n    doc = [1, 2, 3]\n    JsonPointer('/-').set(doc, 4)\n    assert doc == [1, 2, 3, 4]\n\n\ndef test_set_mutates_original_document_in_place():\n    doc = {'foo': {'bar': 1}}\n    result = JsonPointer('/foo/bar').set(doc, 2)\n    assert result is doc\n    assert doc == {'foo': {'bar': 2}}\n\n\ndef test_set_not_inplace_does_not_mutate_original():\n    doc = {'foo': {'bar': 1}}\n    result = JsonPointer('/foo/bar').set(doc, 2, inplace=False)\n    assert result == {'foo': {'bar': 2}}\n    assert doc == {'foo': {'bar': 1}}\n",
+          "old": "",
+          "path": "tests/test_long_index_regression.py"
+        }
+      ],
+      "rationale": "The bug: in `JsonPointer.get_part`, for a Sequence doc, `int(part)` is called after the regex check. When `part` is a very long numeric string, Python's int() raises ValueError (digit conversion limit, e.g. sys.set_int_max_str_digits). This ValueError leaks out of resolve/to_last/set instead of JsonPointerException. Fix: wrap the int() conversion in try/except ValueError and re-raise JsonPointerException. Object member keys (Mapping branch) return `part` unchanged as a string, so long numeric keys remain strings. resolve() already catches JsonPointerException and returns the default, so once get_part raises JsonPointerException, resolve-with-default returns the exact default. to_last and set route through get_part/walk, so they inherit the fix. End-of-list '-' handling and ordinary indices are untouched. New regression tests added in tests/test_long_index_regression.py."
+    }
+  ],
+  "recorded_digest": "e9ca937a47d26e36cf21546d2ffba063b587a5739c81714a2895fa8a08d020a8",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "94b02c26-f1fc-47c2-ad75-01ab59567796",
+      "candidate_number": 1,
+      "duration_seconds": 1.0222088000009535,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "output_truncated": false,
+      "passed": 41,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".........................................                                [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n41 passed in 0.16s\n"
+    }
+  ],
+  "workspace_manifest": {
+    ".github/workflows/test.yaml": "c9707120d99cb87316dfe450b6dacd9c58db362a0e5e902c7fb6a77f056c1020",
+    ".readthedocs.yaml": "5b5c9335d6fa7ff57c3c847a057db901372e2083f259a801046acf5018f544a4",
+    "LICENSE.txt": "d8b24f15d472885f788a2d6e985850f264627b86012a17bb242c83f310d907e5",
+    "README.md": "5cbc1356d894dad09d85160bdeb9743aad94fc5ef66d8b4165b057e4794904fc",
+    "doc/conf.py": "29948433491bf1f630becf275c954520f9af944dcc5199946efac7cd698d928a",
+    "jsonpointer.py": "d82ec40e98ca9b4090031bfa7106f881c2d2fc326f4d216dda04dbefafa4ff01",
+    "requirements-dev.txt": "7272ab2b29dd3ce79746f9128e68956407cfe60543ed4b6d6ed4cb2847fa0723",
+    "setup.py": "718a22267b266bea2ac81135c5f6c888eb581858e3e5b2d2e2012a606d28a6a9",
+    "tests.py": "99300a74a31a1321515782334cd68e21b2558f3d1e934b558c3675673375c06f",
+    "tests/test_long_index_regression.py": "b617bbf13d193e6f0195aaedf6851590d36d7f34593f99c59884a4f329e68368",
+    "tests/test_upstream_suite.py": "ed9d1f6ccefaac11626f4744d3764f893bf62d61492fbba670710152948f21c6"
+  }
+}

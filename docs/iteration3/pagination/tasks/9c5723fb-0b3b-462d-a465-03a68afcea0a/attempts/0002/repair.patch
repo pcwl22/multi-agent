@@ -1,0 +1,74 @@
+--- a/pagination.py
++++ b/pagination.py
+@@ -1,5 +1,5 @@
+ def paginate(items, page, page_size):
+     if page < 1 or page_size < 1:
+         return []
+-    start = page * page_size
+-    return items[start : start + page_size]
++    start = (page - 1) * page_size
++    return list(items[start : start + page_size])
+--- a/tests/test_pagination_regression.py
++++ b/tests/test_pagination_regression.py
+@@ -0,0 +1,61 @@
++from pagination import paginate
++
++
++def test_page_two_size_two_returns_third_and_fourth():
++    result = paginate(range(1, 8), 2, 2)
++    assert result == [3, 4]
++    assert isinstance(result, list)
++
++
++def test_page_one_size_two_returns_first_two():
++    result = paginate(range(1, 8), 1, 2)
++    assert result == [1, 2]
++    assert isinstance(result, list)
++
++
++def test_last_partial_page_returns_remaining():
++    result = paginate(range(1, 8), 4, 2)
++    assert result == [7]
++    assert isinstance(result, list)
++
++
++def test_page_beyond_last_returns_empty():
++    result = paginate(range(1, 8), 5, 2)
++    assert result == []
++    assert isinstance(result, list)
++
++
++def test_empty_input_returns_empty():
++    result = paginate([], 1, 2)
++    assert result == []
++    assert isinstance(result, list)
++
++
++def test_non_positive_page_returns_empty():
++    result = paginate([1, 2], 0, 2)
++    assert result == []
++    assert isinstance(result, list)
++
++
++def test_non_positive_page_size_returns_empty():
++    result = paginate([1, 2], 1, 0)
++    assert result == []
++    assert isinstance(result, list)
++
++
++def test_negative_page_returns_empty():
++    result = paginate([1, 2, 3], -1, 2)
++    assert result == []
++    assert isinstance(result, list)
++
++
++def test_negative_page_size_returns_empty():
++    result = paginate([1, 2, 3], 1, -2)
++    assert result == []
++    assert isinstance(result, list)
++
++
++def test_one_based_semantics_with_list_input():
++    result = paginate([10, 20, 30, 40, 50], 2, 2)
++    assert result == [30, 40]
++    assert isinstance(result, list)

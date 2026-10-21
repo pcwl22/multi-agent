@@ -1,0 +1,130 @@
+{
+  "patches": [
+    {
+      "rationale": "The issue requires is_expired to treat the exact boundary inserted_at + ttl as expired (non-strict comparison), including zero TTL. Currently it uses strict '>' which keeps entries alive at the boundary. Change to '>=' to make now == inserted_at + ttl expired, while preserving strict-before (False) and strict-after (True). Add a new regression test file covering boundary, zero TTL, before, and after cases, plus type checks.",
+      "edits": [
+        {
+          "path": "cache.py",
+          "old": "def is_expired(inserted_at, ttl, now):\n    return now > inserted_at + ttl",
+          "new": "def is_expired(inserted_at, ttl, now):\n    return now >= inserted_at + ttl"
+        },
+        {
+          "path": "tests/test_cache_expiry.py",
+          "old": "",
+          "new": "from cache import is_expired\n\n\ndef test_expired_exactly_at_boundary():\n    # now == inserted_at + ttl must be expired\n    assert is_expired(10, 5, 15) is True\n\n\ndef test_zero_ttl_expires_at_insertion_instant():\n    # ttl == 0 and now == inserted_at must be expired\n    assert is_expired(10, 0, 10) is True\n\n\ndef test_not_expired_strictly_before_boundary():\n    # now < inserted_at + ttl must remain alive\n    assert is_expired(10, 5, 14) is False\n\n\ndef test_expired_strictly_after_boundary():\n    # now > inserted_at + ttl must be expired\n    assert is_expired(10, 5, 16) is True\n\n\ndef test_zero_ttl_before_insertion_instant_not_expired():\n    # strictly before the zero-ttl boundary is not expired\n    assert is_expired(10, 0, 9) is False\n\n\ndef test_zero_ttl_after_insertion_instant_expired():\n    # strictly after the zero-ttl boundary is expired\n    assert is_expired(10, 0, 11) is True\n\n\ndef test_is_expired_returns_bool():\n    assert isinstance(is_expired(10, 5, 15), bool)\n    assert isinstance(is_expired(10, 5, 14), bool)\n    assert isinstance(is_expired(10, 0, 10), bool)\n"
+        }
+      ],
+      "contract_tests": [
+        "tests/test_cache_expiry.py::test_expired_exactly_at_boundary asserts is_expired(10, 5, 15) is True (now == inserted_at + ttl).",
+        "tests/test_cache_expiry.py::test_zero_ttl_expires_at_insertion_instant asserts is_expired(10, 0, 10) is True (ttl == 0, now == inserted_at).",
+        "tests/test_cache_expiry.py::test_not_expired_strictly_before_boundary asserts is_expired(10, 5, 14) is False (now < inserted_at + ttl).",
+        "tests/test_cache_expiry.py::test_expired_strictly_after_boundary asserts is_expired(10, 5, 16) is True (now > inserted_at + ttl).",
+        "tests/test_cache_expiry.py::test_zero_ttl_before_insertion_instant_not_expired asserts is_expired(10, 0, 9) is False.",
+        "tests/test_cache_expiry.py::test_zero_ttl_after_insertion_instant_expired asserts is_expired(10, 0, 11) is True.",
+        "tests/test_cache_expiry.py::test_is_expired_returns_bool asserts isinstance(..., bool) for boundary, before, and zero-ttl cases, confirming return type unchanged."
+      ],
+      "changed_files": [
+        "cache.py",
+        "tests/test_cache_expiry.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.07s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.927858399998513,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_expired_exactly_at_boundary",
+          "classname": "tests.test_cache_expiry",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_zero_ttl_expires_at_insertion_instant",
+          "classname": "tests.test_cache_expiry",
+          "line": 9,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_not_expired_strictly_before_boundary",
+          "classname": "tests.test_cache_expiry",
+          "line": 14,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_expired_strictly_after_boundary",
+          "classname": "tests.test_cache_expiry",
+          "line": 19,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_zero_ttl_before_insertion_instant_not_expired",
+          "classname": "tests.test_cache_expiry",
+          "line": 24,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_zero_ttl_after_insertion_instant_expired",
+          "classname": "tests.test_cache_expiry",
+          "line": 29,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_cache_expiry.py",
+          "name": "test_is_expired_returns_bool",
+          "classname": "tests.test_cache_expiry",
+          "line": 34,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "2d6cbdc677bc308dcd57629bf9212c6ec037474da684f455920970791601940a"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

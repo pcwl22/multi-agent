@@ -1,0 +1,22 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,17 @@
++import copy
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {}
++    for key, value in defaults.items():
++        result[key] = copy.deepcopy(value)
++    for key, value in overrides.items():
++        if (
++            key in result
++            and isinstance(result[key], dict)
++            and isinstance(value, dict)
++        ):
++            result[key] = merge_config(result[key], value)
++        else:
++            result[key] = copy.deepcopy(value)
+     return result

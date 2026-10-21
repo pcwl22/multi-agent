@@ -1,0 +1,62 @@
+{
+  "registry_lock_sha256": "a02823542d0d9722d193349f28d37b148830820075fac99d94f13094fd2fc004",
+  "cases": 4,
+  "runs": 24,
+  "repeats": 2,
+  "configuration": {
+    "image": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d",
+    "budget_limits": {
+      "wall_seconds": 900.0,
+      "model_requests": 8,
+      "observed_tokens": 100000,
+      "sandbox_runs": 6,
+      "artifact_bytes": 268435456,
+      "result_bytes": 8388608
+    },
+    "retry_policy": "isolated",
+    "patch_transactions": true,
+    "workers": 2
+  },
+  "modes": {
+    "single": {
+      "planned_runs": 8,
+      "ready_and_accepted": 5,
+      "strict_success_rate": 0.625,
+      "holdout_passed": 5,
+      "budget_exhausted": 0,
+      "unknown_usage": 0,
+      "infrastructure_blocked": 0,
+      "provider_failures": 0,
+      "observed_tokens": 163007,
+      "model_calls": 13,
+      "duration_seconds": 353.11162530000365
+    },
+    "multi_no_review": {
+      "planned_runs": 8,
+      "ready_and_accepted": 6,
+      "strict_success_rate": 0.75,
+      "holdout_passed": 6,
+      "budget_exhausted": 0,
+      "unknown_usage": 0,
+      "infrastructure_blocked": 0,
+      "provider_failures": 0,
+      "observed_tokens": 217775,
+      "model_calls": 23,
+      "duration_seconds": 527.4578616000035
+    },
+    "multi_full": {
+      "planned_runs": 8,
+      "ready_and_accepted": 6,
+      "strict_success_rate": 0.75,
+      "holdout_passed": 7,
+      "budget_exhausted": 0,
+      "unknown_usage": 0,
+      "infrastructure_blocked": 0,
+      "provider_failures": 0,
+      "observed_tokens": 367732,
+      "model_calls": 31,
+      "duration_seconds": 616.1005720000067
+    }
+  },
+  "limitations": "Small public historical sample; repeats are correlated, not independent bugs. Reference fixes are controls, never counted as model repairs. No human approvals or GitHub writes."
+}

@@ -1,0 +1,21 @@
+{
+  "full_installed_wheel_suite": {
+    "tests": 343,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 341
+  },
+  "controlled_faults_passed": 37,
+  "fault_controls_are_live_llm": false,
+  "fault_controls_use_actual_sdk_and_injected_http": true,
+  "packaged_app_files_match_source_and_installation": 114,
+  "existing_test_helper_files_unchanged": 83,
+  "all_planned_probe_dispositions_retained": true,
+  "unknown_dispatch_replayed": false,
+  "old_three_experiment_reports_unchanged": true,
+  "new_historical_repair_evaluation_started": false,
+  "github_writes": false,
+  "new_head_ci_run": false,
+  "sdist_tested": false
+}

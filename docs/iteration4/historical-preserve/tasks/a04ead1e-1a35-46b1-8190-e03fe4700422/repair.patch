@@ -1,0 +1,108 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -124,7 +124,15 @@
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OSError, OverflowError):
++                    # The timestamp is outside the range supported by
++                    # datetime. Treat it as malformed and report no
++                    # date_signed rather than leaking the error.
++                    raise BadTimeSignature(
++                        "Malformed timestamp", payload=value, date_signed=None
++                    )
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+--- a/tests/test_itsdangerous/test_timed_regression.py
++++ b/tests/test_itsdangerous/test_timed_regression.py
+@@ -0,0 +1,86 @@
++import time
++from datetime import datetime
++from datetime import timezone
++
++import pytest
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++from itsdangerous.encoding import base64_encode
++from itsdangerous.encoding import int_to_bytes
++
++
++def test_invalid_signature_out_of_range_timestamp_raises_bad_time_signature():
++    signer = TimestampSigner("secret-key")
++    # A timestamp far outside datetime's supported year range.
++    huge_ts = 10**18
++    ts_bytes = base64_encode(int_to_bytes(huge_ts))
++    signed = b"payload" + b"." + ts_bytes + b"." + b"bogus-signature"
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(signed)
++
++    err = exc_info.value
++    assert isinstance(err, BadSignature)
++    assert err.payload == b"payload"
++    assert err.date_signed is None
++
++
++def test_invalid_signature_ordinary_timestamp_keeps_date_signed():
++    signer = TimestampSigner("secret-key")
++    ts = 1_000_000_000
++    ts_bytes = base64_encode(int_to_bytes(ts))
++    signed = b"payload" + b"." + ts_bytes + b"." + b"bogus-signature"
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(signed)
++
++    err = exc_info.value
++    assert err.payload == b"payload"
++    assert err.date_signed == datetime.fromtimestamp(ts, tz=timezone.utc)
++
++
++def test_valid_roundtrip_still_works():
++    signer = TimestampSigner("secret-key")
++    signed = signer.sign(b"hello")
++    assert signer.unsign(signed) == b"hello"
++
++    value, ts = signer.unsign(signed, return_timestamp=True)
++    assert value == b"hello"
++    assert isinstance(ts, datetime)
++    assert ts.tzinfo is timezone.utc
++
++
++def test_expiry_behavior_preserved():
++    signer = TimestampSigner("secret-key")
++    signed = signer.sign(b"hello")
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=-1)
++
++    err = exc_info.value
++    assert err.payload == b"hello"
++    assert isinstance(err.date_signed, datetime)
++
++
++def test_timed_serializer_invalid_signature_error_contract():
++    serializer = TimedSerializer("secret-key")
++    huge_ts = 10**18
++    ts_bytes = base64_encode(int_to_bytes(huge_ts))
++    payload = serializer.dump_payload({"a": 1})
++    signed = payload + b"." + ts_bytes + b"." + b"bogus-signature"
++
++    with pytest.raises(BadSignature) as exc_info:
++        serializer.loads(signed)
++
++    assert isinstance(exc_info.value, BadTimeSignature)
++    assert exc_info.value.date_signed is None
++
++
++def test_timed_serializer_valid_roundtrip():
++    serializer = TimedSerializer("secret-key")
++    signed = serializer.dumps({"a": 1})
++    assert serializer.loads(signed) == {"a": 1}

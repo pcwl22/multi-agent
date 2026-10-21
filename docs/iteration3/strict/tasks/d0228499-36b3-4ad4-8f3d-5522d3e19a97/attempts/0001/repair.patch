@@ -1,0 +1,11 @@
+--- a/inventory.py
++++ b/inventory.py
+@@ -1,3 +1,6 @@
+ def available_units(stock, reservations):
+-    reserved = dict(reservations)
+-    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}
++    available = dict(stock)
++    for sku, qty in reservations:
++        if sku in available:
++            available[sku] = max(0, available[sku] - qty)
++    return available

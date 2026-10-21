@@ -1,0 +1,139 @@
+--- a/jsonpointer.py
++++ b/jsonpointer.py
+@@ -239,7 +239,14 @@
+             if not JsonPointer._RE_ARRAY_INDEX.fullmatch(str(part)):
+                 raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+-            return int(part)
++            try:
++                return int(part)
++            except ValueError:
++                # int() can raise ValueError for numeric strings that exceed
++                # Python's integer digit conversion limit (see
++                # sys.set_int_max_str_digits). Such an index is not a usable
++                # sequence index, so surface it as a JsonPointerException.
++                raise JsonPointerException("'%s' is not a valid sequence index" % part)
+ 
+         elif hasattr(doc, '__getitem__'):
+             # Allow indexing via ducktyping
+--- a/tests/test_long_index_regression.py
++++ b/tests/test_long_index_regression.py
+@@ -0,0 +1,118 @@
++import sys
++
++import pytest
++
++from jsonpointer import (
++    JsonPointer,
++    JsonPointerException,
++    resolve_pointer,
++    set_pointer,
++)
++
++
++# A numeric string long enough to exceed CPython's default integer digit
++# conversion limit (sys.get_int_max_str_digits(), default 4300).
++LONG_INDEX = '1' * 5000
++
++
++def test_resolve_long_numeric_index_raises_jsonpointerexception():
++    doc = [1, 2, 3]
++    ptr = JsonPointer('/' + LONG_INDEX)
++    with pytest.raises(JsonPointerException):
++        ptr.resolve(doc)
++
++
++def test_resolve_pointer_long_numeric_index_raises_jsonpointerexception():
++    doc = [1, 2, 3]
++    with pytest.raises(JsonPointerException):
++        resolve_pointer(doc, '/' + LONG_INDEX)
++
++
++def test_to_last_long_numeric_index_raises_jsonpointerexception():
++    doc = [1, 2, 3]
++    ptr = JsonPointer('/' + LONG_INDEX)
++    with pytest.raises(JsonPointerException):
++        ptr.to_last(doc)
++
++
++def test_set_long_numeric_index_raises_jsonpointerexception():
++    doc = [1, 2, 3]
++    ptr = JsonPointer('/' + LONG_INDEX)
++    with pytest.raises(JsonPointerException):
++        ptr.set(doc, 'x')
++
++
++def test_set_pointer_long_numeric_index_raises_jsonpointerexception():
++    doc = [1, 2, 3]
++    with pytest.raises(JsonPointerException):
++        set_pointer(doc, '/' + LONG_INDEX, 'x')
++
++
++def test_resolve_with_default_returns_exact_default():
++    doc = [1, 2, 3]
++    default = object()
++    ptr = JsonPointer('/' + LONG_INDEX)
++    result = ptr.resolve(doc, default)
++    assert result is default
++
++
++def test_resolve_pointer_with_default_returns_exact_default():
++    doc = [1, 2, 3]
++    default = object()
++    result = resolve_pointer(doc, '/' + LONG_INDEX, default)
++    assert result is default
++
++
++def test_long_numeric_object_member_key_remains_string():
++    key = '1' * 5000
++    doc = {key: 'value'}
++    ptr = JsonPointer('/' + key)
++    assert ptr.resolve(doc) == 'value'
++
++
++def test_long_numeric_object_member_key_set_remains_string():
++    key = '1' * 5000
++    doc = {key: 'value'}
++    ptr = JsonPointer('/' + key)
++    ptr.set(doc, 'new')
++    assert doc == {key: 'new'}
++
++
++def test_ordinary_array_index_resolves():
++    doc = [10, 20, 30]
++    assert JsonPointer('/1').resolve(doc) == 20
++
++
++def test_ordinary_array_index_sets():
++    doc = [10, 20, 30]
++    JsonPointer('/1').set(doc, 99)
++    assert doc == [10, 99, 30]
++
++
++def test_end_of_list_dash_resolves_to_end_of_list():
++    from jsonpointer import EndOfList
++
++    doc = [1, 2, 3]
++    result = JsonPointer('/-').resolve(doc)
++    assert isinstance(result, EndOfList)
++    assert result.list_ is doc
++
++
++def test_end_of_list_dash_appends_on_set():
++    doc = [1, 2, 3]
++    JsonPointer('/-').set(doc, 4)
++    assert doc == [1, 2, 3, 4]
++
++
++def test_set_mutates_original_document_in_place():
++    doc = {'foo': {'bar': 1}}
++    result = JsonPointer('/foo/bar').set(doc, 2)
++    assert result is doc
++    assert doc == {'foo': {'bar': 2}}
++
++
++def test_set_not_inplace_does_not_mutate_original():
++    doc = {'foo': {'bar': 1}}
++    result = JsonPointer('/foo/bar').set(doc, 2, inplace=False)
++    assert result == {'foo': {'bar': 2}}
++    assert doc == {'foo': {'bar': 1}}

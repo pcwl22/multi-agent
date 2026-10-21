@@ -1,0 +1,112 @@
+{
+  "candidate_id": "007fce50-d17a-4ffa-a80d-ff31212ad7dd",
+  "candidate_number": 1,
+  "diff": "--- a/pricing.py\n+++ b/pricing.py\n@@ -1,2 +1,2 @@\n def discounted_total(amount, discount_percent):\n-    return round(amount * (1 - discount_percent), 2)\n+    return round(amount * (1 - discount_percent / 100), 2)\n--- a/tests/test_pricing_regression.py\n+++ b/tests/test_pricing_regression.py\n@@ -0,0 +1,29 @@\n+from pricing import discounted_total\n+\n+\n+def test_literal_example_100_with_20_percent_discount():\n+    result = discounted_total(100, 20)\n+    assert result == 80\n+    assert isinstance(result, (int, float))\n+\n+\n+def test_zero_amount_stays_zero():\n+    assert discounted_total(0, 20) == 0\n+    assert discounted_total(0, 0) == 0\n+    assert discounted_total(0, 100) == 0\n+\n+\n+def test_no_discount_leaves_amount_unchanged():\n+    assert discounted_total(100, 0) == 100\n+    assert discounted_total(12.5, 0) == 12.5\n+    assert discounted_total(0, 0) == 0\n+\n+\n+def test_full_discount_percentage_boundary():\n+    assert discounted_total(100, 100) == 0\n+    assert discounted_total(50, 100) == 0\n+\n+\n+def test_percentage_interpretation():\n+    assert discounted_total(200, 25) == 150\n+    assert discounted_total(50, 10) == 45\n",
+  "diff_digest": "d6a9fac495da7f7d00a79150c6bf7b8b631fa505d1409abecf9574e9d71b6cc6",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 3,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "007fce50-d17a-4ffa-a80d-ff31212ad7dd",
+      "candidate_number": 1,
+      "changed_files": [
+        "pricing.py",
+        "tests/test_pricing_regression.py"
+      ],
+      "contract_tests": [
+        "`discounted_total(100, 20)` returns `80` -> tests/test_pricing_regression.py::test_literal_example_100_with_20_percent_discount asserts `discounted_total(100, 20) == 80` and that the result is numeric (int/float).",
+        "A discount of 0 leaves the amount unchanged -> tests/test_pricing_regression.py::test_no_discount_leaves_amount_unchanged asserts `discounted_total(100, 0) == 100` and `discounted_total(12.5, 0) == 12.5`.",
+        "A zero amount stays zero for any valid discount in 0..100 -> tests/test_pricing_regression.py::test_zero_amount_stays_zero asserts `discounted_total(0, 20) == 0`, `discounted_total(0, 0) == 0`, `discounted_total(0, 100) == 0`.",
+        "The discount parameter is interpreted as a percentage in the range 0 to 100 -> tests/test_pricing_regression.py::test_percentage_interpretation asserts `discounted_total(200, 25) == 150` and `discounted_total(50, 10) == 45`; test_full_discount_percentage_boundary asserts `discounted_total(100, 100) == 0` and `discounted_total(50, 100) == 0`.",
+        "Existing behavior for other valid inputs is preserved; no existing tests are modified -> tests/test_contract.py is left unchanged (its assertions `discounted_total(0, 20) == 0` and `discounted_total(12.5, 0) == 12.5` still hold under the fix).",
+        "New regression tests cover the literal example, zero amount, and no-discount cases -> tests/test_pricing_regression.py contains test_literal_example_100_with_20_percent_discount, test_zero_amount_stays_zero, and test_no_discount_leaves_amount_unchanged."
+      ],
+      "edits": [
+        {
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "path": "pricing.py"
+        },
+        {
+          "new": "from pricing import discounted_total\n\n\ndef test_literal_example_100_with_20_percent_discount():\n    result = discounted_total(100, 20)\n    assert result == 80\n    assert isinstance(result, (int, float))\n\n\ndef test_zero_amount_stays_zero():\n    assert discounted_total(0, 20) == 0\n    assert discounted_total(0, 0) == 0\n    assert discounted_total(0, 100) == 0\n\n\ndef test_no_discount_leaves_amount_unchanged():\n    assert discounted_total(100, 0) == 100\n    assert discounted_total(12.5, 0) == 12.5\n    assert discounted_total(0, 0) == 0\n\n\ndef test_full_discount_percentage_boundary():\n    assert discounted_total(100, 100) == 0\n    assert discounted_total(50, 100) == 0\n\n\ndef test_percentage_interpretation():\n    assert discounted_total(200, 25) == 150\n    assert discounted_total(50, 10) == 45\n",
+          "old": "",
+          "path": "tests/test_pricing_regression.py"
+        }
+      ],
+      "rationale": "The bug: `discounted_total` multiplies by `(1 - discount_percent)`, treating the discount as a fraction (0..1) rather than a percentage (0..100). With amount=100, discount=20 it returns round(100 * (1 - 20), 2) = -1900.0 instead of 80. Fix: divide the percentage by 100 so the discount is applied as a percentage. This preserves amount=0 -> 0 and discount=0 -> amount unchanged. New regression tests are added in a fresh file (tests/test_pricing_regression.py) that is not in existing_test_paths, leaving tests/test_contract.py untouched."
+    }
+  ],
+  "recorded_digest": "d6a9fac495da7f7d00a79150c6bf7b8b631fa505d1409abecf9574e9d71b6cc6",
+  "retry_count": 0,
+  "reviews": [
+    {
+      "approved": true,
+      "attempt": 1,
+      "candidate_id": "007fce50-d17a-4ffa-a80d-ff31212ad7dd",
+      "candidate_number": 1,
+      "concerns": [],
+      "contract_checks": [
+        {
+          "evidence": "pricing.py now computes `round(amount * (1 - discount_percent / 100), 2)`, so discounted_total(100, 20) = round(100 * (1 - 0.2), 2) = 80.0, which equals 80. tests/test_pricing_regression.py::test_literal_example_100_with_20_percent_discount asserts `discounted_total(100, 20) == 80` and that the result is int/float. Test suite passed (6 passed).",
+          "requirement": "`discounted_total(100, 20)` returns `80` (literal example from the issue).",
+          "satisfied": true
+        },
+        {
+          "evidence": "With discount_percent=0, the formula yields `round(amount * 1, 2) == amount` for the tested values. tests/test_pricing_regression.py::test_no_discount_leaves_amount_unchanged asserts discounted_total(100, 0) == 100 and discounted_total(12.5, 0) == 12.5; tests/test_contract.py also asserts discounted_total(12.5, 0) == 12.5. All passed.",
+          "requirement": "A discount of 0 leaves the amount unchanged: `discounted_total(amount, 0) == amount`.",
+          "satisfied": true
+        },
+        {
+          "evidence": "With amount=0, `round(0 * (1 - discount_percent/100), 2) == 0` for all discount values. tests/test_pricing_regression.py::test_zero_amount_stays_zero asserts discounted_total(0, 20) == 0, discounted_total(0, 0) == 0, discounted_total(0, 100) == 0; tests/test_contract.py asserts discounted_total(0, 20) == 0. All passed.",
+          "requirement": "A zero amount stays zero: `discounted_total(0, discount) == 0` for any valid discount in 0..100.",
+          "satisfied": true
+        },
+        {
+          "evidence": "The implementation divides discount_percent by 100, so 20 means 20%. tests/test_pricing_regression.py::test_percentage_interpretation asserts discounted_total(200, 25) == 150 and discounted_total(50, 10) == 45; test_full_discount_percentage_boundary asserts discounted_total(100, 100) == 0 and discounted_total(50, 100) == 0. All passed.",
+          "requirement": "The discount parameter is interpreted as a percentage in the range 0 to 100.",
+          "satisfied": true
+        },
+        {
+          "evidence": "tests/test_contract.py is unchanged and its assertions (discounted_total(0, 20) == 0, discounted_total(12.5, 0) == 12.5) still hold under the new formula. The diff only modifies pricing.py and adds tests/test_pricing_regression.py; no existing test files were altered. Full suite passed (6 passed).",
+          "requirement": "Existing behavior for other valid inputs is preserved; no existing tests are modified.",
+          "satisfied": true
+        },
+        {
+          "evidence": "tests/test_pricing_regression.py contains test_literal_example_100_with_20_percent_discount (literal example), test_zero_amount_stays_zero (zero amount), and test_no_discount_leaves_amount_unchanged (no discount), plus boundary and percentage-interpretation tests. Test run reported 6 passed.",
+          "requirement": "New regression tests cover the literal example, zero amount, and no-discount cases.",
+          "satisfied": true
+        }
+      ],
+      "summary": "The fix in pricing.py changes the discount application from `amount * (1 - discount_percent)` to `amount * (1 - discount_percent / 100)`, correctly interpreting the discount as a percentage. The literal example `discounted_total(100, 20) == 80` now holds, zero amount and no-discount behavior are preserved, and new regression tests cover the required cases without modifying existing tests."
+    }
+  ],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "007fce50-d17a-4ffa-a80d-ff31212ad7dd",
+      "candidate_number": 1,
+      "duration_seconds": 1.0022888999992574,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 6,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "......                                                                   [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n6 passed in 0.10s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pricing.py": "a75ffa764bc0e13bf700a6019d07cb69e77dea2b91ed49c2adba5da231e76d08",
+    "tests/test_contract.py": "f33ad1562355afcb3a406dda0dbaa8c4ff17f180df46420db307558d6c22ffa8",
+    "tests/test_pricing_regression.py": "8a87b0a85d8f64c38fae1127083fd98b455ea3e33032ebaabcad79c35c7c609d"
+  }
+}

@@ -1,0 +1,2397 @@
+[
+  {
+    "case_id": "dotenv-empty-comment",
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "f623b66e-5c56-4923-92d9-e9cdfd43a1af",
+    "execution_status": "failed",
+    "error": "Patch retry budget exhausted: One edit per file is required",
+    "model_calls": 5,
+    "tokens": 60029,
+    "duration_seconds": 119.07437600000048,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400013.9560018,
+      "remaining_seconds": 549.0071589946747,
+      "model_requests": 5,
+      "sandbox_runs": 0,
+      "observed_tokens": 60029,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "patch_rejections": [
+      {
+        "attempt": 1,
+        "error": "One edit per file is required",
+        "candidate_id": "39e9e166-9c8c-4650-826a-203371612316",
+        "candidate_number": 1
+      },
+      {
+        "attempt": 2,
+        "error": "One edit per file is required",
+        "candidate_id": "392845e8-729b-4f6b-9ebe-d72dfabf62f6",
+        "candidate_number": 2
+      }
+    ],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 2,
+        "rate_limit_wait_seconds": 1.1505316000002495
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 2,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "a3ebd6b5-bc20-4c6b-949e-172cdd37eb05",
+    "execution_status": "failed",
+    "error": "Patch retry budget exhausted: One edit per file is required",
+    "model_calls": 4,
+    "tokens": 43326,
+    "duration_seconds": 110.7747526000021,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399903.1445324,
+      "remaining_seconds": 438.24290227890015,
+      "model_requests": 4,
+      "sandbox_runs": 0,
+      "observed_tokens": 43326,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "patch_rejections": [
+      {
+        "attempt": 1,
+        "error": "One edit per file is required",
+        "candidate_id": "842c2723-bd8d-4ad1-a58f-02f50dfbcc5f",
+        "candidate_number": 1
+      },
+      {
+        "attempt": 2,
+        "error": "One edit per file is required",
+        "candidate_id": "22202795-9053-4cfc-ac5c-db11f9704bfd",
+        "candidate_number": 2
+      }
+    ],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 6.002072199997201
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 2,
+        "rate_limit_wait_seconds": 6.307801999999356
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 3.7894610999974248
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "6c89d7bb-055d-419a-9bce-69d01b8a1d2a",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 12217,
+    "duration_seconds": 42.81666039999982,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399860.3109455,
+      "remaining_seconds": 395.44690012931824,
+      "model_requests": 1,
+      "sandbox_runs": 1,
+      "observed_tokens": 12217,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "5b94d3565279b2e8697511accbfbd3c4366964ad5bf6d8888c8b4fa3cdf2fed7",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 1.1945954999973765
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 238,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "3285ae34-504d-4737-b46c-a4e90572b571",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 34368,
+    "duration_seconds": 62.39727969999876,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400231.1455142,
+      "remaining_seconds": 766.0747447013855,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 34368,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": true
+      }
+    ],
+    "diff_digest": "be11865df398564d1d80d245b179aacf1d596798fa5f59ade3319b28dd464b2e",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 7.041756999999052
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 1.3679951000012807
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 252,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "1903586c-1e17-4657-8c32-29c0272fb255",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 4,
+    "tokens": 44721,
+    "duration_seconds": 98.06480260000171,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400133.06206,
+      "remaining_seconds": 668.0526840686798,
+      "model_requests": 4,
+      "sandbox_runs": 1,
+      "observed_tokens": 44721,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "c850a724e3c02dd17791db6da21d01fe341bb8722629234d243bc6dff4a21648",
+    "patch_rejections": [
+      {
+        "attempt": 1,
+        "error": "One edit per file is required",
+        "candidate_id": "ed0d94f5-a52d-4230-b3d2-993927fc65af",
+        "candidate_number": 1
+      }
+    ],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 3.2191106999998738
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 5.632533300002251
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 2,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 253,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_parser_empty_value_comment.py",
+            "test": "test_unquoted_empty_value_with_inline_comment[KEY=#literal-#literal]",
+            "origin": "generated_test",
+            "message": "AssertionError: assert '' == '#literal'\n  \n  - #literal"
+          },
+          {
+            "file": "tests/test_parser_empty_value_comment.py",
+            "test": "test_hash_without_whitespace_is_literal",
+            "origin": "generated_test",
+            "message": "AssertionError: assert '' == '#literal'\n  \n  - #literal"
+          },
+          {
+            "file": "tests/test_parser_empty_value_comment.py",
+            "test": "test_adjacent_lines_parsed_independently",
+            "origin": "generated_test",
+            "message": "AssertionError: assert [('A', ''), (...'value#hash')] == [('A', ''), (...'value#hash')]\n  \n  At index 1 diff: ('B', '') != ('B', '#lit')\n  Use -v to get more diff"
+          },
+          {
+            "file": "tests/test_parser_empty_value_comment.py",
+            "test": "test_crlf_empty_value_with_comment",
+            "origin": "generated_test",
+            "message": "AssertionError: assert [('A', ''), ('B', '')] == [('A', ''), ('B', '#lit')]\n  \n  At index 1 diff: ('B', '') != ('B', '#lit')\n  Use -v to get more diff"
+          },
+          {
+            "file": "tests/test_parser_empty_value_comment.py",
+            "test": "test_dotenv_values_stream_matches_file_parsing",
+            "origin": "generated_test",
+            "message": "AssertionError: assert '' == '#literal'\n  \n  - #literal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "15b16269-3f4b-46b6-94c4-8fd86fd357c0",
+    "execution_status": "failed",
+    "error": "Patch retry budget exhausted: One edit per file is required",
+    "model_calls": 3,
+    "tokens": 39823,
+    "duration_seconds": 70.79334209999797,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400293.561044,
+      "remaining_seconds": 828.4576604366302,
+      "model_requests": 3,
+      "sandbox_runs": 0,
+      "observed_tokens": 39823,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "patch_rejections": [
+      {
+        "attempt": 1,
+        "error": "One edit per file is required",
+        "candidate_id": "6a18e73c-6c8f-4b6b-82a1-c3dd62bb02fb",
+        "candidate_number": 1
+      },
+      {
+        "attempt": 2,
+        "error": "One edit per file is required",
+        "candidate_id": "70a66dc0-324e-49d0-bae1-5c392caf15cb",
+        "candidate_number": 2
+      }
+    ],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 2,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "d569e545-a1c5-460d-a45c-78064934b390",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 4,
+    "tokens": 50325,
+    "duration_seconds": 98.202747000003,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399718.170871,
+      "remaining_seconds": 253.38744831085205,
+      "model_requests": 4,
+      "sandbox_runs": 3,
+      "observed_tokens": 50325,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "diff_digest": "672f3f8f68dea4e00f321a17c5527d348cb177cbad3c9dd78fd935ac83fe0f9c",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 4.254136199997447
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.5274462000015774
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 306,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_regression.py",
+            "test": "test_negative_out_of_range_timestamp_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "0dc55e1b-6c3e-4baf-9d75-2601224e8731",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 26308,
+    "duration_seconds": 45.423723700001574,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399672.7212458,
+      "remaining_seconds": 207.98559045791626,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 26308,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "dad367cd5402d2ec15cff02fe738d0aa8985afd84b32894b5688c3f8878420ea",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 5.603134199998749
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 1.8538100000005215
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 297,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "e3565b09-0b7f-447d-88f1-1548ac3831a1",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 2,
+    "tokens": 27112,
+    "duration_seconds": 93.88460960000157,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399578.7402508,
+      "remaining_seconds": 114.02709364891052,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 27112,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "e52d9599be8c0cb358316030d557914d205ed6f5349106a12da3a88d36ab3e94",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 4.4914941000024555
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 4.558724499998789
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 302,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_regression.py",
+            "test": "test_invalid_signature_negative_out_of_range_timestamp_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_regression.py",
+            "test": "test_timed_serializer_loads_raises_bad_signature_family",
+            "origin": "generated_test",
+            "message": "TypeError: must be str or None, not bytes"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "7a9a768a-341d-44c4-b07d-2dcbd0299875",
+    "execution_status": "failed",
+    "error": "Review retry budget exhausted",
+    "model_calls": 4,
+    "tokens": 37980,
+    "duration_seconds": 51.91882230000192,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399893.061179,
+      "remaining_seconds": 428.18410181999207,
+      "model_requests": 4,
+      "sandbox_runs": 2,
+      "observed_tokens": 37980,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 2,
+        "approved": false
+      }
+    ],
+    "diff_digest": "48b15f4f2089c80ce10b4064db31fac6307f0b571b6fbdd5913d49ed26cc15e0",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 1.5443522999994457
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 297,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "d060e1b8-ec91-44a9-8341-a314a5259a22",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 33084,
+    "duration_seconds": 76.63511799999833,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399816.399739,
+      "remaining_seconds": 351.5608124732971,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 33084,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "55040bc8568a3dd572c23122d7b8fa72c96e806b8f7ca74a351118c5e5e110b7",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 6.886165800002345
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 304,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed_timestamp.py",
+            "test": "test_malformed_timestamp_invalid_signature_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed_timestamp.py",
+            "test": "test_malformed_timestamp_negative_invalid_signature_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed_timestamp.py",
+            "test": "test_timed_serializer_malformed_timestamp_raises_bad_signature_family",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "f887fd62-5631-47a7-90d7-a71e894364e7",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 2,
+    "tokens": 27860,
+    "duration_seconds": 52.422273800002586,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399945.004929,
+      "remaining_seconds": 480.11387825012207,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 27860,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "302aad7e44fbbb66ee4df464232677b2097d2b7762c097bca57cf9bb3011a78b",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 304,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_regression.py",
+            "test": "test_invalid_signature_negative_out_of_range_timestamp_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_regression.py",
+            "test": "test_timed_serializer_loads_raises_bad_signature_family",
+            "origin": "generated_test",
+            "message": "TypeError: must be str or None, not bytes"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "2f9d749e-7b34-4ccb-b3b9-13ccdf727e2a",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 5,
+    "tokens": 63763,
+    "duration_seconds": 99.11967240000013,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399660.0226426,
+      "remaining_seconds": 195.2739269733429,
+      "model_requests": 5,
+      "sandbox_runs": 3,
+      "observed_tokens": 63763,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": false
+      },
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "diff_digest": "ae663738046aaba7f627127b29f04d784915d8ae8bc8acfd24ad0051cfe084c0",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 6.3289751000011165
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 2.6511362999990524
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 5.2165985999999975
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 3.3186728000000585
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 48,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "3087ef7e-ecfb-4d82-ad31-afc219cfa5f4",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 12392,
+    "duration_seconds": 68.32870739999998,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399591.6729953,
+      "remaining_seconds": 126.97352075576782,
+      "model_requests": 2,
+      "sandbox_runs": 1,
+      "observed_tokens": 12392,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "d85c802c9296fff3e76b54609706529c9775561280c0bb6e75ca9c1707128f0a",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 2.782207299998845
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "f0910f54-b975-4317-b820-d6fb0838390f",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 9216,
+    "duration_seconds": 13.293291499998304,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399578.3608546,
+      "remaining_seconds": 113.67436671257019,
+      "model_requests": 1,
+      "sandbox_runs": 1,
+      "observed_tokens": 9216,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "4c838ab20e7e91350ff7d620442a40b17d4e81ce345ddb0688beb426134772af",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "8b4e7037-6378-463c-84dd-b63dea2a017f",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 39112,
+    "duration_seconds": 52.64507990000129,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399787.3091602,
+      "remaining_seconds": 322.51118326187134,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 39112,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": true
+      }
+    ],
+    "diff_digest": "4b7de24d166d1dfc096a5a4713faae0813273b494c06a5746738bc01d72e35ff",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 56,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "6e6dd887-6c14-4a23-9e27-d80bd865c9c9",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 12995,
+    "duration_seconds": 28.103061899997556,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399759.1873376,
+      "remaining_seconds": 294.4235050678253,
+      "model_requests": 2,
+      "sandbox_runs": 1,
+      "observed_tokens": 12995,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "b390a8084ccbf7e0e5caf5a30b2b7ccf40a9002177e91296a5f0f7a2c1a05e05",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 4.926606800003356
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "8706baa5-e4d9-402a-946d-9f097801e7c5",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 9266,
+    "duration_seconds": 18.457278800000495,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399839.9682562,
+      "remaining_seconds": 375.155152797699,
+      "model_requests": 1,
+      "sandbox_runs": 1,
+      "observed_tokens": 9266,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "ecc68f0aa8ec7b0b69e48d841d97f070280ee516e0f79ba12736981d1918b916",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 3.6017529999990074
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "9c5d87d5-8602-4fe4-ad7c-5baa8ace044f",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 31693,
+    "duration_seconds": 55.46344289999979,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400086.1283338,
+      "remaining_seconds": 621.1611874103546,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 31693,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": true
+      }
+    ],
+    "diff_digest": "16286c339b5c89c117d391c65a2eacdd9799b99833b2cb6e256f762a8ddbc677",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.48398660000020755
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 3.97331110000232
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 106,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "b2e00e53-4d1b-4370-bf84-d34f1117dcde",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 31016,
+    "duration_seconds": 68.62207230000058,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400017.4876492,
+      "remaining_seconds": 552.5542345046997,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 31016,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "ad1008d2092137c94d9fba320b6aa567d78e284f4c4862336c0976b4220ef07f",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 5.525093399999605
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 6.759617100000469
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 110,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_uppercase_translations.py",
+            "test": "test_smart_truncate_unchanged",
+            "origin": "generated_test",
+            "message": "AssertionError: 'one two three' != 'one-two-three'\n- one two three\n?    ^   ^\n+ one-two-three\n?    ^   ^"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "ecad1065-e711-4f4f-a7ec-53113e6c5bb9",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 10459,
+    "duration_seconds": 18.4263271000018,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792399999.0455258,
+      "remaining_seconds": 534.1301472187042,
+      "model_requests": 1,
+      "sandbox_runs": 1,
+      "observed_tokens": 10459,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "445bf8c20cc9ee221f1ba1d33aa2b397bc83682e72321a461a2199e0a119c8b8",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 92,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "4c4c2f1f-0100-49f0-9f42-dfd6548350e1",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 4,
+    "tokens": 50462,
+    "duration_seconds": 77.27915180000127,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400173.1440096,
+      "remaining_seconds": 708.1187171936035,
+      "model_requests": 4,
+      "sandbox_runs": 3,
+      "observed_tokens": 50462,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "diff_digest": "c2913a776768cacefce8b58898be11df0e17f97c3001b0fb8eab1dfd05f3abc6",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 5.399617200000648
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 4.78517759999886
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 106,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_special_uppercase.py",
+            "test": "test_smart_truncate_unchanged",
+            "origin": "generated_test",
+            "message": "AssertionError: 'one two three' != 'one-two-three'\n- one two three\n?    ^   ^\n+ one-two-three\n?    ^   ^"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "cb97a910-494f-45b7-9ca8-88d739ed60c6",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 13933,
+    "duration_seconds": 31.505623100001685,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400141.6232245,
+      "remaining_seconds": 676.6401181221008,
+      "model_requests": 2,
+      "sandbox_runs": 1,
+      "observed_tokens": 13933,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "9001d95b5e73129f6b3797ac0a528c167e54653303a3392feaadfab229910f2c",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 2.8032702000018617
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 6.878560200002539
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 102,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": []
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "c96a591b-9a12-4b3c-8f54-a6bf4ea36e2c",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 27054,
+    "duration_seconds": 43.01784200000111,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792400250.4473355,
+      "remaining_seconds": 785.403671503067,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 27054,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "review_decisions": [],
+    "diff_digest": "29e4770d8440c29b73ecd45110845030547d45a0763fa8df8f40d8fb1ac7c0a6",
+    "patch_rejections": [],
+    "creation_failures": [],
+    "model_observations": [
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 3.3572471999978006
+      },
+      {
+        "model_requested": "deepseek-v4.1-flash",
+        "model_reported": "deepseek-v4.1-flash",
+        "provider_response_id": null,
+        "calls": 1,
+        "rate_limit_wait_seconds": 0.0
+      }
+    ],
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 106,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_special_uppercase_regression.py",
+            "test": "test_smart_truncate_unchanged",
+            "origin": "generated_test",
+            "message": "AssertionError: 'one two three' != 'one-two-three'\n- one two three\n?    ^   ^\n+ one-two-three\n?    ^   ^"
+          },
+          {
+            "file": "tests/test_special_uppercase_regression.py",
+            "test": "test_uppercase_entries_are_prepended",
+            "origin": "generated_test",
+            "message": "AssertionError: 0 not less than 0"
+          }
+        ]
+      }
+    ]
+  }
+]

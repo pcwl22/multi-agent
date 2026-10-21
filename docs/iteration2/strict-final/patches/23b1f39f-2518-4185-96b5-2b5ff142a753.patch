@@ -1,0 +1,70 @@
+--- a/inventory.py
++++ b/inventory.py
+@@ -1,3 +1,6 @@
+ def available_units(stock, reservations):
+-    reserved = dict(reservations)
++    reserved = {}
++    for sku, qty in reservations:
++        if sku in stock:
++            reserved[sku] = reserved.get(sku, 0) + qty
+     return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}
+--- a/tests/test_inventory_regression.py
++++ b/tests/test_inventory_regression.py
+@@ -0,0 +1,57 @@
++from inventory import available_units
++
++
++def test_repeated_sku_reservations_are_all_subtracted():
++    # Literal example from the issue.
++    assert available_units({"A": 10}, [("A", 2), ("A", 3)]) == {"A": 5}
++
++
++def test_repeated_sku_does_not_collapse_to_last_value():
++    # If collapsed to last value, result would be 7; all entries must count.
++    result = available_units({"A": 10}, [("A", 2), ("A", 3)])
++    assert result == {"A": 5}
++    assert result != {"A": 7}
++
++
++def test_over_reservation_clamps_at_zero():
++    assert available_units({"A": 3}, [("A", 2), ("A", 5)]) == {"A": 0}
++    assert available_units({"A": 1}, [("A", 10)]) == {"A": 0}
++
++
++def test_unknown_sku_reservations_are_ignored():
++    result = available_units({"A": 10}, [("B", 4), ("A", 2)])
++    assert result == {"A": 8}
++    assert "B" not in result
++
++
++def test_unknown_sku_only_reservations_do_not_raise():
++    assert available_units({"A": 10}, [("Z", 5)]) == {"A": 10}
++
++
++def test_input_stock_is_not_mutated():
++    stock = {"A": 10}
++    available_units(stock, [("A", 2), ("A", 3)])
++    assert stock == {"A": 10}
++
++
++def test_input_reservations_is_not_mutated():
++    reservations = [("A", 2), ("A", 3)]
++    available_units({"A": 10}, reservations)
++    assert reservations == [("A", 2), ("A", 3)]
++
++
++def test_return_type_and_keys_match_stock():
++    stock = {"A": 10, "B": 5}
++    result = available_units(stock, [("A", 2)])
++    assert isinstance(result, dict)
++    assert set(result.keys()) == set(stock.keys())
++    assert result == {"A": 8, "B": 5}
++
++
++def test_existing_single_reservation_behavior_preserved():
++    assert available_units({"A": 10}, [("A", 2)]) == {"A": 8}
++    assert available_units({}, []) == {}
++
++
++def test_multiple_distinct_skus_preserved():
++    assert available_units({"A": 10, "B": 4}, [("A", 3), ("B", 1)]) == {"A": 7, "B": 3}

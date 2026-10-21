@@ -1,0 +1,105 @@
+{
+  "status": "demonstrated",
+  "generated_tests": [
+    "tests/test_inventory_regression.py"
+  ],
+  "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-isolated-data\\tasks\\1cfdecdd-df5a-4e28-aa73-7d4065090929\\regression\\attempt-1-612febea-02b6-4e6d-8e75-9abb02620dae",
+  "baseline_result": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": ".F..F...                                                                 [100%]\n=================================== FAILURES ===================================\n______________ test_repeated_sku_reservations_are_all_subtracted _______________\n\n    def test_repeated_sku_reservations_are_all_subtracted():\n        stock = {\"A\": 10}\n        reservations = [(\"A\", 2), (\"A\", 3)]\n        result = available_units(stock, reservations)\n>       assert result == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:8: AssertionError\n______________________ test_result_keys_match_stock_keys _______________________\n\n    def test_result_keys_match_stock_keys():\n        result = available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"A\", 3), (\"C\", 7)])\n        assert set(result.keys()) == {\"A\", \"B\"}\n>       assert result == {\"A\": 5, \"B\": 5}\nE       AssertionError: assert {'A': 7, 'B': 5} == {'A': 5, 'B': 5}\nE         \nE         Omitting 1 identical items, use -vv to show\nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:28: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_inventory_regression.py::test_repeated_sku_reservations_are_all_subtracted\nFAILED tests/test_inventory_regression.py::test_result_keys_match_stock_keys\n2 failed, 6 passed in 0.11s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 6,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 0.9395646000011766,
+    "evidence": "docker",
+    "cases": [
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_repeated_sku_reservations_are_all_subtracted",
+        "classname": "tests.test_inventory_regression",
+        "line": 4,
+        "status": "failed",
+        "message": "AssertionError: assert {'A': 7} == {'A': 5}\n  \n  Differing items:\n  {'A': 7} != {'A': 5}\n  Use -v to get more diff",
+        "details": "def test_repeated_sku_reservations_are_all_subtracted():\n        stock = {\"A\": 10}\n        reservations = [(\"A\", 2), (\"A\", 3)]\n        result = available_units(stock, reservations)\n>       assert result == {\"A\": 5}\nE       AssertionError: assert {'A': 7} == {'A': 5}\nE         \nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:8: AssertionError"
+      },
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_result_keys_match_stock_keys",
+        "classname": "tests.test_inventory_regression",
+        "line": 25,
+        "status": "failed",
+        "message": "AssertionError: assert {'A': 7, 'B': 5} == {'A': 5, 'B': 5}\n  \n  Omitting 1 identical items, use -vv to show\n  Differing items:\n  {'A': 7} != {'A': 5}\n  Use -v to get more diff",
+        "details": "def test_result_keys_match_stock_keys():\n        result = available_units({\"A\": 10, \"B\": 5}, [(\"A\", 2), (\"A\", 3), (\"C\", 7)])\n        assert set(result.keys()) == {\"A\", \"B\"}\n>       assert result == {\"A\": 5, \"B\": 5}\nE       AssertionError: assert {'A': 7, 'B': 5} == {'A': 5, 'B': 5}\nE         \nE         Omitting 1 identical items, use -vv to show\nE         Differing items:\nE         {'A': 7} != {'A': 5}\nE         Use -v to get more diff\n\ntests/test_inventory_regression.py:28: AssertionError"
+      },
+      {
+        "file": "tests/test_contract.py",
+        "name": "test_existing_contract",
+        "classname": "tests.test_contract",
+        "line": 4,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_clamped_at_zero",
+        "classname": "tests.test_inventory_regression",
+        "line": 13,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_unknown_sku_reservations_ignored",
+        "classname": "tests.test_inventory_regression",
+        "line": 19,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_inputs_are_not_mutated",
+        "classname": "tests.test_inventory_regression",
+        "line": 31,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_single_reservation_behavior_preserved",
+        "classname": "tests.test_inventory_regression",
+        "line": 41,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_inventory_regression.py",
+        "name": "test_empty_inputs",
+        "classname": "tests.test_inventory_regression",
+        "line": 46,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      }
+    ],
+    "cases_truncated": false
+  },
+  "fail_to_pass_tests": [
+    "tests/test_inventory_regression.py::tests.test_inventory_regression::test_repeated_sku_reservations_are_all_subtracted",
+    "tests/test_inventory_regression.py::tests.test_inventory_regression::test_result_keys_match_stock_keys"
+  ],
+  "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+  "attempt": 1,
+  "diff_digest": "d77cc9a04aec6033e1b8e517066302c8007920c73d5af531c0430d1819667e39",
+  "candidate_id": "4501b5bb-1786-4a8e-8cbe-b81bd6ee9931",
+  "candidate_number": 1
+}

@@ -1,0 +1,2999 @@
+[
+  {
+    "case_id": "dotenv-empty-comment",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "63051762-8820-4f3b-8217-6ee9723b1a4e",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 5,
+    "tokens": 64149,
+    "duration_seconds": 131.07860770000025,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "08ee91a038eb1ecf8e363b666845050e381b336f721ba75804fdadfd857bedf4",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463621.859519,
+      "remaining_seconds": 451.1266107559204,
+      "model_requests": 5,
+      "sandbox_runs": 3,
+      "observed_tokens": 64149,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": false
+      },
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 251,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 64149,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "d90831b5-749e-413f-aee7-16b4a91e2276",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 15889,
+    "duration_seconds": 44.66788489999999,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "c27640839bdde99b924ac3f20d0422cf2ebe73a3295a8349af358b9fc9a3ebde",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463577.178337,
+      "remaining_seconds": 406.46752738952637,
+      "model_requests": 2,
+      "sandbox_runs": 1,
+      "observed_tokens": 15889,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 238,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 15889,
+    "current_regression": null
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "5951f240-6e05-4780-840b-1bae09261adf",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 40381,
+    "duration_seconds": 99.74400390000028,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "7873cde453cd7aa6c1c699eaf619d96ad8b0ab61e1cadb262ce881afedc05a8e",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463477.4196913,
+      "remaining_seconds": 306.7243883609772,
+      "model_requests": 3,
+      "sandbox_runs": 1,
+      "observed_tokens": 40381,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [
+      {
+        "attempt": 1,
+        "error": "One edit per file is required",
+        "candidate_id": "0d48eab1-5291-427b-a6f5-cbac394f729f",
+        "candidate_number": 1
+      }
+    ],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 254,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 40381,
+    "current_regression": null
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "211c5917-3297-4b55-b696-dd129164db5d",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 54.78128399999969,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463806.242783,
+      "remaining_seconds": 635.4856886863708,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462960.678825
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792462970.671225,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462960.6712067,
+        "duration_seconds": 52.57152649999989
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "d00962d9-11ea-4e06-9de5-6f1d037a2e29",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 15899,
+    "duration_seconds": 53.258624000000054,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "e14557ca2ebe3323ac2dc0d0bf04caccb4e02d153d377f0897bc43dcbe44361a",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463752.9627962,
+      "remaining_seconds": 582.2155909538269,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 15899,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 255,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 15899,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "dotenv-empty-comment",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "f8e4af01-2e39-4206-b3c6-88895444e15c",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 17.492454300000645,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463861.0386426,
+      "remaining_seconds": 690.2664804458618,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462978.2548728
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "coder",
+      "retry_at": 1792462988.2483177,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "coder",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462978.2483046,
+        "duration_seconds": 12.68737659999988
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "a303c2dc-a60d-4b49-b5df-4b4a92724ed6",
+    "execution_status": "failed",
+    "error": "Review retry budget exhausted",
+    "model_calls": 4,
+    "tokens": 38713,
+    "duration_seconds": 84.37742499999968,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "55bcdaf71235817cbb4d7a389077b67e10987d5ee67b844949de70fd886a9893",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463482.1305003,
+      "remaining_seconds": 311.44581389427185,
+      "model_requests": 4,
+      "sandbox_runs": 2,
+      "observed_tokens": 38713,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 2,
+        "approved": false
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 297,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 38713,
+    "current_regression": "no_new_tests"
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "1a16fda5-c2ad-487f-ae17-c0a036735406",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 3,
+    "tokens": 37310,
+    "duration_seconds": 72.78642930000024,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "25970039a60f418d88adcb997e64c83580e1c7cbfcdb2cdb4a6bd85ed93cff1c",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463409.3208585,
+      "remaining_seconds": 238.64535403251648,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 37310,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 306,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed.py",
+            "test": "test_malformed_timestamp_invalid_signature_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "AttributeError: 'bytes' object has no attribute 'encode'. Did you mean: 'decode'?"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed.py",
+            "test": "test_malformed_timestamp_negative_invalid_signature",
+            "origin": "generated_test",
+            "message": "AttributeError: 'bytes' object has no attribute 'encode'. Did you mean: 'decode'?"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed.py",
+            "test": "test_ordinary_invalid_signature_has_date_signed",
+            "origin": "generated_test",
+            "message": "AttributeError: 'bytes' object has no attribute 'encode'. Did you mean: 'decode'?"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed.py",
+            "test": "test_timed_serializer_malformed_timestamp_is_bad_signature_family",
+            "origin": "generated_test",
+            "message": "AttributeError: 'bytes' object has no attribute 'encode'. Did you mean: 'decode'?"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed.py",
+            "test": "test_url_safe_timed_serializer_malformed_timestamp_is_bad_signature_family",
+            "origin": "generated_test",
+            "message": "AttributeError: 'bytes' object has no attribute 'encode'. Did you mean: 'decode'?"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed_malformed.py",
+            "test": "test_malformed_timestamp_negative_invalid_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 37310,
+    "current_regression": null
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "381f2cbb-d515-4a39-8e86-a6450515f367",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 2,
+    "tokens": 23419,
+    "duration_seconds": 40.01694830000088,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "345928df2b9d02832ba138cfa7bed4d14deee04503295eec849fa9d308f7ff41",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463566.5256968,
+      "remaining_seconds": 395.82369661331177,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 23419,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 306,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed_regression.py",
+            "test": "test_malformed_timestamp_payload_and_date_signed",
+            "origin": "generated_test",
+            "message": "assert datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) is None\n +  where datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) = BadTimeSignature(\"Signature b'invalid-signature' does not match\").date_signed"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 23419,
+    "current_regression": null
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "95a9fad9-aa64-4d51-86d3-1c3ed449e71d",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 4,
+    "tokens": 54057,
+    "duration_seconds": 86.11565549999978,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "9894fed58ca38775fb426bacee065db675b366b0f5533d894b0a0b8294dede39",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463323.182575,
+      "remaining_seconds": 152.52475333213806,
+      "model_requests": 4,
+      "sandbox_runs": 3,
+      "observed_tokens": 54057,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 307,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 54057,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "71307cb9-c59d-48c6-af4c-ab1fad7f093a",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 33219,
+    "duration_seconds": 67.0063898999997,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "f0dfe77a3d7b896c8e9f291dd6bd6619c358b5b69fb5aeda0990e1231de019cb",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463256.1494474,
+      "remaining_seconds": 85.51168513298035,
+      "model_requests": 3,
+      "sandbox_runs": 3,
+      "observed_tokens": 33219,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 308,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 33219,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "itsdangerous-date-overflow",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "615d79b8-28be-4eb7-8464-171f6a2be5e9",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 2,
+    "tokens": 31540,
+    "duration_seconds": 56.35731759999999,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "852f50e570a87d5ede50d03b2d62da4fabac550b634f932d0412b1be68113009",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463199.774295,
+      "remaining_seconds": 29.147209882736206,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 31540,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 303,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed.py",
+            "test": "test_malformed_future_timestamp",
+            "origin": "original_test",
+            "message": "assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\n +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\n +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_out_of_range.py",
+            "test": "test_out_of_range_timestamp_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_out_of_range.py",
+            "test": "test_out_of_range_timestamp_is_bad_signature_family",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_out_of_range.py",
+            "test": "test_negative_out_of_range_timestamp_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          },
+          {
+            "file": "tests/test_itsdangerous/test_timed_out_of_range.py",
+            "test": "test_timed_serializer_out_of_range_timestamp_raises_bad_signature",
+            "origin": "generated_test",
+            "message": "struct.error: 'Q' format requires 0 <= number <= 18446744073709551615"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_itsdangerous/test_timed_out_of_range.py",
+            "test": "test_negative_out_of_range_timestamp_raises_bad_time_signature",
+            "origin": "generated_test",
+            "message": "OverflowError: can't convert negative int to unsigned"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 31540,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "bc8d75f9-c575-4039-af31-8e0fdbaa8cb3",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 5,
+    "tokens": 60355,
+    "duration_seconds": 111.05274349999945,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "ec0134aadeb9e804af5428a295557ca58dd5c1c72b3c4c2bcea692cbae14c76c",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463937.4836373,
+      "remaining_seconds": 766.6506266593933,
+      "model_requests": 5,
+      "sandbox_runs": 3,
+      "observed_tokens": 60355,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": false
+      },
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 39,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 12,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 60355,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "d90c34b1-8e16-4cdd-856c-b6ca6605e0bf",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 14.98561940000036,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463922.489592,
+      "remaining_seconds": 751.6959047317505,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792463037.4335961
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463047.4298825,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792463037.4298723,
+        "duration_seconds": 14.603098300000056
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "fe3aa4c4-3076-4608-8a43-ff486c161fc3",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 9403,
+    "duration_seconds": 21.832482300000265,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "6e34d86a1b57197cef52a31e9b5b9362bf737c4a01d8a8b12390682ae7da6661",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792464048.5521188,
+      "remaining_seconds": 877.7014052867889,
+      "model_requests": 1,
+      "sandbox_runs": 1,
+      "observed_tokens": 9403,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 23,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 12,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 9403,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "1d198416-bd97-42d1-9357-8d3803539923",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 14.949974400000428,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463907.5256367,
+      "remaining_seconds": 736.7370903491974,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792463022.4337773
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463032.429659,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792463022.42965,
+        "duration_seconds": 14.453822599999512
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "0ca1109b-805b-41fc-9674-22111ced3fcc",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 14.983210100000178,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463892.525419,
+      "remaining_seconds": 721.7421135902405,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792463007.4385164
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463017.433774,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792463007.4337544,
+        "duration_seconds": 14.405015800000001
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-assignment-errors",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "6178ee6c-03b7-4303-a14b-99542baee98d",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 12.533633400000326,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463879.9790695,
+      "remaining_seconds": 709.2012283802032,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462992.4321797
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "coder",
+      "retry_at": 1792463002.427051,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "coder",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462992.4270406,
+        "duration_seconds": 11.283973999999944
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "31ce8a28-f83d-4dde-899d-45e999fcf870",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 5,
+    "tokens": 61393,
+    "duration_seconds": 84.71935550000035,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "c8a120c3094f12390d702c7d1bf43dfe77fdf1a2ec69c3a2efe136dd6cdcb6ca",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463242.1225767,
+      "remaining_seconds": 71.47910046577454,
+      "model_requests": 5,
+      "sandbox_runs": 3,
+      "observed_tokens": 61393,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": false
+      },
+      {
+        "attempt": 2,
+        "approved": true
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 52,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 61393,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "6662e626-a294-4820-a106-5cb4dbbce66e",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 13340,
+    "duration_seconds": 28.13187300000027,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "741c5a9322918116084d2595b7e8bbbe63795e15dba6c284f539d5152af736da",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463213.9733708,
+      "remaining_seconds": 43.3555953502655,
+      "model_requests": 2,
+      "sandbox_runs": 1,
+      "observed_tokens": 13340,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 13340,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "0705f3b8-6d7f-4db2-ae69-4663f205bea3",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 9282,
+    "duration_seconds": 14.455185200000415,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "a4bb3a74ef7c3c3d39a8b56585ca0813858af5fcf384f04067c5caef91d4b39d",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463199.5043697,
+      "remaining_seconds": 28.891939401626587,
+      "model_requests": 1,
+      "sandbox_runs": 1,
+      "observed_tokens": 9282,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 9282,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "6a1f23b3-df23-4d45-8236-32d3679d9487",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 37294,
+    "duration_seconds": 72.92731420000018,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "ef906fe9055631b7187850215e8537c1419b57420449e8edcfa82714864a3ae0",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463377.0124128,
+      "remaining_seconds": 206.35009050369263,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 37294,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": true
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 46,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 37294,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "65a279b7-83d6-45c6-aa6f-5ceb8c5e6db5",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 15602,
+    "duration_seconds": 50.13133509999989,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "6e8e930b93a42f2c43ae27afffb0341005e70dac5f420b47afa01befc2f62136",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463326.863141,
+      "remaining_seconds": 156.2151141166687,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 15602,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 52,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 15602,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "jsonpointer-large-index",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "9bdff6f4-cde8-4814-8cba-2c27b467f49f",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 1,
+    "tokens": 11019,
+    "duration_seconds": 25.62518210000053,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "414ed43529afee8c6e2bf8405975cd9d0b1d687e147d998498e5459b1d908404",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463449.954048,
+      "remaining_seconds": 279.28735733032227,
+      "model_requests": 1,
+      "sandbox_runs": 2,
+      "observed_tokens": 11019,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 39,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 11019,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "d985ad95-9ee2-457d-8d73-98d1f14c7e37",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 14.956571700000495,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463900.018948,
+      "remaining_seconds": 729.2329704761505,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792463014.9112005
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463024.907167,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792463014.9071565,
+        "duration_seconds": 14.374457300000358
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "fb713b4d-a910-4acf-a8f3-bdd5c3415393",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 14.94239319999997,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463885.067193,
+      "remaining_seconds": 714.2864217758179,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462999.9397333
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463009.935252,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462999.935242,
+        "duration_seconds": 14.275882400000228
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "2cdc1241-ca97-4538-a07a-f49206521b72",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 13.201189299999896,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463871.8493998,
+      "remaining_seconds": 701.0742785930634,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462984.9586082
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "coder",
+      "retry_at": 1792462994.9522426,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "coder",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462984.9522207,
+        "duration_seconds": 11.64098180000019
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "6caf8de8-9ef5-428c-a583-054269397040",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 12.50206900000012,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463929.9728353,
+      "remaining_seconds": 759.1766333580017,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792463042.3838203
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463052.376263,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792463042.3762355,
+        "duration_seconds": 12.060020999999324
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "af645d6a-2bf3-4be5-af62-b17c43ea1c3a",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 14.9651829000004,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463914.9900837,
+      "remaining_seconds": 744.199015378952,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792463029.9130476
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "planner",
+      "retry_at": 1792463039.9096606,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "planner",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792463029.9096491,
+        "duration_seconds": 14.399743399999352
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "jsonpointer-subclass-join",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "95022d99-f225-4fc5-9e9d-d15f66f50de7",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 25910,
+    "duration_seconds": 50.11650279999958,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "9b1c8da5312554e9740adcbc471d7e3b0b4f90b4284e7f52c048f8641879a86a",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463942.4902241,
+      "remaining_seconds": 771.6747233867645,
+      "model_requests": 2,
+      "sandbox_runs": 3,
+      "observed_tokens": 25910,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 39,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 8,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_join_subclass.py",
+            "test": "test_truediv_chaining_preserves_left_class",
+            "origin": "generated_test",
+            "message": "jsonpointer.JsonPointerException: Location must start with /"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 25910,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_full",
+    "task_id": "38fa563b-8123-40be-b6a5-e950ffb92028",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 3,
+    "tokens": null,
+    "duration_seconds": 88.87280720000035,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "be153635cc2de888b9aa41c7e6f7aebce9d6ac23b7ed91fe67050e239ecd3885",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463773.4070637,
+      "remaining_seconds": 602.6466875076294,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 14521,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462960.6774106
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "reviewer",
+      "retry_at": 1792462970.6711102,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 105,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "reviewer",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462960.6710708,
+        "duration_seconds": 46.01064399999996
+      }
+    ],
+    "recorded_tokens_with_partial": 14521,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "multi_no_review",
+    "task_id": "11b1a0a2-f2ee-4384-8279-f046865d7f31",
+    "execution_status": "failed",
+    "error": "Patch retry budget exhausted: Edit precondition must match exactly once",
+    "model_calls": 3,
+    "tokens": 28468,
+    "duration_seconds": 43.206638999999996,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463730.167412,
+      "remaining_seconds": 559.4312560558319,
+      "model_requests": 3,
+      "sandbox_runs": 1,
+      "observed_tokens": 28468,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [
+      {
+        "attempt": 2,
+        "error": "Edit precondition must match exactly once",
+        "candidate_id": "84206255-8d29-45ef-9434-4a3af6644ff3",
+        "candidate_number": 2
+      }
+    ],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_special_uppercase.py",
+            "test": "test_smart_truncate_unchanged",
+            "origin": "generated_test",
+            "message": "AssertionError: 'one two three' != 'one-two-three'\n- one two three\n?    ^   ^\n+ one-two-three\n?    ^   ^"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 28468,
+    "current_regression": null
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "variant": "legacy",
+    "variant_repeat": 0,
+    "repeat": 1,
+    "mode": "single",
+    "task_id": "b74f0542-d08e-45d7-9422-4bef51fb3c24",
+    "execution_status": "budget_exhausted",
+    "error": "Model usage incomplete; remaining token budget is unknown",
+    "model_calls": 1,
+    "tokens": null,
+    "duration_seconds": 7.70678130000033,
+    "retry_count": 0,
+    "attempts": 0,
+    "candidate_number": 1,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463862.2995923,
+      "remaining_seconds": 691.5359308719635,
+      "model_requests": 1,
+      "sandbox_runs": 0,
+      "observed_tokens": 0,
+      "usage_complete": false,
+      "pending_reservations": 0
+    },
+    "budget_failure": {
+      "resource": "observed_tokens",
+      "message": "Model usage incomplete; remaining token budget is unknown",
+      "timestamp": 1792462969.939433
+    },
+    "provider_failure": {
+      "kind": "connection",
+      "retryable": true,
+      "retry_after_seconds": 10.0,
+      "node": "coder",
+      "retry_at": 1792462979.9343166,
+      "budget_exhausted": false
+    },
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": null,
+      "acceptance": null
+    },
+    "failure_observations": [],
+    "stopped_node_events": [
+      {
+        "node": "coder",
+        "error": "Model request failed: OpenAIConnectionError",
+        "timestamp": 1792462969.934308,
+        "duration_seconds": 5.225455399999191
+      }
+    ],
+    "recorded_tokens_with_partial": 0,
+    "current_regression": null
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_full",
+    "task_id": "5e408a82-ace0-485e-9de1-e6bfd69122a7",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 3,
+    "tokens": 31188,
+    "duration_seconds": 51.473218899999665,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "9f31fa87da69dce41b7930c3e77e42cdf4870ab147d17674e8104842ddafb60f",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463678.6678886,
+      "remaining_seconds": 507.9458966255188,
+      "model_requests": 3,
+      "sandbox_runs": 2,
+      "observed_tokens": 31188,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [
+      {
+        "attempt": 1,
+        "approved": true
+      }
+    ],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 106,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 31188,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "multi_no_review",
+    "task_id": "5b4d332d-bfb4-4544-83fb-b813323c4c66",
+    "execution_status": "awaiting_approval",
+    "error": null,
+    "model_calls": 2,
+    "tokens": 13791,
+    "duration_seconds": 31.542417700000442,
+    "retry_count": 0,
+    "attempts": 1,
+    "candidate_number": 1,
+    "strict_success": true,
+    "original_tests_unchanged": true,
+    "diff_digest": "61b53f44680643b2f3486bc3cf7db79241c18c09c9aa31fdb831ec8a970b31bd",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463647.0975697,
+      "remaining_seconds": 476.37955355644226,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 13791,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "passed",
+        "passed": 105,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    "failure_observations": [],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 13791,
+    "current_regression": "demonstrated"
+  },
+  {
+    "case_id": "slugify-uppercase-translations",
+    "variant": "quality",
+    "variant_repeat": 0,
+    "repeat": 0,
+    "mode": "single",
+    "task_id": "1782a7b8-cc73-4829-aa14-31f023c0a8d3",
+    "execution_status": "failed",
+    "error": "Test retry budget exhausted",
+    "model_calls": 2,
+    "tokens": 25701,
+    "duration_seconds": 39.11467360000006,
+    "retry_count": 1,
+    "attempts": 2,
+    "candidate_number": 2,
+    "strict_success": false,
+    "original_tests_unchanged": true,
+    "diff_digest": "43e03cbb7d6df8ecb82d6943ff4350cf140af769ffc105e0e58f5143d285559e",
+    "budget": {
+      "enabled": true,
+      "limits": {
+        "wall_seconds": 900.0,
+        "model_requests": 8,
+        "observed_tokens": 100000,
+        "sandbox_runs": 6,
+        "artifact_bytes": 268435456,
+        "result_bytes": 8388608
+      },
+      "deadline": 1792463607.9670095,
+      "remaining_seconds": 437.25231981277466,
+      "model_requests": 2,
+      "sandbox_runs": 2,
+      "observed_tokens": 25701,
+      "usage_complete": true,
+      "pending_reservations": 0
+    },
+    "budget_failure": null,
+    "provider_failure": null,
+    "patch_rejections": [],
+    "creation_failures": [],
+    "review_decisions": [],
+    "cohort": "observed_calibration",
+    "tests": {
+      "baseline": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "test_result": {
+        "status": "failed",
+        "passed": 103,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "acceptance": null
+    },
+    "failure_observations": [
+      {
+        "attempt": 1,
+        "observations": [
+          {
+            "file": "tests/test_special_uppercase_regression.py",
+            "test": "test_greek_has_all_uppercase_variants",
+            "origin": "generated_test",
+            "message": "AssertionError: assert ('ΰ', 'Y') in [('Ϋ́', 'Y'), ('Ϋ', 'Y'), ('Ύ', 'Y'), ('Υ', 'Y'), ('Χ', 'Ch'), ('χ', 'ch'), ...]"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "observations": [
+          {
+            "file": "tests/test_special_uppercase_regression.py",
+            "test": "test_greek_uppercase_convention_uses_upper_of_char",
+            "origin": "generated_test",
+            "message": "AssertionError: assert 'Ϋ́' == 'Ϋ'\n  \n  - Ϋ\n  + Ϋ́"
+          }
+        ]
+      }
+    ],
+    "stopped_node_events": [],
+    "recorded_tokens_with_partial": 25701,
+    "current_regression": null
+  }
+]

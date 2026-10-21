@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import threading
+import time
 import uuid
 from pathlib import Path
 
@@ -13,7 +14,17 @@ from app.config.settings import Settings
 from app.graph.workflow import build_graph
 from app.models.schemas import TaskRequest
 from app.sandbox.runner import DockerRunner
+from app.services import transactions
+from app.services.attempts import (
+    controlled_path,
+    file_manifest,
+    prepare_candidate,
+    save_candidate,
+    validate_isolated,
+)
+from app.services.budgets import BudgetExceeded, TaskBudget, for_state, stopped
 from app.services.github import GitHubPublisher, read_issue
+from app.services.publication import PublicationPlan, PublicationTarget
 from app.tools.repository import Repository, diff_repositories, digest, snapshot
 
 
@@ -32,6 +43,9 @@ class TaskService:
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS publications (task_id TEXT PRIMARY KEY, result TEXT)"
         )
+        self.conn.commit()
+        self.conn.execute("CREATE TABLE IF NOT EXISTS publication_requests "
+                          "(task_id TEXT PRIMARY KEY, digest TEXT, plan TEXT, approved INTEGER)")
         self.conn.commit()
         self.lock = threading.RLock()
         self.checkpoint_conn = sqlite3.connect(
@@ -63,6 +77,7 @@ class TaskService:
         return json.loads(row[0])
 
     def create(self, request: TaskRequest) -> dict:
+        created_at = time.time()
         allowed = self.settings.repository_root.resolve(strict=True)
         source = Path(request.repository_path).resolve(strict=True)
         if not source.is_relative_to(allowed):
@@ -79,21 +94,38 @@ class TaskService:
             )
         task_id, thread_id = str(uuid.uuid4()), str(uuid.uuid4())
         task_dir = self.data / "tasks" / task_id
-        snapshot(repo, task_dir / "baseline")
-        snapshot(Repository(task_dir / "baseline"), task_dir / "workspace")
+        policy = request.retry_workspace_policy or self.settings.retry_workspace_policy
+        if self.settings.repair_quality_checks and (policy != "isolated" or not self.settings.patch_transactions):
+            raise ValueError("Repair quality checks require isolated candidates and patch transactions")
+        creation_manifest = file_manifest(repo.root)
+        candidate = {"workspace_path": str(task_dir / "workspace"), "candidate_id": None,
+                     "candidate_number": 0}
         state = dict(
             task_id=task_id,
             thread_id=thread_id,
             issue_description=description,
             repository_path=str(source),
-            workspace_path=str(task_dir / "workspace"),
+            **candidate,
+            task_path=str(task_dir), retry_workspace_policy=policy, baseline_manifest={},
+            patch_transaction_version=1 if self.settings.patch_transactions else None,
+            publication_contract_version=1,
+            repair_quality_version=self.settings.repair_quality_policy_version if self.settings.repair_quality_checks else None,
+            budget_version=1 if self.settings.task_budgets else None,
+            budget_limits=self.settings.budget_limits.model_dump(),
+            budget_deadline=created_at + self.settings.budget_limits.wall_seconds,
+            budget_failure=None,
+            circuit_failure=None,
+            budget_initialized=False,
+            creation_manifest=creation_manifest, creation_attempts=0, creation_failures=[],
+            attempt_history=[], previous_candidate_diff="", approved_candidate_id=None,
             mode=request.mode,
-            execution_status="queued",
+            execution_status="creating",
             plan=None,
             located_files=[],
             context="",
             patches=[],
-            test_results=[],
+            patch_feedback=[],
+            test_results=[], repair_feedback=[], regression_results=[],
             review_results=[],
             retry_count=0,
             attempts=0,
@@ -105,6 +137,8 @@ class TaskService:
             output_tokens=0,
             token_usage_complete=True,
             error=None,
+            failure=None,
+            provider_retry_count=0,
             next_node="",
             diff="",
             diff_digest="",
@@ -114,6 +148,72 @@ class TaskService:
                 "INSERT INTO tasks VALUES (?, ?, ?)", (task_id, thread_id, json.dumps(state))
             )
             self.conn.commit()
+        return self._prepare_initial(state)
+
+    def _store_initial(self, state: dict) -> None:
+        with self.lock:
+            self.conn.execute("UPDATE tasks SET initial=? WHERE task_id=?",
+                              (json.dumps(state), state["task_id"]))
+            self.conn.commit()
+
+    def _check_creation(self, state: dict) -> None:
+        if (state["execution_status"] == "creation_failed" and
+                state.get("creation_attempts", 0) >= self.settings.max_retries + 1):
+            raise ValueError("Creation retry budget exhausted; create a new task")
+        root = controlled_path(self.data, f"tasks/{state['task_id']}", directory=True)
+        if root.exists():
+            baseline = controlled_path(root, "baseline", directory=True)
+            if baseline.exists():
+                if file_manifest(baseline) != state["creation_manifest"]:
+                    raise ValueError("Partial or changed creation baseline; preserved without reset")
+                return
+        if file_manifest(Path(state["repository_path"])) != state["creation_manifest"]:
+            raise ValueError("Original source changed after creation intent")
+
+    def _prepare_initial(self, state: dict) -> dict:
+        # Persist intent before filesystem writes, including the first creation failure.
+        state = dict(state)
+        try:
+            self._check_creation(state)
+            state["creation_attempts"] = max(1, state.get("creation_attempts", 0) +
+                (1 if state["execution_status"] == "creation_failed" else 0))
+            state.update(execution_status="creating", error=None)
+            self._store_initial(state)
+            root = controlled_path(self.data, f"tasks/{state['task_id']}", directory=True)
+            root.mkdir(parents=True, exist_ok=True)
+            if state.get("budget_version") == 1:
+                initialize_budget = not state.get("budget_initialized", False)
+                if initialize_budget:
+                    state["budget_initialized"] = True
+                    self._store_initial(state)
+                TaskBudget(state, create=initialize_budget).check()
+            baseline = controlled_path(root, "baseline", directory=True)
+            if not baseline.exists():
+                snapshot(Repository(state["repository_path"]), baseline)
+            if file_manifest(baseline) != state["creation_manifest"]:
+                raise ValueError("Partial or changed creation baseline; preserved without reset")
+            if state["retry_workspace_policy"] == "isolated":
+                state.update(prepare_candidate(root, 1, state["creation_manifest"]))
+                state["baseline_manifest"] = state["creation_manifest"]
+            else:
+                workspace = controlled_path(root, "workspace", directory=True)
+                if not workspace.exists():
+                    snapshot(Repository(baseline), workspace)
+                if file_manifest(workspace) != state["creation_manifest"]:
+                    raise ValueError("Unrecorded initial workspace writes; preserved without reset")
+                state["workspace_path"] = str(workspace)
+            if (budget := for_state(state)) is not None:
+                budget.check()
+            state.update(execution_status="queued", error=None)
+        except BudgetExceeded as exc:
+            state.update(stopped(exc))
+        except (ValueError, OSError) as exc:
+            failure = {"type": type(exc).__name__, "winerror": getattr(exc, "winerror", None),
+                       "message": str(exc)[:1000], "timestamp": time.time(),
+                       "attempt": state.get("creation_attempts", 0)}
+            state["creation_failures"] = [*state.get("creation_failures", []), failure][-8:]
+            state.update(execution_status="creation_failed", error="Task creation failed: " + str(exc)[:1000])
+        self._store_initial(state)
         return state
 
     def get(self, task_id: str) -> dict:
@@ -121,36 +221,115 @@ class TaskService:
         values = self.graph.get_state(self._config(initial["thread_id"])).values
         return dict(values) if values else initial
 
+    def budget(self, task_id: str) -> dict:
+        state = self.get(task_id)
+        budget = for_state(state)
+        return budget.view() if budget else {"enabled": False}
+
     def _task_lock(self, task_id):
         self._initial(task_id)
-        return FileLock(str(self.data / "tasks" / task_id / "execution.lock"), timeout=0)
+        root = controlled_path(self.data, f"tasks/{task_id}", directory=True)
+        root.mkdir(parents=True, exist_ok=True)
+        return FileLock(str(root / "execution.lock"), timeout=0)
 
     def run(self, task_id: str) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
+            if state["execution_status"] in {"creating", "creation_failed"}:
+                state = self._prepare_initial(state)
+                if state["execution_status"] == "creation_failed":
+                    return state
+            validate_isolated(state, self.data / "tasks" / task_id)
+            transactions.acknowledge(state)
+            if transactions.pending(state):
+                raise ValueError("Pending patch transaction; inspect and explicitly recover before resume")
             config = self._config(state["thread_id"])
-            if state["execution_status"] in {"approved", "rejected", "failed", "awaiting_approval"}:
+            if state["execution_status"] in {"approved", "rejected", "failed", "budget_exhausted", "batch_paused", "awaiting_approval"}:
                 raise ValueError("Task cannot be resumed from this status")
             current_diff = diff_repositories(
                 Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])
             )
-            if state["attempts"] and digest(current_diff) != state["diff_digest"]:
+            if digest(current_diff) != (state["diff_digest"] or digest("")):
                 raise ValueError("Workspace changed outside the recorded repair")
             checkpoint = self.graph.get_state(config)
+            if state["execution_status"] == "retryable":
+                self.check_resume(task_id)
+                failure = state["failure"]
+                self.graph.update_state(
+                    config,
+                    {
+                        "execution_status": "running", "error": None, "failure": None,
+                        "provider_retry_count": state.get("provider_retry_count", 0) + 1,
+                        "next_node": failure["node"],
+                    },
+                    as_node="supervisor",
+                )
             if state["execution_status"] == "blocked":
                 self.graph.update_state(
                     config,
                     {"execution_status": "running", "error": None, "next_node": "test"},
                     as_node="supervisor",
                 )
-            self.graph.invoke(state if not checkpoint.values else None, config)
-            return self.get(task_id)
+            self.graph.invoke(state if not checkpoint.values else None, config, durability="sync")
+            result = self.get(task_id)
+            transactions.acknowledge(result)
+            if result.get("retry_workspace_policy") == "isolated":
+                save_candidate(result)
+            return result
 
-    def decide(self, task_id: str, approved: bool, expected_digest: str) -> dict:
+    def check_resume(self, task_id: str) -> None:
+        state = self.get(task_id)
+        if state["execution_status"] in {"creating", "creation_failed"}:
+            self._check_creation(state)
+            return
+        validate_isolated(state, self.data / "tasks" / task_id)
+        if transactions.pending(state):
+            raise ValueError("Pending patch transaction; inspect and explicitly recover before resume")
+        if state["execution_status"] not in {"queued", "running", "blocked", "retryable"}:
+            raise ValueError("Task is not resumable; use approve/reject at human interrupt")
+        if state["execution_status"] == "retryable":
+            failure = state.get("failure") or {}
+            if not failure.get("retryable") or (
+                state.get("provider_retry_count", 0) >= self.settings.max_retries
+            ):
+                raise ValueError("Provider retry budget exhausted; create a new task")
+            remaining = failure.get("retry_at", 0) - time.time()
+            if remaining > 0:
+                raise ValueError(f"Provider cooldown active; retry after {int(remaining) + 1}s")
+        actual = self.diff(task_id)
+        expected = state["diff_digest"] or digest("")
+        if actual["diff_digest"] != expected:
+            raise ValueError("Workspace changed outside the recorded repair; create a new task")
+
+    def patch_recovery(self, task_id: str) -> dict:
+        with self._task_lock(task_id):
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            transactions.acknowledge(state)
+            return transactions.inspect(state)
+
+    def recover_patch(self, task_id: str, journal_digest: str) -> dict:
+        with self._task_lock(task_id):
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            _, _, result = transactions.recover(state, journal_digest)
+            self.graph.update_state(self._config(state["thread_id"]), result, as_node="coder")
+            recovered = self.get(task_id)
+            transactions.acknowledge(recovered)
+            return recovered
+
+    def decide(self, task_id: str, approved: bool, expected_digest: str,
+               *, candidate_id: str | None = None) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
             if state["execution_status"] != "awaiting_approval":
                 raise ValueError("Task is not awaiting approval")
+            validate_isolated(state, self.data / "tasks" / task_id)
+            if state.get("retry_workspace_policy") == "isolated":
+                if candidate_id != state["candidate_id"]:
+                    raise ValueError("Approval does not match current candidate")
+                if state["test_results"][-1].get("candidate_id") != candidate_id:
+                    raise ValueError("Test evidence does not match current candidate")
             actual = diff_repositories(
                 Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])
             )
@@ -159,13 +338,21 @@ class TaskService:
             if approved and state["test_results"][-1]["evidence"] != "docker":
                 raise ValueError("Approval requires real Docker test evidence")
             self.graph.invoke(
-                Command(resume={"approved": approved, "diff_digest": expected_digest}),
+                Command(resume={"approved": approved, "diff_digest": expected_digest,
+                                "candidate_id": candidate_id}),
                 self._config(state["thread_id"]),
+                durability="sync",
             )
-            return self.get(task_id)
+            result = self.get(task_id)
+            if result.get("retry_workspace_policy") == "isolated":
+                save_candidate(result)
+            return result
 
     def diff(self, task_id: str) -> dict:
         state = self.get(task_id)
+        if state["execution_status"] in {"creating", "creation_failed"}:
+            return {"diff": "", "diff_digest": digest(""), "matches_recorded": False,
+                    "candidate_id": None}
         actual = diff_repositories(
             Path(state["workspace_path"]).parent / "baseline", Path(state["workspace_path"])
         )
@@ -173,13 +360,88 @@ class TaskService:
             "diff": actual,
             "diff_digest": digest(actual),
             "matches_recorded": digest(actual) == state["diff_digest"],
+            "candidate_id": state.get("candidate_id"),
         }
 
-    def publish(self, task_id: str, expected_digest: str, *, publisher=None) -> dict:
+    def _publisher(self) -> GitHubPublisher:
+        if not self.settings.github_repository:
+            raise ValueError("Configure REPOPILOT_GITHUB_REPOSITORY before publication")
+        return GitHubPublisher(self.settings.github_repository,
+            self.settings.github_token.get_secret_value() if self.settings.github_token else "",
+            subdirectory=self.settings.github_repository_subdirectory,
+            base_branch=self.settings.github_base_branch)
+
+    def publication_request(self, task_id: str) -> dict:
+        self._initial(task_id)
+        with self.lock:
+            row = self.conn.execute("SELECT digest,plan,approved FROM publication_requests "
+                                    "WHERE task_id=?", (task_id,)).fetchone()
+        if row is None:
+            raise ValueError("Preview a publication request first")
+        plan = PublicationPlan.model_validate_json(row[1])
+        if plan.digest() != row[0]:
+            raise ValueError("Stored publication request changed")
+        return {"request_digest": row[0], "plan": plan.model_dump(),
+                "approval_status": "approved" if row[2] else "pending"}
+
+    def _validate_publication_target(self, plan: PublicationPlan) -> None:
+        current = PublicationTarget(repository=self.settings.github_repository or "",
+            configured_base_branch=self.settings.github_base_branch,
+            subdirectory=self.settings.github_repository_subdirectory)
+        if current != plan.target:
+            raise ValueError("Publication target configuration changed; preview and approve again")
+
+    def preview_publication(self, task_id: str, *, title: str | None = None,
+                            body: str | None = None, publisher=None) -> dict:
+        with self._task_lock(task_id):
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            with self.lock:
+                if self.conn.execute("SELECT 1 FROM publications WHERE task_id=?", (task_id,)).fetchone():
+                    raise ValueError("Publication already attempted; inspect its recorded result")
+            owns = publisher is None
+            client = publisher or self._publisher()
+            try:
+                plan = client.preview(state, title=title, body=body)
+                self._validate_publication_target(plan)
+            finally:
+                if owns:
+                    client.close()
+            with self.lock:
+                self.conn.execute("INSERT INTO publication_requests VALUES (?,?,?,0) "
+                    "ON CONFLICT(task_id) DO UPDATE SET digest=excluded.digest, "
+                    "plan=excluded.plan,approved=0", (task_id, plan.digest(), plan.model_dump_json()))
+                self.conn.commit()
+            return self.publication_request(task_id)
+
+    def approve_publication(self, task_id: str, request_digest: str) -> dict:
+        with self._task_lock(task_id):
+            request = self.publication_request(task_id)
+            plan = PublicationPlan.model_validate(request["plan"])
+            self._validate_publication_target(plan)
+            state = self.get(task_id)
+            validate_isolated(state, self.data / "tasks" / task_id)
+            if state["execution_status"] != "approved" or not self.diff(task_id)["matches_recorded"]:
+                raise ValueError("Repair approval or actual content changed")
+            if request_digest != request["request_digest"]:
+                raise ValueError("Publication approval does not match current request")
+            with self.lock:
+                self.conn.execute("UPDATE publication_requests SET approved=1 "
+                                  "WHERE task_id=? AND digest=?", (task_id, request_digest))
+                self.conn.commit()
+            return self.publication_request(task_id)
+
+    def publish(self, task_id: str, expected_digest: str, *, publisher=None,
+                candidate_id: str | None = None, publication_digest: str | None = None) -> dict:
         with self._task_lock(task_id):
             state = self.get(task_id)
             if state["execution_status"] != "approved" or state["approval_status"] != "approved":
                 raise ValueError("Explicit human approval is required before publication")
+            validate_isolated(state, self.data / "tasks" / task_id)
+            if state.get("retry_workspace_policy") == "isolated" and (
+                candidate_id != state["candidate_id"] or state.get("approved_candidate_id") != candidate_id
+            ):
+                raise ValueError("Publication does not match approved candidate")
             actual = self.diff(task_id)
             if (
                 expected_digest != state["diff_digest"]
@@ -196,15 +458,25 @@ class TaskService:
                 if result["status"] == "created":
                     return result
                 raise ValueError("Prior publication has uncertain outcome; inspect GitHub manually")
+            owns_publisher = publisher is None
+            bound_plan = None
+            # An explicitly injected custom adapter is trusted application code and
+            # owns its contract; public API callers cannot provide one.
+            if owns_publisher or isinstance(publisher, GitHubPublisher):
+                request = self.publication_request(task_id)
+                bound_plan = PublicationPlan.model_validate(request["plan"])
+                self._validate_publication_target(bound_plan)
+                if request["approval_status"] != "approved" or publication_digest != request["request_digest"]:
+                    raise ValueError("Separate human publication approval is required")
             if publisher is None:
-                if not self.settings.github_repository:
-                    raise ValueError("Configure REPOPILOT_GITHUB_REPOSITORY before publication")
-                publisher = GitHubPublisher(
-                    self.settings.github_repository,
-                    self.settings.github_token.get_secret_value()
-                    if self.settings.github_token
-                    else "",
-                )
+                publisher = self._publisher()
+            if bound_plan is not None:
+                try:
+                    publisher.validate_plan(state, bound_plan, publication_digest)
+                except Exception:
+                    if owns_publisher:
+                        publisher.close()
+                    raise
             with self.lock:
                 self.conn.execute(
                     "INSERT INTO publications VALUES (?, ?)",
@@ -212,7 +484,8 @@ class TaskService:
                 )
                 self.conn.commit()
             try:
-                url = publisher.publish(state)
+                url = (publisher.publish(state, plan=bound_plan, approval_digest=publication_digest)
+                       if bound_plan is not None else publisher.publish(state))
                 result = {"status": "created", "url": url}
             except Exception as exc:
                 with self.lock:
@@ -224,6 +497,9 @@ class TaskService:
                 raise ValueError(
                     "PR publication interrupted; inspect GitHub before retrying"
                 ) from exc
+            finally:
+                if owns_publisher:
+                    publisher.close()
             with self.lock:
                 self.conn.execute(
                     "UPDATE publications SET result=? WHERE task_id=?",

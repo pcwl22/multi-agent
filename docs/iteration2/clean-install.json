@@ -1,0 +1,25 @@
+{
+  "status": "local unpublished candidate",
+  "runtime_code_commit": "7abd716",
+  "wheel": "dist/iteration2-final-7abd716/repopilot-0.1.0-py3-none-any.whl",
+  "wheel_sha256": "d0786a76c6af9371538962362b9c1509fefbb1b970676bedde37731d34b40e4b",
+  "tests": {
+    "source": {
+      "passed": 129,
+      "skipped": 1,
+      "seconds": 117.38
+    },
+    "isolated_wheel": {
+      "passed": 129,
+      "skipped": 1,
+      "seconds": 115.96
+    }
+  },
+  "system_site_packages": false,
+  "isolated_parent_and_recovery_worker_import_verified": true,
+  "pip_check": "passed",
+  "ruff": "passed",
+  "existing_test_files_unchanged": 35,
+  "original_corpus_and_strict_acceptance_unchanged": true,
+  "shell_verified": "Bundled pwsh 7.6.5; PowerShell 7.6.3 was not separately verified"
+}

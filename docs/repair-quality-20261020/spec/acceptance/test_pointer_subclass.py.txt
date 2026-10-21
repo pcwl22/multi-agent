@@ -1,0 +1,55 @@
+from pathlib import Path
+
+import jsonpointer
+import pytest
+from jsonpointer import JsonPointer, JsonPointerException
+
+assert Path(jsonpointer.__file__).resolve().is_relative_to(Path.cwd().resolve())
+
+
+class LeftPointer(JsonPointer):
+    pass
+
+
+class RightPointer(JsonPointer):
+    pass
+
+
+@pytest.mark.parametrize("suffix", [JsonPointer("/m~0n"), LeftPointer("/m~0n"), RightPointer("/m~0n"), "/m~0n", ["m~n"]])
+def test_join_retains_left_class_parts_and_inputs(suffix):
+    left = LeftPointer("/a~1b")
+    result = left.join(suffix)
+    assert type(result) is LeftPointer
+    assert result.path == "/a~1b/m~0n"
+    assert result.resolve({"a/b": {"m~n": 7}}) == 7
+    assert left.path == "/a~1b"
+    if isinstance(suffix, JsonPointer):
+        assert suffix.path == "/m~0n"
+    if isinstance(suffix, list):
+        assert suffix == ["m~n"]
+
+
+def test_division_chains_keep_subclass():
+    result = LeftPointer("/a~1b") / JsonPointer("/m~0n") / ["c"]
+    assert type(result) is LeftPointer
+    assert result.resolve({"a/b": {"m~n": {"c": 42}}}) == 42
+
+
+def test_join_dispatches_to_subclass_factory():
+    calls = []
+    class FactoryPointer(JsonPointer):
+        @classmethod
+        def from_parts(cls, parts):
+            parts = list(parts)
+            calls.append(tuple(parts))
+            return super().from_parts(parts)
+    result = FactoryPointer("/a").join(["b"])
+    assert calls == [("a", "b")]
+    assert type(result) is FactoryPointer and result.path == "/a/b"
+
+
+def test_base_pointer_and_invalid_suffix_contracts_preserved():
+    assert type(JsonPointer("/a").join(RightPointer("/b"))) is JsonPointer
+    assert LeftPointer("").join([]).path == ""
+    with pytest.raises(JsonPointerException):
+        LeftPointer("/a").join(42)

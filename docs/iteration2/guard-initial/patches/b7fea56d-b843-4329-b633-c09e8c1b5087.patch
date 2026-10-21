@@ -1,0 +1,61 @@
+--- a/cache.py
++++ b/cache.py
+@@ -1,2 +1,2 @@
+ def is_expired(inserted_at, ttl, now):
+-    return now > inserted_at + ttl
++    return now >= inserted_at + ttl
+--- a/tests/test_cache_expiry_regression.py
++++ b/tests/test_cache_expiry_regression.py
+@@ -0,0 +1,52 @@
++from cache import is_expired
++
++
++def test_alive_strictly_before_boundary():
++    # now < inserted_at + ttl -> alive
++    result = is_expired(10, 5, 14)
++    assert result is False
++    assert isinstance(result, bool)
++
++
++def test_expired_exactly_at_boundary():
++    # now == inserted_at + ttl -> expired
++    result = is_expired(10, 5, 15)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_expired_strictly_after_boundary():
++    # now > inserted_at + ttl -> expired
++    result = is_expired(10, 5, 16)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_zero_ttl_expired_at_insertion_time():
++    # ttl == 0, now == inserted_at -> expired
++    result = is_expired(10, 0, 10)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_zero_ttl_expired_after_insertion_time():
++    # ttl == 0, now > inserted_at -> expired
++    result = is_expired(10, 0, 11)
++    assert result is True
++    assert isinstance(result, bool)
++
++
++def test_positive_ttl_non_boundary_behavior_preserved():
++    # Non-boundary behavior for positive TTLs is unchanged.
++    assert is_expired(0, 10, 5) is False
++    assert is_expired(0, 10, 20) is True
++
++
++def test_is_expired_does_not_mutate_inputs():
++    inserted_at = 10
++    ttl = 5
++    now = 15
++    is_expired(inserted_at, ttl, now)
++    assert inserted_at == 10
++    assert ttl == 5
++    assert now == 15

@@ -1,0 +1,64 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug: `discounted_total` treats `discount_percent` as a fraction (multiplying by `1 - discount_percent`) instead of a percentage. For amount=100, discount=20 it returns round(100 * (1 - 20), 2) = -1900.0, but the contract requires 80. Fix: divide discount_percent by 100 before subtracting. Preserve zero amount (0 * anything = 0) and no discount (discount 0 -> amount unchanged, rounded to 2 decimals as before).",
+      "edits": [
+        {
+          "path": "pricing.py",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)"
+        }
+      ],
+      "contract_tests": [
+        "tests/test_discounted_total_regression.py::test_issue_example_100_with_20_percent_discount_equals_80 asserts discounted_total(100, 20) == 80 (int input, int result value 80)",
+        "tests/test_discounted_total_regression.py::test_zero_amount_preserved asserts discounted_total(0, 20) == 0 (zero amount stays zero regardless of discount)",
+        "tests/test_discounted_total_regression.py::test_no_discount_preserved asserts discounted_total(12.5, 0) == 12.5 (0 percent leaves amount unchanged)",
+        "tests/test_discounted_total_regression.py::test_percentage_interpretation asserts discounted_total(200, 25) == 150.0 (25 percent of 200 is 50, result 150.0)",
+        "tests/test_discounted_total_regression.py::test_full_discount_100_percent asserts discounted_total(100, 100) == 0.0 (100 percent discount yields zero)",
+        "tests/test_discounted_total_regression.py::test_result_is_rounded_to_two_decimals asserts discounted_total(10, 33) == 6.7 (rounding to 2 decimals preserved)"
+      ],
+      "changed_files": [
+        "pricing.py"
+      ],
+      "applied": true,
+      "candidate_id": "ca053cf4-136b-4c60-8e21-cbf1753f9a4d",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".                                                                        [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n1 passed in 0.05s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.8505001000012271,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "49f9f9a4a005f6b8484e711be37f528015d568462331a04066359c699f8cb663",
+      "candidate_id": "ca053cf4-136b-4c60-8e21-cbf1753f9a4d",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

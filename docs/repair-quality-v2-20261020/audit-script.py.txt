@@ -1,0 +1,190 @@
+"""Read-only full-matrix audit; export bounded review artifacts after completion."""
+from collections import Counter
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import xml.etree.ElementTree as ET
+
+from app.evaluation.historical import summarize, verify
+from app.tools.repository import is_test_file
+
+Q = Path('E:/multi-agent/.repopilot/quality-v2-20261020')
+H = Path('E:/multi-agent/.repopilot/history-20261019')
+W = Path('C:/Users/14659/.codex/worktrees/ci-fixtures-model-scope/multi-agent')
+D = W / 'docs/repair-quality-v2-20261020'
+
+
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def read(p):
+    return json.loads(p.read_text(encoding='utf-8'))
+
+
+def save(name, data):
+    (D / name).write_bytes((json.dumps(data, ensure_ascii=False, indent=2) + '\n').encode())
+
+
+def result_summary(result):
+    return {k: result.get(k) for k in ['status', 'passed', 'failed', 'errors', 'skipped', 'evidence', 'image_id']} if result else None
+
+
+if __name__ == '__main__':
+    p = read(Q / 'preregistration.json')
+    assert sha(Q / 'preregistration.json') == (Q / 'preregistration.sha256').read_text().strip()
+    assert (D / 'preregistration.json').read_bytes() == (Q / 'preregistration.json').read_bytes()
+    lock = verify(Path(p['corpus']), p['lock_sha256'])
+    assert sha(Q / 'results/controls/controls.json') == p['controls_sha256']
+    records = read(Q / 'results/records.json')
+    resolved = read(Q / 'results/formal/report.json')
+    assert resolved['model_name'] == p['model_name'] and resolved['model_endpoint_host'] == 'muyuan.do'
+    for name in ['context_chars', 'max_retries', 'retry_workspace_policy', 'temperature', 'model_timeout', 'model_min_interval', 'test_timeout']:
+        assert resolved['configuration'][name] == p['profile'][name]
+    assert resolved['configuration']['workers'] == p['workers']
+    expected = Counter((c, m, v, n) for c in p['case_order'] for m in p['modes'] for v in p['variants'] for n in range(1))
+    assert Counter((r['case_id'], r['mode'], r['variant'], r['variant_repeat']) for r in records) == expected
+    assert len(records) == p['planned_tasks'] == 36
+    for index, case_id in enumerate(p['case_order']):
+        order = ['legacy', 'quality'] if index % 2 == 0 else ['quality', 'legacy']
+        expected_order = [(arm, block, mode) for block, arm in enumerate(order)
+                          for mode in p['modes'][block:] + p['modes'][:block]]
+        assert [(r['variant'], r['repeat'], r['mode']) for r in records if r['case_id'] == case_id] == expected_order
+    subprocess.run(['git', 'diff', '--exit-code', p['runtime_commit'], '--', 'app', 'tests', 'frontend', 'scripts', 'sandbox', 'pyproject.toml', '.env.example'], cwd=W, check=True, capture_output=True)
+    old_plan_sha = sha(H / 'preregistration.json')
+    assert old_plan_sha == '2a1d0034f196b5389ee3d66ae2221edc820ed850760180cc6d933c7d68e8e247'
+    assert len(read(H / 'results-02/records.json')) == 24
+    assert sum(r['strict_success'] for r in read(H / 'results-02/records.json')) == 17
+    prior = read(Path('E:/multi-agent/.repopilot/quality-20261020/results/records.json'))
+    assert len(prior) == 72
+    assert {v: sum(r['strict_success'] for r in prior if r['variant'] == v) for v in ['legacy', 'quality']} == {'legacy': 26, 'quality': 21}
+    assert sha(Path('E:/multi-agent/.repopilot/quality-20261020/results/records.json')) == p['prior_results_preserved']['quality_v1']['records_sha256']
+    runs, patches, events, reviews, quality = [], [], [], [], []
+    artifacts = ['preregistration.json', 'wheel-artifact.json', 'wheel-full-final.xml',
+                 'formal-timing.json', 'results/report.json',
+                 'results/records.json', 'results/formal/runs.jsonl', 'results/controls/controls.json', 'results/probe-records.json', 'scope-note.json']
+    all_original, created, regression_counts = True, 0, Counter()
+    for r in records:
+        fields = ['case_id', 'variant', 'variant_repeat', 'repeat', 'mode', 'task_id', 'execution_status', 'error',
+                  'model_calls', 'tokens', 'duration_seconds', 'retry_count', 'attempts', 'candidate_number',
+                  'strict_success', 'original_tests_unchanged', 'diff_digest', 'budget', 'budget_failure', 'provider_failure',
+                  'patch_rejections', 'creation_failures', 'review_decisions']
+        item = {k: r.get(k) for k in fields}
+        item['cohort'] = next(k for k, ids in p['cohorts'].items() if r['case_id'] in ids)
+        item['tests'] = {k: result_summary(r.get(k)) for k in ['baseline', 'test_result', 'acceptance']}
+        item['failure_observations'] = [{'attempt': f['attempt'], 'observations': [{k: o.get(k) for k in ['file', 'test', 'origin', 'message']} for o in f.get('observations', [])]} for f in r.get('repair_feedback', [])]
+        if r['task_id'] is None:
+            assert not r['strict_success'] and r['execution_status'] in {'blocked', 'invalid_case'}
+            item.update(current_regression=None, recorded_tokens_with_partial=0)
+            runs.append(item)
+            continue
+        created += 1
+        path = Q / 'results/formal/tasks' / r['task_id'] / 'state.json'
+        state = read(path)
+        item['stopped_node_events'] = [{k: e.get(k) for k in ['node', 'error', 'timestamp', 'duration_seconds']} for e in state['execution_history'] if e.get('error')]
+        assert Path(state['task_path']).resolve().is_relative_to((Q / 'data' / r['variant']).resolve())
+        assert state.get('repair_quality_version') == (2 if r['variant'] == 'quality' else None)
+        assert state['approval_status'] == 'pending' and state['budget_limits'] == p['budget_limits']
+        assert r['budget']['pending_reservations'] == 0
+        assert r['budget']['model_requests'] == r['model_calls'] <= p['budget_limits']['model_requests']
+        model_events = [e for e in state['execution_history'] if e['node'] == 'model']
+        assert sum(e['calls'] for e in model_events) == r['model_calls']
+        observed = sum(e.get('input_tokens', 0) + e.get('output_tokens', 0) for e in model_events)
+        assert observed == r['budget']['observed_tokens']
+        if r['tokens'] is not None:
+            assert observed == r['tokens']
+        item['recorded_tokens_with_partial'] = observed
+        case = next(c for c in lock['cases'] if c['case']['id'] == r['case_id'])
+        workspace = Path(state['workspace_path'])
+        for n in range(1, state['candidate_number'] + 1):
+            candidate = Path(state['task_path']) / f'attempts/{n:04}/workspace'
+            assert all(sha(candidate / name) == fingerprint for name, fingerprint in case['source_manifest'].items() if name.endswith('.py') and is_test_file(name))
+        assert r['original_tests_unchanged']
+        current_witnesses = [w for w in state.get('regression_results', []) if w['attempt'] == state['attempts'] and w['diff_digest'] == state['diff_digest'] and w.get('candidate_id') == state.get('candidate_id')]
+        witness = current_witnesses[-1] if current_witnesses else None
+        item['current_regression'] = witness['status'] if witness else None
+        if witness:
+            regression_counts[(r['variant'], witness['status'])] += 1
+        strict = r['baseline_verified'] and r['execution_status'] == 'awaiting_approval' and (r.get('test_result') or {}).get('status') == (r.get('acceptance') or {}).get('status') == 'passed'
+        assert bool(strict) == r['strict_success']
+        if strict and r['variant'] == 'quality':
+            assert witness and witness['status'] == 'demonstrated'
+        for test in [r['baseline'], *state['test_results'], r.get('acceptance'), *[w.get('baseline_result') for w in state.get('regression_results', [])]]:
+            if test and test['status'] not in {'unavailable', 'timeout'}:
+                assert test['evidence'] == 'docker' and test['image_id'] == p['image']
+        quality_events = [e for e in state['execution_history'] if e['node'] in {'candidate_quality', 'review_evidence', 'contract_api_context'}]
+        for e in quality_events:
+            root = Path(state['task_path']) / f"attempts/{e['candidate_number']:04}/workspace"
+            if e['node'] == 'candidate_quality':
+                assert all(sha(root / name) == fingerprint for name, fingerprint in e['staged_content_digests'].items())
+                raw = json.dumps(e['raw_proposal'], sort_keys=True, separators=(',', ':'), ensure_ascii=False)
+                assert hashlib.sha256(raw.encode()).hexdigest() == e['raw_proposal_digest']
+                assert e['version'] == 2
+            elif e['node'] == 'contract_api_context':
+                baseline = root.parent / 'baseline'
+                assert e['snapshot'] == 'isolated_candidate_original_before_patch'
+                assert e['context_chars'] <= e['context_limit'] == p['profile']['context_chars']
+                assert all(hashlib.sha256((baseline / f['path']).read_text(encoding='utf-8').encode()).hexdigest() == f['source_text_sha256'] for f in e['api_slices'])
+            else:
+                assert all(hashlib.sha256((root / f['path']).read_text(encoding='utf-8').encode()).hexdigest() == f['source_text_sha256'] for f in e['file_facts'])
+                assert all(hashlib.sha256((root / f['file']).read_text(encoding='utf-8').encode()).hexdigest() == f['source_text_sha256'] for f in e['test_facts'])
+        if strict and r['variant'] == 'quality':
+            assert any(e['node'] == 'candidate_quality' and e['candidate_id'] == state['candidate_id'] for e in quality_events)
+        events.append({'task_id': r['task_id'], 'events': model_events})
+        quality.append({'task_id': r['task_id'], 'events': quality_events})
+        if state['review_results']:
+            reviews.append({'task_id': r['task_id'], 'variant': r['variant'], 'case_id': r['case_id'], 'mode': r['mode'], 'repeat': r['variant_repeat'], 'reviews': state['review_results']})
+        attempts = []
+        for candidate in sorted(path.parent.glob('attempts/*/repair.patch')):
+            attempts.append({'attempt': int(candidate.parent.name), 'sha256': sha(candidate), 'patch': candidate.read_text(encoding='utf-8')})
+            artifacts.append(candidate.relative_to(Q).as_posix())
+        patches.append({'task_id': r['task_id'], 'case_id': r['case_id'], 'variant': r['variant'], 'mode': r['mode'], 'repeat': r['variant_repeat'], 'attempts': attempts})
+        artifacts.append(path.relative_to(Q).as_posix())
+        runs.append(item)
+    for f in p['app_files']:
+        assert sha(W / f['path']) == f['sha256']
+        assert sha(Path('E:/multi-agent/.repopilot/ci-isolation-venv/Lib/site-packages') / f['path']) == f['sha256']
+    previous_tests = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', '05c00e0adbd778a8257ed886cf5501a2ca9b24a0', '--', 'tests'], cwd=W, text=True).splitlines()
+    assert len(previous_tests) == 78
+    for name in previous_tests:
+        before = subprocess.check_output(['git', 'show', '05c00e0adbd778a8257ed886cf5501a2ca9b24a0:' + name], cwd=W)
+        assert before.replace(b'\r\n', b'\n') == (W / name).read_bytes().replace(b'\r\n', b'\n')
+    suites = list(ET.parse(Q / 'wheel-full-final.xml').getroot().iter('testsuite'))
+    assert sha(Q / 'wheel-full-final.xml') == p['junit_sha256']
+    assert sum(int(s.get('failures', 0)) + int(s.get('errors', 0)) for s in suites) == 0
+    cohorts = {'all': p['case_order'], **p['cohorts']}
+    groups = {group: {variant: summarize([r for r in records if r['case_id'] in ids and r['variant'] == variant]) for variant in p['variants']} for group, ids in cohorts.items()}
+    for group, ids in cohorts.items():
+        for variant, modes in groups[group].items():
+            for mode, metrics in modes.items():
+                subset = [r for r in runs if r['case_id'] in ids and r['variant'] == variant and r['mode'] == mode]
+                assert metrics['planned_runs'] == len(ids) == len(subset)
+                metrics['recorded_tokens_including_partial'] = sum(r['recorded_tokens_with_partial'] for r in subset)
+                metrics['regression_demonstrated'] = sum(r['current_regression'] == 'demonstrated' for r in subset)
+                metrics['regression_not_executed_for_current_candidate'] = sum(r['current_regression'] is None for r in subset)
+    controls = read(Q / 'results/controls/controls.json')
+    save('controls.json', {'source_sha256': p['controls_sha256'], 'image': p['image'], 'all_eligible': True,
+        'cases': [{'id': c['id'], 'eligible': c['eligible'], **{k: result_summary(c[k]) for k in ['baseline_suite', 'baseline_holdout', 'reference_suite', 'reference_holdout']}} for c in controls['cases']]})
+    probes = read(Q / 'results/probe-records.json')
+    report = {'runtime_commit': p['runtime_commit'], 'preregistration_sha256': sha(Q / 'preregistration.json'),
+        'planned_tasks': 36, 'completed_tasks': len(records), 'created_tasks': created, 'cohorts': p['cohorts'],
+        'groups': groups, 'execution_statuses': {v: dict(Counter(r['execution_status'] for r in runs if r['variant'] == v)) for v in p['variants']},
+        'formal_wall_seconds': read(Q / 'formal-timing.json')['wall_seconds'], 'limitations': p['limits']}
+    save('report.json', report)
+    save('runs.json', sorted(runs, key=lambda r: (r['case_id'], r['variant'], r['mode'], r['variant_repeat'])))
+    save('candidate-patches.json', patches)
+    save('model-events.json', events)
+    save('quality-events.json', quality)
+    save('review-results.json', reviews)
+    save('corpus-lock.json', lock)
+    save('wheel-artifact.json', read(Q / 'wheel-artifact.json'))
+    save('timing.json', read(Q / 'formal-timing.json'))
+    save('verification.json', {'complete_matrix': True, 'tasks': 36, 'all_created_tasks_all_candidates_preserve_original_tests': True,
+        'all_approvals_pending': True, 'quality_successes_have_current_fail_to_pass_witness': True,
+        'upstream_extra_load_tests_doctests_executed': False,
+        'evidence_source_digests_match': True, 'app_source_and_install_match': 111, 'previous_tests_helpers_unchanged': 78,
+        'old_17_of_24_unchanged': True, 'full_installed_wheel_suite': p['installed_wheel_full_suite'],
+        'formal_evaluator_probes': len(probes), 'reused_control_probes': 24, 'fresh_control_probes': 0, 'github_writes': False, 'source_distribution_tested': False})
+    save('evidence-manifest.json', [{'path': name, 'sha256': sha(Q / name), 'bytes': (Q / name).stat().st_size} for name in sorted(set(artifacts))])
+    print(json.dumps({'audit_passed': True, 'groups': groups, 'statuses': report['execution_statuses']}, ensure_ascii=False))

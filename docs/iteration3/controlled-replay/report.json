@@ -1,0 +1,210 @@
+{
+  "note": "Controlled fixture replay with real Docker. Corrected tests are evaluator-authored. No real LLM calls; excluded from live benchmark results.",
+  "records": [
+    {
+      "case_id": "pagination-tail",
+      "original_task_id": "ff1af86a-f7b6-4965-b757-38d489882020",
+      "task_id": "d713e93b-466b-46c9-a277-abab5ff850f4",
+      "execution_status": "awaiting_approval",
+      "attempts": 2,
+      "retry_count": 1,
+      "model_calls": 0,
+      "model_adapter": "controlled-replay",
+      "benchmark_run": false,
+      "test_attempts": [
+        {
+          "status": "failed",
+          "exit_code": 1,
+          "stdout": ".FF..FF                                                                  [100%]\n=================================== FAILURES ===================================\n______________________ test_page_two_size_two_returns_3_4 ______________________\n\n    def test_page_two_size_two_returns_3_4():\n        # Literal example from the issue: range(1,8), page 2, size 2 -> [3,4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(3, 5) == [3, 4]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:7: AssertionError\n_______________________ test_page_numbers_are_one_based ________________________\n\n    def test_page_numbers_are_one_based():\n        # Page 1 returns the first `size` items.\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(1, 3) == [1, 2]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:13: AssertionError\n________________ test_page_beyond_last_page_returns_empty_list _________________\n\n    def test_page_beyond_last_page_returns_empty_list():\n>       assert paginate(range(1, 8), 4, 2) == []\nE       assert range(7, 8) == []\nE         \nE         Left contains one more item: 7\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:30: AssertionError\n________________ test_last_partial_page_returns_remaining_items ________________\n\n    def test_last_partial_page_returns_remaining_items():\n        # range(1,8) has 7 items; page 4 size 2 -> [7]\n>       assert paginate(range(1, 8), 4, 2) == [7]\nE       assert range(7, 8) == [7]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:36: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pagination_regression.py::test_page_two_size_two_returns_3_4\nFAILED tests/test_pagination_regression.py::test_page_numbers_are_one_based\nFAILED tests/test_pagination_regression.py::test_page_beyond_last_page_returns_empty_list\nFAILED tests/test_pagination_regression.py::test_last_partial_page_returns_remaining_items\n4 failed, 3 passed in 0.18s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 3,
+          "failed": 4,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 1.0489911000004213,
+          "evidence": "docker",
+          "attempt": 1,
+          "candidate_id": "43507ccb-f0a6-4750-a2fb-da47fddb9ddc",
+          "candidate_number": 1
+        },
+        {
+          "status": "passed",
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n2 passed in 0.08s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 2,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 0.9793059000003268,
+          "evidence": "docker",
+          "attempt": 2,
+          "candidate_id": "8a9b9c38-1495-4c63-8db0-2f924ad9a28d",
+          "candidate_number": 2
+        }
+      ],
+      "acceptance": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "..........                                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n10 passed in 0.09s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 10,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.0536974999995437,
+        "evidence": "docker"
+      },
+      "oracle_sha256": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676",
+      "original_tests_unchanged": true,
+      "prior_generated_test_unchanged": true,
+      "candidate_ids": [
+        "43507ccb-f0a6-4750-a2fb-da47fddb9ddc",
+        "8a9b9c38-1495-4c63-8db0-2f924ad9a28d"
+      ]
+    },
+    {
+      "case_id": "discount-type",
+      "original_task_id": "7cb0e583-0f71-4838-afbc-879838e92232",
+      "task_id": "aef89a29-2895-4a05-8355-189a9eb6a97c",
+      "execution_status": "awaiting_approval",
+      "attempts": 2,
+      "retry_count": 1,
+      "model_calls": 0,
+      "model_adapter": "controlled-replay",
+      "benchmark_run": false,
+      "test_attempts": [
+        {
+          "status": "failed",
+          "exit_code": 1,
+          "stdout": ".FFF..                                                                   [100%]\n=================================== FAILURES ===================================\n_________________ test_discount_is_percentage_literal_example __________________\n\n    def test_discount_is_percentage_literal_example():\n        # Literal contract from the issue: 100 with discount 20 must equal 80.\n        result = discounted_total(100, 20)\n        assert result == 80\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(80.0, int)\n\ntests/test_pricing_regression.py:8: AssertionError\n__________________________ test_zero_amount_preserved __________________________\n\n    def test_zero_amount_preserved():\n        # Zero amount must be preserved regardless of discount.\n        result = discounted_total(0, 20)\n        assert result == 0\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(0.0, int)\n\ntests/test_pricing_regression.py:15: AssertionError\n__________________________ test_no_discount_preserved __________________________\n\n    def test_no_discount_preserved():\n        # No discount must return the original amount unchanged.\n        result = discounted_total(100, 0)\n        assert result == 100\n>       assert isinstance(result, int)\nE       assert False\nE        +  where False = isinstance(100.0, int)\n\ntests/test_pricing_regression.py:22: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pricing_regression.py::test_discount_is_percentage_literal_example\nFAILED tests/test_pricing_regression.py::test_zero_amount_preserved - assert ...\nFAILED tests/test_pricing_regression.py::test_no_discount_preserved - assert ...\n3 failed, 3 passed in 0.15s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 3,
+          "failed": 3,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 1.0593078999991121,
+          "evidence": "docker",
+          "attempt": 1,
+          "candidate_id": "bd23c616-0d22-4272-8b28-989f9d2a3831",
+          "candidate_number": 1
+        },
+        {
+          "status": "passed",
+          "exit_code": 0,
+          "stdout": "..                                                                       [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n2 passed in 0.09s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 2,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 0.9766200000012759,
+          "evidence": "docker",
+          "attempt": 2,
+          "candidate_id": "4b0c93e2-ece2-4ea8-a752-ba03a51439a5",
+          "candidate_number": 2
+        }
+      ],
+      "acceptance": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": ".....                                                                    [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n5 passed in 0.08s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 5,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9606495000007271,
+        "evidence": "docker"
+      },
+      "oracle_sha256": "f729f55def2b1794225e80e7d83b0b264a1d279046143f4463749e90ec77e82a",
+      "original_tests_unchanged": true,
+      "prior_generated_test_unchanged": true,
+      "candidate_ids": [
+        "bd23c616-0d22-4272-8b28-989f9d2a3831",
+        "4b0c93e2-ece2-4ea8-a752-ba03a51439a5"
+      ]
+    },
+    {
+      "case_id": "unsigned-timestamp",
+      "original_task_id": "5d4ce88c-d818-4f67-826a-7fd68d6ae24e",
+      "task_id": "d84ccb6a-f750-4b1c-87b0-052033194493",
+      "execution_status": "awaiting_approval",
+      "attempts": 2,
+      "retry_count": 1,
+      "model_calls": 0,
+      "model_adapter": "controlled-replay",
+      "benchmark_run": false,
+      "test_attempts": [
+        {
+          "status": "failed",
+          "exit_code": 1,
+          "stdout": "........................................................................ [ 23%]\n......................................................................F. [ 46%]\n..........................F............................................. [ 70%]\n........................................................................ [ 93%]\n...................                                                      [100%]\n=================================== FAILURES ===================================\n_____________ TestTimestampSigner.test_malformed_future_timestamp ______________\n\nself = <test_itsdangerous.test_timed.TestTimestampSigner object at 0x7813971dd190>\nsigner = <itsdangerous.timed.TimestampSigner object at 0x7813971dc050>\n\n    @pytest.mark.skipif(\n        sys.platform == \"win32\", reason=\"Freezegun Invalid argument occurs on Windows\"\n    )\n    def test_malformed_future_timestamp(self, signer):\n        signed = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n    \n        with pytest.raises(BadTimeSignature) as exc_info:\n            signer.unsign(signed)\n    \n>       assert \"Malformed\" in str(exc_info.value)\nE       assert 'Malformed' in \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"\nE        +  where \"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\" = str(BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\"))\nE        +    where BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") = <ExceptionInfo BadTimeSignature(\"Signature b'AGBfQ6G6cr07byTRt0zAdPljHOY' does not match\") tblen=2>.value\n\ntests/test_itsdangerous/test_timed.py:79: AssertionError\n________ test_negative_out_of_range_timestamp_raises_bad_time_signature ________\n\n    def test_negative_out_of_range_timestamp_raises_bad_time_signature():\n        signer = _make_signer()\n        signed = signer.sign(b\"value\")\n>       tampered = _tamper_timestamp(signed, -(10**18))\n\ntests/test_itsdangerous/test_timed_regression.py:68: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_itsdangerous/test_timed_regression.py:26: in _tamper_timestamp\n    new_ts = base64_encode(int_to_bytes(ts_int))\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nnum = -1000000000000000000\n\n    def int_to_bytes(num: int) -> bytes:\n>       return _int_to_bytes(num).lstrip(b\"\\x00\")\nE       struct.error: 'Q' format requires 0 <= number <= 18446744073709551615\n\nsrc/itsdangerous/encoding.py:50: error\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_itsdangerous/test_timed.py::TestTimestampSigner::test_malformed_future_timestamp\nFAILED tests/test_itsdangerous/test_timed_regression.py::test_negative_out_of_range_timestamp_raises_bad_time_signature\n2 failed, 305 passed in 2.27s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+          "passed": 305,
+          "failed": 2,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 3.3706037999982073,
+          "evidence": "docker",
+          "attempt": 1,
+          "candidate_id": "fc856e74-7585-469d-8b2b-57e3c6b42ff3",
+          "candidate_number": 1
+        },
+        {
+          "status": "passed",
+          "exit_code": 0,
+          "stdout": "........................................................................ [ 24%]\n........................................................................ [ 48%]\n........................................................................ [ 72%]\n........................................................................ [ 96%]\n..........                                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n298 passed in 2.15s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+          "passed": 298,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 3.3029394000004686,
+          "evidence": "docker",
+          "attempt": 2,
+          "candidate_id": "8b43d032-2f96-4c5b-b980-5ba03efc74d0",
+          "candidate_number": 2
+        }
+      ],
+      "acceptance": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": "....                                                                     [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n4 passed in 0.27s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.2587538000007044,
+        "evidence": "docker"
+      },
+      "oracle_sha256": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d",
+      "original_tests_unchanged": true,
+      "prior_generated_test_unchanged": true,
+      "candidate_ids": [
+        "fc856e74-7585-469d-8b2b-57e3c6b42ff3",
+        "8b43d032-2f96-4c5b-b980-5ba03efc74d0"
+      ]
+    }
+  ],
+  "runtime_code_commit": "3b4247f60dd36b031dbaa2c31f70940bc31fba9b"
+}

@@ -1,0 +1,120 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug: discount_percent is treated as a fraction (1 - discount_percent) instead of a percentage (1 - discount_percent/100). Fix by dividing by 100. Preserve zero amount (0 * anything = 0) and no discount (discount 0 -> amount unchanged). Add a NEW regression test file covering the literal example (100, 20) == 80, boundaries 0 and 100 percent, zero amount, and no discount, with exact input/result types.",
+      "edits": [
+        {
+          "path": "pricing.py",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)"
+        },
+        {
+          "path": "tests/test_discounted_total_regression.py",
+          "old": "",
+          "new": "from pricing import discounted_total\n\n\ndef test_issue_example_100_with_20_percent_discount():\n    result = discounted_total(100, 20)\n    assert result == 80\n    assert isinstance(result, (int, float))\n\n\ndef test_zero_amount_preserved():\n    assert discounted_total(0, 20) == 0\n    assert discounted_total(0, 0) == 0\n    assert discounted_total(0, 100) == 0\n\n\ndef test_no_discount_preserved():\n    assert discounted_total(12.5, 0) == 12.5\n    assert discounted_total(100, 0) == 100\n\n\ndef test_boundary_zero_percent():\n    assert discounted_total(50, 0) == 50\n\n\ndef test_boundary_full_percent():\n    assert discounted_total(100, 100) == 0\n    assert discounted_total(37.5, 100) == 0\n\n\ndef test_percentage_interpretation():\n    assert discounted_total(200, 25) == 150\n    assert discounted_total(50, 10) == 45\n"
+        }
+      ],
+      "contract_tests": [
+        "discounted_total(100, 20) == 80 (literal issue example, numeric result) — tests/test_discounted_total_regression.py::test_issue_example_100_with_20_percent_discount",
+        "Zero amount preserved: discounted_total(0, 20) == 0, discounted_total(0, 0) == 0, discounted_total(0, 100) == 0 — tests/test_discounted_total_regression.py::test_zero_amount_preserved",
+        "No discount preserved: discounted_total(12.5, 0) == 12.5 and discounted_total(100, 0) == 100 — tests/test_discounted_total_regression.py::test_no_discount_preserved",
+        "Lower boundary 0 percent leaves amount unchanged: discounted_total(50, 0) == 50 — tests/test_discounted_total_regression.py::test_boundary_zero_percent",
+        "Upper boundary 100 percent yields zero: discounted_total(100, 100) == 0 and discounted_total(37.5, 100) == 0 — tests/test_discounted_total_regression.py::test_boundary_full_percent",
+        "Percentage semantics: discounted_total(200, 25) == 150 and discounted_total(50, 10) == 45 — tests/test_discounted_total_regression.py::test_percentage_interpretation"
+      ],
+      "changed_files": [
+        "pricing.py",
+        "tests/test_discounted_total_regression.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".......                                                                  [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n7 passed in 0.10s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 7,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9845287999996799,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_issue_example_100_with_20_percent_discount",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_zero_amount_preserved",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 10,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_no_discount_preserved",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 16,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_boundary_zero_percent",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 21,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_boundary_full_percent",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 25,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_discounted_total_regression.py",
+          "name": "test_percentage_interpretation",
+          "classname": "tests.test_discounted_total_regression",
+          "line": 30,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "2d885b38df2dd18b4f9d22d2c86ac38040329edef5064c37f8cdb2ac1738c356"
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

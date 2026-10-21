@@ -9,7 +9,7 @@ from app.tools.repository import Repository, diff_repositories, snapshot
 
 @pytest.fixture
 def copied(tmp_path):
-    source = Repository(Path(__file__).parents[2] / "demo_repository")
+    source = Repository(Path(__file__).parents[2] / "test_fixtures" / "repair_repository")
     snapshot(source, tmp_path / "baseline")
     snapshot(source, tmp_path / "workspace")
     return Repository(tmp_path / "workspace")

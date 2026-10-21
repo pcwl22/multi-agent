@@ -1,0 +1,35 @@
+{
+  "recorded_at": "2026-10-16T06:39:10.515207+00:00",
+  "code_commit": "acb0b9a35b044ee33ebb88921c1351f3a45c0106",
+  "planned_runs": [
+    {
+      "name": "final-strict",
+      "cases": 10,
+      "modes": 3,
+      "repeats": 1,
+      "runs": 30
+    },
+    {
+      "name": "pagination-target",
+      "cases": 1,
+      "modes": 3,
+      "repeats": 3,
+      "runs": 9
+    },
+    {
+      "name": "historical-pilots",
+      "cases": 2,
+      "modes": 3,
+      "repeats": 1,
+      "runs": 6
+    }
+  ],
+  "datasets_sha256": {
+    "app/evaluation/expanded/dataset.strict.json": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+    ".repopilot/guard-target/dataset.json": "7d00f1241601c25d5dce824fa74fac51631237482933d7d2e9545cdd6acc1c2d",
+    ".repopilot/pilots/corpus/dataset.json": "b7e04741ba6d84c5e99f2da9ffc3a844e00fb3178051ca110083899462901466"
+  },
+  "failures_stay_in_denominator": true,
+  "no_oracle_changes": true,
+  "no_remote_writes": true
+}

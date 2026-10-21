@@ -1,0 +1,637 @@
+{
+  "patches": [
+    {
+      "rationale": "The current paginate uses zero-based indexing (start = page * page_size), so page=2, size=2 on range(1,8) returns items[4:6] == [5,6]. The issue requires one-based page numbers: page=2 must return [3,4]. Fix by computing start = (page - 1) * page_size. Preserve existing invalid-input guards (page < 1 or page_size < 1 -> []) and empty input behavior (slicing an empty sequence yields []). Pages beyond the last page naturally yield [] via slicing. Add a new regression test file covering the stated contracts.",
+      "edits": [
+        {
+          "path": "pagination.py",
+          "old": "    start = page * page_size\n    return items[start : start + page_size]",
+          "new": "    start = (page - 1) * page_size\n    return items[start : start + page_size]"
+        },
+        {
+          "path": "tests/test_pagination_one_based.py",
+          "old": "",
+          "new": "from pagination import paginate\n\n\ndef test_issue_example_range_page2_size2():\n    # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n    result = paginate(range(1, 8), 2, 2)\n    assert result == [3, 4]\n    assert isinstance(result, list)\n\n\ndef test_page_numbers_are_one_based():\n    # page=1 returns the first `size` items\n    assert paginate(range(1, 8), 1, 2) == [1, 2]\n    assert paginate(range(1, 8), 2, 2) == [3, 4]\n    assert paginate(range(1, 8), 3, 2) == [5, 6]\n\n\ndef test_last_page_partial():\n    # range(1, 8) has 7 items; page 4 size 2 -> [7]\n    assert paginate(range(1, 8), 4, 2) == [7]\n\n\ndef test_page_beyond_last_page_returns_empty():\n    assert paginate(range(1, 8), 5, 2) == []\n    assert paginate(range(1, 8), 100, 2) == []\n\n\ndef test_empty_input_returns_empty():\n    assert paginate([], 1, 2) == []\n    assert paginate([], 2, 2) == []\n\n\ndef test_invalid_page_returns_empty():\n    assert paginate([1, 2, 3], 0, 2) == []\n    assert paginate([1, 2, 3], -1, 2) == []\n\n\ndef test_invalid_page_size_returns_empty():\n    assert paginate([1, 2, 3], 1, 0) == []\n    assert paginate([1, 2, 3], 1, -2) == []\n\n\ndef test_returns_list_type():\n    assert isinstance(paginate([1, 2, 3], 1, 2), list)\n    assert isinstance(paginate([], 1, 2), list)\n"
+        }
+      ],
+      "contract_tests": [
+        "paginate(range(1,8), page=2, size=2) returns [3,4] -> test_issue_example_range_page2_size2 asserts paginate(range(1, 8), 2, 2) == [3, 4] and isinstance(result, list).",
+        "Page numbers are one-based: page=1 returns the first `size` items -> test_page_numbers_are_one_based asserts paginate(range(1, 8), 1, 2) == [1, 2].",
+        "Empty input returns [] -> test_empty_input_returns_empty asserts paginate([], 1, 2) == [] and paginate([], 2, 2) == [].",
+        "Invalid inputs (size <= 0 or page <= 0) return [] -> test_invalid_page_returns_empty asserts paginate([1, 2, 3], 0, 2) == [] and paginate([1, 2, 3], -1, 2) == []; test_invalid_page_size_returns_empty asserts paginate([1, 2, 3], 1, 0) == [] and paginate([1, 2, 3], 1, -2) == [].",
+        "A page beyond the last page returns [] -> test_page_beyond_last_page_returns_empty asserts paginate(range(1, 8), 5, 2) == [] and paginate(range(1, 8), 100, 2) == [].",
+        "Existing public callers of paginate continue to work with one-based semantics -> test_last_page_partial asserts paginate(range(1, 8), 4, 2) == [7]; test_returns_list_type asserts isinstance(paginate([1, 2, 3], 1, 2), list) and isinstance(paginate([], 1, 2), list).",
+        "A new regression test file is added covering these contracts -> tests/test_pagination_one_based.py is created with the assertions above."
+      ],
+      "changed_files": [
+        "pagination.py",
+        "tests/test_pagination_one_based.py"
+      ],
+      "applied": true
+    },
+    {
+      "rationale": "The paginate function already uses one-based indexing (start = (page-1)*page_size), but slicing a `range` object returns a `range`, not a `list`. The issue requires the exact example paginate(range(1,8), page=2, size=2) to return [3,4] (a list). The fix is to materialize the slice as a list. Empty/invalid inputs already return [] (a list), and beyond-last-page slices must also return [] as a list. I will wrap the slice in list(...) so all return paths yield lists, preserving the existing one-based semantics and invalid-input behavior. I will also add a new regression test file (distinct filename) covering the contracts with exact input expressions and result types.",
+      "edits": [
+        {
+          "path": "pagination.py",
+          "old": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = (page - 1) * page_size\n    return items[start : start + page_size]",
+          "new": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = (page - 1) * page_size\n    return list(items[start : start + page_size])"
+        },
+        {
+          "path": "tests/test_pagination_regression.py",
+          "old": "",
+          "new": "from pagination import paginate\n\n\ndef test_issue_example_range_page2_size2_returns_list():\n    # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n    result = paginate(range(1, 8), 2, 2)\n    assert result == [3, 4]\n    assert isinstance(result, list)\n\n\ndef test_page_numbers_are_one_based():\n    # page=1 returns the first `size` items\n    assert paginate(range(1, 8), 1, 2) == [1, 2]\n    assert paginate(range(1, 8), 2, 2) == [3, 4]\n    assert paginate(range(1, 8), 3, 2) == [5, 6]\n\n\ndef test_last_page_partial_returns_list():\n    # range(1, 8) has 7 items; page 4 size 2 -> [7]\n    result = paginate(range(1, 8), 4, 2)\n    assert result == [7]\n    assert isinstance(result, list)\n\n\ndef test_page_beyond_last_page_returns_empty_list():\n    result = paginate(range(1, 8), 5, 2)\n    assert result == []\n    assert isinstance(result, list)\n    assert paginate(range(1, 8), 100, 2) == []\n\n\ndef test_empty_input_returns_empty_list():\n    result = paginate([], 1, 2)\n    assert result == []\n    assert isinstance(result, list)\n    assert paginate([], 2, 2) == []\n\n\ndef test_invalid_page_returns_empty_list():\n    assert paginate([1, 2, 3], 0, 2) == []\n    assert paginate([1, 2, 3], -1, 2) == []\n\n\ndef test_invalid_page_size_returns_empty_list():\n    assert paginate([1, 2, 3], 1, 0) == []\n    assert paginate([1, 2, 3], 1, -2) == []\n\n\ndef test_list_input_returns_list():\n    result = paginate([1, 2, 3, 4], 2, 2)\n    assert result == [3, 4]\n    assert isinstance(result, list)\n"
+        }
+      ],
+      "contract_tests": [
+        "paginate(range(1, 8), 2, 2) == [3, 4] and isinstance(result, list) -> tests/test_pagination_regression.py::test_issue_example_range_page2_size2_returns_list",
+        "One-based page numbering: paginate(range(1, 8), 1, 2) == [1, 2]; paginate(range(1, 8), 2, 2) == [3, 4]; paginate(range(1, 8), 3, 2) == [5, 6] -> tests/test_pagination_regression.py::test_page_numbers_are_one_based",
+        "Last partial page: paginate(range(1, 8), 4, 2) == [7] and isinstance(result, list) -> tests/test_pagination_regression.py::test_last_page_partial_returns_list",
+        "Beyond last page returns []: paginate(range(1, 8), 5, 2) == [] and isinstance(result, list); paginate(range(1, 8), 100, 2) == [] -> tests/test_pagination_regression.py::test_page_beyond_last_page_returns_empty_list",
+        "Empty input returns []: paginate([], 1, 2) == [] and isinstance(result, list); paginate([], 2, 2) == [] -> tests/test_pagination_regression.py::test_empty_input_returns_empty_list",
+        "Invalid page (<=0) returns []: paginate([1, 2, 3], 0, 2) == []; paginate([1, 2, 3], -1, 2) == [] -> tests/test_pagination_regression.py::test_invalid_page_returns_empty_list",
+        "Invalid page_size (<=0) returns []: paginate([1, 2, 3], 1, 0) == []; paginate([1, 2, 3], 1, -2) == [] -> tests/test_pagination_regression.py::test_invalid_page_size_returns_empty_list",
+        "List input returns list: paginate([1, 2, 3, 4], 2, 2) == [3, 4] and isinstance(result, list) -> tests/test_pagination_regression.py::test_list_input_returns_list"
+      ],
+      "changed_files": [
+        "pagination.py",
+        "tests/test_pagination_regression.py"
+      ],
+      "applied": true
+    }
+  ],
+  "test_results": [
+    {
+      "status": "failed",
+      "exit_code": 1,
+      "stdout": ".FFFF....                                                                [100%]\n=================================== FAILURES ===================================\n_____________________ test_issue_example_range_page2_size2 _____________________\n\n    def test_issue_example_range_page2_size2():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(3, 5) == [3, 4]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:7: AssertionError\n_______________________ test_page_numbers_are_one_based ________________________\n\n    def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(1, 3) == [1, 2]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:13: AssertionError\n____________________________ test_last_page_partial ____________________________\n\n    def test_last_page_partial():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n>       assert paginate(range(1, 8), 4, 2) == [7]\nE       assert range(7, 8) == [7]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:20: AssertionError\n___________________ test_page_beyond_last_page_returns_empty ___________________\n\n    def test_page_beyond_last_page_returns_empty():\n>       assert paginate(range(1, 8), 5, 2) == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:24: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pagination_one_based.py::test_issue_example_range_page2_size2\nFAILED tests/test_pagination_one_based.py::test_page_numbers_are_one_based - ...\nFAILED tests/test_pagination_one_based.py::test_last_page_partial - assert ra...\nFAILED tests/test_pagination_one_based.py::test_page_beyond_last_page_returns_empty\n4 failed, 5 passed in 0.15s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 5,
+      "failed": 4,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9478041000002122,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_issue_example_range_page2_size2",
+          "classname": "tests.test_pagination_one_based",
+          "line": 4,
+          "status": "failed",
+          "message": "assert range(3, 5) == [3, 4]\n  \n  Use -v to get more diff",
+          "details": "def test_issue_example_range_page2_size2():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(3, 5) == [3, 4]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:7: AssertionError"
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_page_numbers_are_one_based",
+          "classname": "tests.test_pagination_one_based",
+          "line": 11,
+          "status": "failed",
+          "message": "assert range(1, 3) == [1, 2]\n  \n  Use -v to get more diff",
+          "details": "def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(1, 3) == [1, 2]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:13: AssertionError"
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_last_page_partial",
+          "classname": "tests.test_pagination_one_based",
+          "line": 18,
+          "status": "failed",
+          "message": "assert range(7, 8) == [7]\n  \n  Use -v to get more diff",
+          "details": "def test_last_page_partial():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n>       assert paginate(range(1, 8), 4, 2) == [7]\nE       assert range(7, 8) == [7]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:20: AssertionError"
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_page_beyond_last_page_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 23,
+          "status": "failed",
+          "message": "assert range(8, 8) == []\n  \n  Use -v to get more diff",
+          "details": "def test_page_beyond_last_page_returns_empty():\n>       assert paginate(range(1, 8), 5, 2) == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:24: AssertionError"
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_empty_input_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 28,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_invalid_page_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 33,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_invalid_page_size_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 38,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_returns_list_type",
+          "classname": "tests.test_pagination_one_based",
+          "line": 43,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "c7fdede037f58c24f2b955aca7dcec9a21c627da505ed14e83c242f931a583a8"
+    },
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".................                                                        [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n17 passed in 0.14s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 17,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9747334999992745,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_issue_example_range_page2_size2",
+          "classname": "tests.test_pagination_one_based",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_page_numbers_are_one_based",
+          "classname": "tests.test_pagination_one_based",
+          "line": 11,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_last_page_partial",
+          "classname": "tests.test_pagination_one_based",
+          "line": 18,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_page_beyond_last_page_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 23,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_empty_input_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 28,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_invalid_page_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 33,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_invalid_page_size_returns_empty",
+          "classname": "tests.test_pagination_one_based",
+          "line": 38,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "name": "test_returns_list_type",
+          "classname": "tests.test_pagination_one_based",
+          "line": 43,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_issue_example_range_page2_size2_returns_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_page_numbers_are_one_based",
+          "classname": "tests.test_pagination_regression",
+          "line": 11,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_last_page_partial_returns_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 18,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_page_beyond_last_page_returns_empty_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 25,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_empty_input_returns_empty_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 32,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_invalid_page_returns_empty_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 39,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_invalid_page_size_returns_empty_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 44,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_pagination_regression.py",
+          "name": "test_list_input_returns_list",
+          "classname": "tests.test_pagination_regression",
+          "line": 49,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 2,
+      "diff_digest": "5105bc80d2750726fa5ded8dfcbd7702ac6baa7c671402a8b1ccc43716932edf"
+    }
+  ],
+  "review_results": [
+    {
+      "approved": true,
+      "summary": "The diff changes paginate to one-based indexing (start = (page - 1) * page_size) and wraps the slice in list(), so range(1,8) with page=2, size=2 returns [3,4]. Invalid page/page_size guards are preserved, empty input and beyond-last-page cases return []. Two new regression test files were added without modifying existing tests. Regression evidence shows the added tests failed on the original source (range(5,7) vs [3,4]) and pass on the candidate (17 passed).",
+      "concerns": [
+        "The diff adds two overlapping regression test files (tests/test_pagination_one_based.py and tests/test_pagination_regression.py) with largely duplicated coverage; this is redundant but not a correctness issue.",
+        "The list() wrapping changes the return type for sliceable non-list inputs (e.g., range/tuple) from the same type to list; this is consistent with the issue's expected [3,4] list output and the added tests, but is a behavior change for callers expecting the original container type."
+      ],
+      "contract_checks": [
+        {
+          "requirement": "paginate(range(1,8), page=2, size=2) returns [3,4].",
+          "satisfied": true,
+          "evidence": "pagination.py: start = (page - 1) * page_size = 2; items[2:4] on range(1,8) yields 3,4; list() wraps to [3,4]. Test tests/test_pagination_regression.py::test_issue_example_range_page2_size2_returns_list asserts result == [3,4] and isinstance(result, list); baseline failed with range(5,7), candidate passes."
+        },
+        {
+          "requirement": "Page numbers are one-based: page=1 returns the first `size` items.",
+          "satisfied": true,
+          "evidence": "start = (1-1)*2 = 0 -> items[0:2] = [1,2]. Test test_page_numbers_are_one_based asserts paginate(range(1,8),1,2)==[1,2], (2,2)==[3,4], (3,2)==[5,6]; failed on baseline (range(3,5)), passes on candidate."
+        },
+        {
+          "requirement": "Empty input returns [].",
+          "satisfied": true,
+          "evidence": "paginate([],1,2): start=0, [][0:2] = [], list([]) = []. Test test_empty_input_returns_empty_list asserts paginate([],1,2)==[] and paginate([],2,2)==[] with isinstance list; passes."
+        },
+        {
+          "requirement": "Invalid inputs (size <= 0 or page <= 0) return [].",
+          "satisfied": true,
+          "evidence": "Guard `if page < 1 or page_size < 1: return []` is preserved unchanged in the diff. Tests test_invalid_page_returns_empty_list (page 0, -1) and test_invalid_page_size_returns_empty_list (size 0, -2) pass."
+        },
+        {
+          "requirement": "A page beyond the last page returns [].",
+          "satisfied": true,
+          "evidence": "range(1,8) has 7 items; page 5 size 2 -> start=8, items[8:10] = empty -> []. Test test_page_beyond_last_page_returns_empty_list asserts paginate(range(1,8),5,2)==[] and (100,2)==[]; failed on baseline (range(8,8)), passes on candidate."
+        },
+        {
+          "requirement": "Existing public callers of paginate continue to work with one-based semantics.",
+          "satisfied": true,
+          "evidence": "Only caller context is tests/test_contract.py, which asserts paginate([],1,2)==[] and paginate([1,2],0,2)==[]; both still hold under the new implementation (empty slice and guard). No production callers exist in the repository."
+        },
+        {
+          "requirement": "A new regression test file is added covering these contracts.",
+          "satisfied": true,
+          "evidence": "tests/test_pagination_regression.py (52 lines) and tests/test_pagination_one_based.py (45 lines) are newly added; existing tests/test_contract.py is unmodified. Regression evidence confirms these added tests failed on original source and pass on candidate."
+        }
+      ],
+      "attempt": 2
+    }
+  ],
+  "patch_feedback": [],
+  "repair_feedback": [
+    {
+      "attempt": 1,
+      "diff_digest": "c7fdede037f58c24f2b955aca7dcec9a21c627da505ed14e83c242f931a583a8",
+      "failure_fingerprint": "6c4baeede66c41d695005ea9b65d73625cd6f3765e275929d9023bb0111de096",
+      "identical_prior_failures": 0,
+      "observations": [
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "test": "test_issue_example_range_page2_size2",
+          "origin": "generated_test",
+          "line": 4,
+          "message": "assert range(3, 5) == [3, 4]\n  \n  Use -v to get more diff",
+          "assertion": "range(3, 5) == [3, 4]",
+          "actual_expression": "range(3, 5)",
+          "expected_expression": "[3, 4]",
+          "details": "def test_issue_example_range_page2_size2():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(3, 5) == [3, 4]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:7: AssertionError"
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "test": "test_page_numbers_are_one_based",
+          "origin": "generated_test",
+          "line": 11,
+          "message": "assert range(1, 3) == [1, 2]\n  \n  Use -v to get more diff",
+          "assertion": "range(1, 3) == [1, 2]",
+          "actual_expression": "range(1, 3)",
+          "expected_expression": "[1, 2]",
+          "details": "def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(1, 3) == [1, 2]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:13: AssertionError"
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "test": "test_last_page_partial",
+          "origin": "generated_test",
+          "line": 18,
+          "message": "assert range(7, 8) == [7]\n  \n  Use -v to get more diff",
+          "assertion": "range(7, 8) == [7]",
+          "actual_expression": "range(7, 8)",
+          "expected_expression": "[7]",
+          "details": "def test_last_page_partial():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n>       assert paginate(range(1, 8), 4, 2) == [7]\nE       assert range(7, 8) == [7]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:20: AssertionError"
+        },
+        {
+          "file": "tests/test_pagination_one_based.py",
+          "test": "test_page_beyond_last_page_returns_empty",
+          "origin": "generated_test",
+          "line": 23,
+          "message": "assert range(8, 8) == []\n  \n  Use -v to get more diff",
+          "assertion": "range(8, 8) == []",
+          "actual_expression": "range(8, 8)",
+          "expected_expression": "[]",
+          "details": "def test_page_beyond_last_page_returns_empty():\n>       assert paginate(range(1, 8), 5, 2) == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:24: AssertionError"
+        }
+      ],
+      "evidence": "docker",
+      "raw_fallback": false,
+      "instruction": "Compare the observed assertion with the ORIGINAL issue. Correct source or an unjustified NEW test; existing tests stay immutable."
+    }
+  ],
+  "regression_results": [
+    {
+      "status": "demonstrated",
+      "generated_tests": [
+        "tests/test_pagination_one_based.py",
+        "tests/test_pagination_regression.py"
+      ],
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-pagination-preserve-data\\tasks\\f6fc9a28-2c24-456f-b906-1163e86ae22e\\regression\\attempt-2-c52a88f4-0620-4e4e-abe6-b2dd6c9f53fd",
+      "baseline_result": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": ".FFFF....FFFF...F                                                        [100%]\n=================================== FAILURES ===================================\n_____________________ test_issue_example_range_page2_size2 _____________________\n\n    def test_issue_example_range_page2_size2():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(5, 7) == [3, 4]\nE         \nE         At index 0 diff: 5 != 3\nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:7: AssertionError\n_______________________ test_page_numbers_are_one_based ________________________\n\n    def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(3, 5) == [1, 2]\nE         \nE         At index 0 diff: 3 != 1\nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:13: AssertionError\n____________________________ test_last_page_partial ____________________________\n\n    def test_last_page_partial():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n>       assert paginate(range(1, 8), 4, 2) == [7]\nE       assert range(8, 8) == [7]\nE         \nE         Right contains one more item: 7\nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:20: AssertionError\n___________________ test_page_beyond_last_page_returns_empty ___________________\n\n    def test_page_beyond_last_page_returns_empty():\n>       assert paginate(range(1, 8), 5, 2) == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:24: AssertionError\n______________ test_issue_example_range_page2_size2_returns_list _______________\n\n    def test_issue_example_range_page2_size2_returns_list():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(5, 7) == [3, 4]\nE         \nE         At index 0 diff: 5 != 3\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:7: AssertionError\n_______________________ test_page_numbers_are_one_based ________________________\n\n    def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(3, 5) == [1, 2]\nE         \nE         At index 0 diff: 3 != 1\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:13: AssertionError\n_____________________ test_last_page_partial_returns_list ______________________\n\n    def test_last_page_partial_returns_list():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n        result = paginate(range(1, 8), 4, 2)\n>       assert result == [7]\nE       assert range(8, 8) == [7]\nE         \nE         Right contains one more item: 7\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:21: AssertionError\n________________ test_page_beyond_last_page_returns_empty_list _________________\n\n    def test_page_beyond_last_page_returns_empty_list():\n        result = paginate(range(1, 8), 5, 2)\n>       assert result == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:27: AssertionError\n_________________________ test_list_input_returns_list _________________________\n\n    def test_list_input_returns_list():\n        result = paginate([1, 2, 3, 4], 2, 2)\n>       assert result == [3, 4]\nE       assert [] == [3, 4]\nE         \nE         Right contains 2 more items, first extra item: 3\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:51: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pagination_one_based.py::test_issue_example_range_page2_size2\nFAILED tests/test_pagination_one_based.py::test_page_numbers_are_one_based - ...\nFAILED tests/test_pagination_one_based.py::test_last_page_partial - assert ra...\nFAILED tests/test_pagination_one_based.py::test_page_beyond_last_page_returns_empty\nFAILED tests/test_pagination_regression.py::test_issue_example_range_page2_size2_returns_list\nFAILED tests/test_pagination_regression.py::test_page_numbers_are_one_based\nFAILED tests/test_pagination_regression.py::test_last_page_partial_returns_list\nFAILED tests/test_pagination_regression.py::test_page_beyond_last_page_returns_empty_list\nFAILED tests/test_pagination_regression.py::test_list_input_returns_list - as...\n9 failed, 8 passed in 0.25s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 8,
+        "failed": 9,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.1197285999987798,
+        "evidence": "docker",
+        "cases": [
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_issue_example_range_page2_size2",
+            "classname": "tests.test_pagination_one_based",
+            "line": 4,
+            "status": "failed",
+            "message": "assert range(5, 7) == [3, 4]\n  \n  At index 0 diff: 5 != 3\n  Use -v to get more diff",
+            "details": "def test_issue_example_range_page2_size2():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(5, 7) == [3, 4]\nE         \nE         At index 0 diff: 5 != 3\nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:7: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_page_numbers_are_one_based",
+            "classname": "tests.test_pagination_one_based",
+            "line": 11,
+            "status": "failed",
+            "message": "assert range(3, 5) == [1, 2]\n  \n  At index 0 diff: 3 != 1\n  Use -v to get more diff",
+            "details": "def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(3, 5) == [1, 2]\nE         \nE         At index 0 diff: 3 != 1\nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:13: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_last_page_partial",
+            "classname": "tests.test_pagination_one_based",
+            "line": 18,
+            "status": "failed",
+            "message": "assert range(8, 8) == [7]\n  \n  Right contains one more item: 7\n  Use -v to get more diff",
+            "details": "def test_last_page_partial():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n>       assert paginate(range(1, 8), 4, 2) == [7]\nE       assert range(8, 8) == [7]\nE         \nE         Right contains one more item: 7\nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:20: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_page_beyond_last_page_returns_empty",
+            "classname": "tests.test_pagination_one_based",
+            "line": 23,
+            "status": "failed",
+            "message": "assert range(8, 8) == []\n  \n  Use -v to get more diff",
+            "details": "def test_page_beyond_last_page_returns_empty():\n>       assert paginate(range(1, 8), 5, 2) == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_one_based.py:24: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_issue_example_range_page2_size2_returns_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 4,
+            "status": "failed",
+            "message": "assert range(5, 7) == [3, 4]\n  \n  At index 0 diff: 5 != 3\n  Use -v to get more diff",
+            "details": "def test_issue_example_range_page2_size2_returns_list():\n        # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(5, 7) == [3, 4]\nE         \nE         At index 0 diff: 5 != 3\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:7: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_page_numbers_are_one_based",
+            "classname": "tests.test_pagination_regression",
+            "line": 11,
+            "status": "failed",
+            "message": "assert range(3, 5) == [1, 2]\n  \n  At index 0 diff: 3 != 1\n  Use -v to get more diff",
+            "details": "def test_page_numbers_are_one_based():\n        # page=1 returns the first `size` items\n>       assert paginate(range(1, 8), 1, 2) == [1, 2]\nE       assert range(3, 5) == [1, 2]\nE         \nE         At index 0 diff: 3 != 1\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:13: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_last_page_partial_returns_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 18,
+            "status": "failed",
+            "message": "assert range(8, 8) == [7]\n  \n  Right contains one more item: 7\n  Use -v to get more diff",
+            "details": "def test_last_page_partial_returns_list():\n        # range(1, 8) has 7 items; page 4 size 2 -> [7]\n        result = paginate(range(1, 8), 4, 2)\n>       assert result == [7]\nE       assert range(8, 8) == [7]\nE         \nE         Right contains one more item: 7\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:21: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_page_beyond_last_page_returns_empty_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 25,
+            "status": "failed",
+            "message": "assert range(8, 8) == []\n  \n  Use -v to get more diff",
+            "details": "def test_page_beyond_last_page_returns_empty_list():\n        result = paginate(range(1, 8), 5, 2)\n>       assert result == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:27: AssertionError"
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_list_input_returns_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 49,
+            "status": "failed",
+            "message": "assert [] == [3, 4]\n  \n  Right contains 2 more items, first extra item: 3\n  Use -v to get more diff",
+            "details": "def test_list_input_returns_list():\n        result = paginate([1, 2, 3, 4], 2, 2)\n>       assert result == [3, 4]\nE       assert [] == [3, 4]\nE         \nE         Right contains 2 more items, first extra item: 3\nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:51: AssertionError"
+          },
+          {
+            "file": "tests/test_contract.py",
+            "name": "test_existing_contract",
+            "classname": "tests.test_contract",
+            "line": 4,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_empty_input_returns_empty",
+            "classname": "tests.test_pagination_one_based",
+            "line": 28,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_invalid_page_returns_empty",
+            "classname": "tests.test_pagination_one_based",
+            "line": 33,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_invalid_page_size_returns_empty",
+            "classname": "tests.test_pagination_one_based",
+            "line": 38,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_one_based.py",
+            "name": "test_returns_list_type",
+            "classname": "tests.test_pagination_one_based",
+            "line": 43,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_empty_input_returns_empty_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 32,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_invalid_page_returns_empty_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 39,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_pagination_regression.py",
+            "name": "test_invalid_page_size_returns_empty_list",
+            "classname": "tests.test_pagination_regression",
+            "line": 44,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          }
+        ],
+        "cases_truncated": false
+      },
+      "fail_to_pass_tests": [
+        "tests/test_pagination_one_based.py::tests.test_pagination_one_based::test_issue_example_range_page2_size2",
+        "tests/test_pagination_one_based.py::tests.test_pagination_one_based::test_page_numbers_are_one_based",
+        "tests/test_pagination_one_based.py::tests.test_pagination_one_based::test_last_page_partial",
+        "tests/test_pagination_one_based.py::tests.test_pagination_one_based::test_page_beyond_last_page_returns_empty",
+        "tests/test_pagination_regression.py::tests.test_pagination_regression::test_issue_example_range_page2_size2_returns_list",
+        "tests/test_pagination_regression.py::tests.test_pagination_regression::test_page_numbers_are_one_based",
+        "tests/test_pagination_regression.py::tests.test_pagination_regression::test_last_page_partial_returns_list",
+        "tests/test_pagination_regression.py::tests.test_pagination_regression::test_page_beyond_last_page_returns_empty_list",
+        "tests/test_pagination_regression.py::tests.test_pagination_regression::test_list_input_returns_list"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "attempt": 2,
+      "diff_digest": "5105bc80d2750726fa5ded8dfcbd7702ac6baa7c671402a8b1ccc43716932edf"
+    }
+  ]
+}

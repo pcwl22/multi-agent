@@ -1,0 +1,63 @@
+--- a/pagination.py
++++ b/pagination.py
+@@ -1,5 +1,5 @@
+ def paginate(items, page, page_size):
+     if page < 1 or page_size < 1:
+         return []
+-    start = page * page_size
++    start = (page - 1) * page_size
+     return items[start : start + page_size]
+--- a/tests/test_pagination_regression.py
++++ b/tests/test_pagination_regression.py
+@@ -0,0 +1,51 @@
++from pagination import paginate
++
++
++def test_page_two_size_two_is_one_based():
++    # Literal issue example: range(1, 8), page 2, size 2 -> [3, 4].
++    assert list(paginate(range(1, 8), 2, 2)) == [3, 4]
++
++
++def test_first_page_is_one_based():
++    assert list(paginate(range(1, 8), 1, 2)) == [1, 2]
++
++
++def test_last_full_page():
++    assert list(paginate(range(1, 8), 3, 2)) == [5, 6]
++
++
++def test_partial_last_page():
++    assert list(paginate(range(1, 8), 4, 2)) == [7]
++
++
++def test_page_beyond_last_page_returns_empty():
++    assert list(paginate(range(1, 8), 5, 2)) == []
++    assert list(paginate(range(1, 8), 100, 2)) == []
++
++
++def test_empty_input_returns_empty():
++    assert paginate([], 1, 2) == []
++    assert paginate([], 2, 2) == []
++
++
++def test_invalid_page_returns_empty():
++    assert paginate([1, 2, 3], 0, 2) == []
++    assert paginate([1, 2, 3], -1, 2) == []
++
++
++def test_invalid_page_size_returns_empty():
++    assert paginate([1, 2, 3], 1, 0) == []
++    assert paginate([1, 2, 3], 1, -2) == []
++
++
++def test_list_input_returns_list():
++    result = paginate([1, 2, 3, 4, 5, 6, 7], 2, 2)
++    assert isinstance(result, list)
++    assert result == [3, 4]
++
++
++def test_range_input_preserves_slice_type():
++    # Slicing a range yields a range; the function must not coerce types.
++    result = paginate(range(1, 8), 2, 2)
++    assert isinstance(result, range)
++    assert list(result) == [3, 4]

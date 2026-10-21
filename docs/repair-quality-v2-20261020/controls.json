@@ -1,0 +1,247 @@
+{
+  "source_sha256": "985150a11f868c587687b1c64c42d72fa7383c148bad7aff49259d3ee6fb937c",
+  "image": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d",
+  "all_eligible": true,
+  "cases": [
+    {
+      "id": "jsonpointer-large-index",
+      "eligible": true,
+      "baseline_suite": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "baseline_holdout": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_suite": {
+        "status": "passed",
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_holdout": {
+        "status": "passed",
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    {
+      "id": "itsdangerous-date-overflow",
+      "eligible": true,
+      "baseline_suite": {
+        "status": "failed",
+        "passed": 296,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "baseline_holdout": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_suite": {
+        "status": "passed",
+        "passed": 297,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_holdout": {
+        "status": "passed",
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    {
+      "id": "dotenv-empty-comment",
+      "eligible": true,
+      "baseline_suite": {
+        "status": "passed",
+        "passed": 238,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "baseline_holdout": {
+        "status": "failed",
+        "passed": 6,
+        "failed": 14,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_suite": {
+        "status": "passed",
+        "passed": 238,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 1,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_holdout": {
+        "status": "passed",
+        "passed": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    {
+      "id": "slugify-uppercase-translations",
+      "eligible": true,
+      "baseline_suite": {
+        "status": "passed",
+        "passed": 92,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "baseline_holdout": {
+        "status": "failed",
+        "passed": 2,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_suite": {
+        "status": "passed",
+        "passed": 92,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_holdout": {
+        "status": "passed",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    {
+      "id": "jsonpointer-subclass-join",
+      "eligible": true,
+      "baseline_suite": {
+        "status": "passed",
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "baseline_holdout": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 7,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_suite": {
+        "status": "passed",
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_holdout": {
+        "status": "passed",
+        "passed": 8,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    },
+    {
+      "id": "jsonpointer-assignment-errors",
+      "eligible": true,
+      "baseline_suite": {
+        "status": "passed",
+        "passed": 23,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "baseline_holdout": {
+        "status": "failed",
+        "passed": 1,
+        "failed": 11,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_suite": {
+        "status": "passed",
+        "passed": 23,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      },
+      "reference_holdout": {
+        "status": "passed",
+        "passed": 12,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "evidence": "docker",
+        "image_id": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d"
+      }
+    }
+  ]
+}

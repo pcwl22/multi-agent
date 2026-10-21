@@ -1,0 +1,126 @@
+{
+  "patches": [
+    {
+      "rationale": "The bug: `dict(reservations)` collapses repeated SKU entries, keeping only the last quantity, so `[('A',2),('A',3)]` reserves 3 instead of 5. Fix by summing all reservation quantities per SKU. Clamp at zero via max(0, ...). Unknown SKUs are naturally ignored since we only iterate stock items. Inputs are preserved (no mutation of stock or reservations). Add a new regression test file covering repeated SKUs, clamping, unknown SKUs, input preservation, and exact types.",
+      "edits": [
+        {
+          "path": "inventory.py",
+          "old": "def available_units(stock, reservations):\n    reserved = dict(reservations)\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}",
+          "new": "def available_units(stock, reservations):\n    reserved = {}\n    for sku, qty in reservations:\n        reserved[sku] = reserved.get(sku, 0) + qty\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}"
+        },
+        {
+          "path": "tests/test_available_units_regression.py",
+          "old": "",
+          "new": "from inventory import available_units\n\n\ndef test_repeated_sku_reservations_are_summed():\n    assert available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 5}\n\n\ndef test_repeated_sku_reservations_clamp_at_zero():\n    assert available_units({\"A\": 4}, [(\"A\", 2), (\"A\", 3)]) == {\"A\": 0}\n\n\ndef test_unknown_sku_reservations_are_ignored():\n    assert available_units({\"A\": 10}, [(\"B\", 5), (\"B\", 5)]) == {\"A\": 10}\n\n\ndef test_mixed_known_and_unknown_skus():\n    assert available_units(\n        {\"A\": 10, \"B\": 1}, [(\"A\", 2), (\"B\", 3), (\"A\", 3), (\"C\", 100)]\n    ) == {\"A\": 5, \"B\": 0}\n\n\ndef test_inputs_are_preserved():\n    stock = {\"A\": 10}\n    reservations = [(\"A\", 2), (\"A\", 3)]\n    stock_copy = dict(stock)\n    reservations_copy = list(reservations)\n    available_units(stock, reservations)\n    assert stock == stock_copy\n    assert reservations == reservations_copy\n\n\ndef test_result_types_are_int():\n    result = available_units({\"A\": 10}, [(\"A\", 2), (\"A\", 3)])\n    assert isinstance(result, dict)\n    assert all(isinstance(k, str) and isinstance(v, int) for k, v in result.items())\n    assert result == {\"A\": 5}\n\n\ndef test_empty_inputs():\n    assert available_units({}, []) == {}\n"
+        }
+      ],
+      "contract_tests": [],
+      "changed_files": [
+        "inventory.py",
+        "tests/test_available_units_regression.py"
+      ],
+      "applied": true,
+      "candidate_id": "6e9ba929-ba8e-4ade-a600-badf97771d14",
+      "candidate_number": 1
+    }
+  ],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.09s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.9881293999969785,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_repeated_sku_reservations_are_summed",
+          "classname": "tests.test_available_units_regression",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_repeated_sku_reservations_clamp_at_zero",
+          "classname": "tests.test_available_units_regression",
+          "line": 8,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_unknown_sku_reservations_are_ignored",
+          "classname": "tests.test_available_units_regression",
+          "line": 12,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_mixed_known_and_unknown_skus",
+          "classname": "tests.test_available_units_regression",
+          "line": 16,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_inputs_are_preserved",
+          "classname": "tests.test_available_units_regression",
+          "line": 22,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_result_types_are_int",
+          "classname": "tests.test_available_units_regression",
+          "line": 32,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_available_units_regression.py",
+          "name": "test_empty_inputs",
+          "classname": "tests.test_available_units_regression",
+          "line": 39,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_contract.py",
+          "name": "test_existing_contract",
+          "classname": "tests.test_contract",
+          "line": 4,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "73b77dbf52877fddb6d5ce349ff68c35be0937ea09432247dc96064e73a47bfc",
+      "candidate_id": "6e9ba929-ba8e-4ade-a600-badf97771d14",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [],
+  "patch_feedback": [],
+  "repair_feedback": [],
+  "regression_results": []
+}

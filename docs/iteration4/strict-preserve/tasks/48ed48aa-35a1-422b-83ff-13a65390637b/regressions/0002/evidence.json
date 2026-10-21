@@ -1,0 +1,94 @@
+{
+  "status": "demonstrated",
+  "generated_tests": [
+    "tests/test_slugify_unicode.py"
+  ],
+  "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-preserve-data\\tasks\\48ed48aa-35a1-422b-83ff-13a65390637b\\regression\\attempt-2-ca3c26b4-3afe-4da6-a0c5-80cd308421a7",
+  "baseline_result": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": ".FF....                                                                  [100%]\n=================================== FAILURES ===================================\n_________________________ test_literal_accented_phrase _________________________\n\n    def test_literal_accented_phrase():\n        result = slugify(\"Café déjà vu\")\n>       assert result == \"cafe-deja-vu\"\nE       AssertionError: assert 'caf-d-j-vu' == 'cafe-deja-vu'\nE         \nE         - cafe-deja-vu\nE         ?    -  ^ -\nE         + caf-d-j-vu\nE         ?      ^\n\ntests/test_slugify_unicode.py:6: AssertionError\n_____________________ test_decomposed_matches_precomposed ______________________\n\n    def test_decomposed_matches_precomposed():\n        decomposed = \"cafe\" + \"\\u0301\"\n>       assert slugify(decomposed) == slugify(\"café\")\nE       AssertionError: assert 'cafe' == 'caf'\nE         \nE         - caf\nE         + cafe\nE         ?    +\n\ntests/test_slugify_unicode.py:12: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_slugify_unicode.py::test_literal_accented_phrase - Assertio...\nFAILED tests/test_slugify_unicode.py::test_decomposed_matches_precomposed - A...\n2 failed, 5 passed in 0.23s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 5,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 1.0235351000010269,
+    "evidence": "docker",
+    "cases": [
+      {
+        "file": "tests/test_slugify_unicode.py",
+        "name": "test_literal_accented_phrase",
+        "classname": "tests.test_slugify_unicode",
+        "line": 4,
+        "status": "failed",
+        "message": "AssertionError: assert 'caf-d-j-vu' == 'cafe-deja-vu'\n  \n  - cafe-deja-vu\n  ?    -  ^ -\n  + caf-d-j-vu\n  ?      ^",
+        "details": "def test_literal_accented_phrase():\n        result = slugify(\"Café déjà vu\")\n>       assert result == \"cafe-deja-vu\"\nE       AssertionError: assert 'caf-d-j-vu' == 'cafe-deja-vu'\nE         \nE         - cafe-deja-vu\nE         ?    -  ^ -\nE         + caf-d-j-vu\nE         ?      ^\n\ntests/test_slugify_unicode.py:6: AssertionError"
+      },
+      {
+        "file": "tests/test_slugify_unicode.py",
+        "name": "test_decomposed_matches_precomposed",
+        "classname": "tests.test_slugify_unicode",
+        "line": 10,
+        "status": "failed",
+        "message": "AssertionError: assert 'cafe' == 'caf'\n  \n  - caf\n  + cafe\n  ?    +",
+        "details": "def test_decomposed_matches_precomposed():\n        decomposed = \"cafe\" + \"\\u0301\"\n>       assert slugify(decomposed) == slugify(\"café\")\nE       AssertionError: assert 'cafe' == 'caf'\nE         \nE         - caf\nE         + cafe\nE         ?    +\n\ntests/test_slugify_unicode.py:12: AssertionError"
+      },
+      {
+        "file": "tests/test_contract.py",
+        "name": "test_existing_contract",
+        "classname": "tests.test_contract",
+        "line": 4,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_slugify_unicode.py",
+        "name": "test_output_is_lowercase_ascii_only",
+        "classname": "tests.test_slugify_unicode",
+        "line": 16,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_slugify_unicode.py",
+        "name": "test_ascii_word_separation_preserved",
+        "classname": "tests.test_slugify_unicode",
+        "line": 22,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_slugify_unicode.py",
+        "name": "test_leading_and_trailing_dashes_trimmed",
+        "classname": "tests.test_slugify_unicode",
+        "line": 28,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_slugify_unicode.py",
+        "name": "test_plain_ascii_behavior_unchanged",
+        "classname": "tests.test_slugify_unicode",
+        "line": 34,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      }
+    ],
+    "cases_truncated": false
+  },
+  "fail_to_pass_tests": [
+    "tests/test_slugify_unicode.py::tests.test_slugify_unicode::test_literal_accented_phrase",
+    "tests/test_slugify_unicode.py::tests.test_slugify_unicode::test_decomposed_matches_precomposed"
+  ],
+  "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+  "attempt": 2,
+  "diff_digest": "331f3e76dc79d8050dd6db70b4d757fa8e2ff1d7a598c0df3dee4644c49580df"
+}

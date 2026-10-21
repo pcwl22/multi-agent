@@ -1,0 +1,58 @@
+"""Freeze small native connectivity probes only after full wheel verification."""
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import shutil
+import subprocess
+import xml.etree.ElementTree as ET
+
+Q = Path('E:/multi-agent/.repopilot/provider-reliability-20261020')
+W = Path('C:/Users/14659/.codex/worktrees/ci-fixtures-model-scope/multi-agent')
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+def read(p):
+    return json.loads(p.read_text(encoding='utf-8'))
+assert not (Q / 'preregistration.json').exists() and not (Q / 'data').exists()
+assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=W)
+runtime = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=W, text=True).strip()
+wheel = read(Q / 'wheel-artifact.json')
+assert sha(Path(wheel['path'])) == wheel['sha256']
+for row in wheel['files']:
+    assert sha(W / row['path']) == sha(Path('E:/multi-agent/.repopilot/ci-isolation-venv/Lib/site-packages') / row['path']) == row['sha256']
+suites = list(ET.parse(Q / 'wheel-full-final.xml').getroot().iter('testsuite'))
+tests = {key: sum(int(s.get(key, 0)) for s in suites) for key in ['tests', 'failures', 'errors', 'skipped']}
+tests['passed'] = tests['tests'] - tests['failures'] - tests['errors'] - tests['skipped']
+assert tests == {'tests': 343, 'failures': 0, 'errors': 0, 'skipped': 2, 'passed': 341}, tests
+fault_suites = list(ET.parse(Q / 'fault-controls-final.xml').getroot().iter('testsuite'))
+assert sum(int(s.get('tests', 0)) for s in fault_suites) == 37
+assert sum(int(s.get('errors', 0)) + int(s.get('failures', 0)) for s in fault_suites) == 0
+payload = {'issue_description': 'Explicit connectivity diagnostic only, not a repository repair. Return a short valid Plan for checking a demo expired token that should produce HTTP 401. Use auth.py as the suspected module and Docker as the validation strategy. Do not execute tools or claim any tests passed.'}
+plan = {'version': 1, 'registered_at': datetime.now(timezone.utc).isoformat(), 'runtime_commit': runtime,
+    'model_base_url': 'https://muyuan.do/v1', 'model_name': 'deepseek-v4.1-flash',
+    'planned_cells': [{'id': f'probe-{n+1:02}', 'streaming': bool(n % 2)} for n in range(12)],
+    'purpose': 'Native small-payload connectivity/usage observation, not code-repair capability or full evaluation',
+    'schema': 'Plan', 'payload': payload, 'physical_request_cap': 12, 'per_cell_request_cap': 1,
+    'budget_limits': {'wall_seconds': 150, 'model_requests': 1, 'observed_tokens': 20000,
+        'sandbox_runs': 1, 'artifact_bytes': 268435456, 'result_bytes': 8388608},
+    'profile': {'temperature': 0, 'model_timeout': 120, 'model_min_interval': 7.5, 'model_stream_usage': True,
+        'evaluation_provider_failure_threshold': 3, 'workers': 1, 'sdk_implicit_retries': 0},
+    'failure_policy': 'No reruns or replacement cells. One durable reservation per cell. Unknown usage stops that cell. Open latched circuit leaves remaining cells not_run in the original 12-cell denominator.',
+    'app_files': wheel['files'], 'wheel_sha256': wheel['sha256'], 'full_suite': tests,
+    'junit_sha256': sha(Q / 'wheel-full-final.xml'), 'controlled_faults': 37,
+    'fault_junit_sha256': sha(Q / 'fault-controls-final.xml'), 'existing_tests_helpers_unchanged': 83,
+    'prior_results': [{'path': str(Path('E:/multi-agent/docs') / name / 'report.json'),
+        'sha256': sha(Path('E:/multi-agent/docs') / name / 'report.json')} for name in
+        ['historical-evaluation-20261019', 'repair-quality-20261020', 'repair-quality-v2-20261020']],
+    'limits': ['Twelve small requests are a smoke test, not proof of long-context or long-term reliability.',
+        'No repository/code repair, target execution, task approval or GitHub write in this probe.',
+        'Provider alias is not underlying-weight or billing proof. Unknown tokens remain unknown.',
+        'Past 13 connection-failure root causes are not established by a later successful probe.',
+        'Controlled SDK/HTTP faults are separate synthetic evidence and never counted as live model calls.']}
+raw = (json.dumps(plan, ensure_ascii=False, indent=2) + '\n').encode()
+(Q / 'preregistration.json').write_bytes(raw)
+(Q / 'preregistration.sha256').write_text(hashlib.sha256(raw).hexdigest() + '\n', encoding='utf-8')
+D = W / 'docs/provider-reliability-20261020'
+shutil.copyfile(Q / 'preregistration.json', D / 'preregistration.json')
+print(json.dumps({'registered': True, 'runtime_commit': runtime, 'physical_request_cap': 12,
+    'preregistration_sha256': hashlib.sha256(raw).hexdigest(), 'verified_tests': tests}))

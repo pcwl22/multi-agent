@@ -1,0 +1,793 @@
+{
+  "registered_at": "2026-10-21T01:18:14.098093+00:00",
+  "runtime_commit": "affc36c1eade4a8ac16c2299879ad7b130abd4b3",
+  "runtime_sha256": "4799a7f1d4bb285a5ccff3e8075440baed40ef86c1f602f8559fef6988ddb430",
+  "app_files": [
+    {
+      "path": "app/__init__.py",
+      "sha256": "1e51dc2d7b84f85c537e1bcd05f3c548404380e6a35ac7b6b52929ceac2b2b57"
+    },
+    {
+      "path": "app/agents/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/agents/api_context.py",
+      "sha256": "cfb7b3a468bfd16bbf2f7d38931e63b662b170a23b77362390c1b5a635026e22"
+    },
+    {
+      "path": "app/agents/contracts.py",
+      "sha256": "2ac5f10e06cd07166b5873ec6cd2c2b61d895e70ce6996413dc138daf288adc0"
+    },
+    {
+      "path": "app/agents/demo_fixtures.py",
+      "sha256": "43c7489067a36501037ec3333eb589212c051af6e9020f0aca131057bc42c451"
+    },
+    {
+      "path": "app/agents/failures.py",
+      "sha256": "f2de31a786ea30516087662700c63fbdb60a33c3ae416f18e0ec5616251fd795"
+    },
+    {
+      "path": "app/agents/feedback.py",
+      "sha256": "5135603fe4e9dae3b35a4f20982ca32fac48241e38558957c1b23015207b5dd2"
+    },
+    {
+      "path": "app/agents/instructions.py",
+      "sha256": "2bbe616ebcf27591385e16e98a3d1d602530e62e55d198c8bd686d73cf8b6041"
+    },
+    {
+      "path": "app/agents/model.py",
+      "sha256": "0cef4b9981f858e97eb68c4e14152c2628c7b59aa95ecb6fbb5ace8dbee80f9d"
+    },
+    {
+      "path": "app/agents/normalization.py",
+      "sha256": "dc17ef3d77a5c41e5c98c78fb95cae9d15480e4c97cc7b375a9e384f4d15371d"
+    },
+    {
+      "path": "app/agents/output_diagnostics.py",
+      "sha256": "28499f3eb816ed42c25387bd31a56edc9c1fcdfd7b324192fb23d7bb421c567e"
+    },
+    {
+      "path": "app/agents/pacing.py",
+      "sha256": "2d873f20a7003bb7a3acb31a6c863e0b9c455fdc1fbf7037d24e7b020303b5b0"
+    },
+    {
+      "path": "app/agents/quality.py",
+      "sha256": "526bcc27c1a11656afbb34195e7bda300b4f72e1fc6e47cd0b7a310b29642519"
+    },
+    {
+      "path": "app/agents/review_evidence.py",
+      "sha256": "352640ed18d5c56ebe64cd7938a0fae75da8791f8ab9ed1bdbdb57986dcf8d4f"
+    },
+    {
+      "path": "app/agents/scope.py",
+      "sha256": "87a9ae23a67ac52836cd4540dda1a94045404e3fc824c906f3be9395712bc3db"
+    },
+    {
+      "path": "app/agents/test_context.py",
+      "sha256": "9f5eb245d68d70fceaeac1a7246cc8a5362128ef131e1444e5cfa6efe3591bde"
+    },
+    {
+      "path": "app/agents/transport.py",
+      "sha256": "463f4ac25aed6bcef90fd0817d1cf79515beda407e5115fdf553fa37987dd314"
+    },
+    {
+      "path": "app/api/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/api/main.py",
+      "sha256": "a3821bccaa8c424aaf141d9fb5c3ee479c0b9c3281d03b791ace552aa4cd71fb"
+    },
+    {
+      "path": "app/cli.py",
+      "sha256": "d883915fed427db617732f81569a4db87e913a13c814d291526a7de90c78fea9"
+    },
+    {
+      "path": "app/config/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/config/settings.py",
+      "sha256": "6ba05f581743bb32a15935d7cd23c9371aece4c70a5b8efb634d9b31dfcfcb55"
+    },
+    {
+      "path": "app/evaluation/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/evaluation/acceptance/test_auth_acceptance.py",
+      "sha256": "d28fd4de720ea84988f18f120636de76f6466b5c168203f6170cbaf5c4468ceb"
+    },
+    {
+      "path": "app/evaluation/acceptance/test_discount_acceptance.py",
+      "sha256": "7be9fb200c68768834edc750288c080608d549bccd597bb837c47756053a5339"
+    },
+    {
+      "path": "app/evaluation/acceptance/test_pagination_acceptance.py",
+      "sha256": "c41992b39a7625c68a2a6f3dfc225482f03ec6540fefc2d769764f1c0f20a73a"
+    },
+    {
+      "path": "app/evaluation/connectivity.py",
+      "sha256": "08e56da4f667a5ecb708b18e336bb6787cbeca63fe2e777808673e3636c3cc95"
+    },
+    {
+      "path": "app/evaluation/dataset.json",
+      "sha256": "8470dd1023e1bb2e4f4de13ee57d2576a2a564a86d8f3dadf5d5c847b90b051e"
+    },
+    {
+      "path": "app/evaluation/expanded/README.md",
+      "sha256": "a8bd1af6ab96eb74d4e3d7cfe7bafa03e44770666be0314ebba6d23fb7073843"
+    },
+    {
+      "path": "app/evaluation/expanded/__init__.py",
+      "sha256": "eb0148737b2cbfaa829090d58d45ed04714644a7da74f912d72ec600d2355625"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_accent_slug.py",
+      "sha256": "5e50fb1536c469b0fc2e66b50971721e2072c0b6370db4656f5b32f53884266e"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_checkout_two_files.py",
+      "sha256": "e52f74cd006971dc6555199d43a2513efb47008c6e9ea8c6d434aba69e5ec024"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_csv_roundtrip.py",
+      "sha256": "df63c61310f8a4e13a1907f9f3eda53bfbc30e2032b86dd00a38d9e17a423b8b"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_expired_status.py",
+      "sha256": "8545b32e4e0cfc63c40282600be013b713cf327987a0fe3b975eb685797bd762"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_offset_to_utc.py",
+      "sha256": "7a1923463b46148ad1ac94992a71e2d1e7972efafb39f20e3da7794affc0b790"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_one_based_page.py",
+      "sha256": "81945ac38348eb15eb3d318bcd0f4a55dfa5577e62eac10c1cb0ccf5e4a9accb"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_pagination_sequence_acceptance.py",
+      "sha256": "793d1951df8c5d48f67677f4211ff459db58f1ac7d17430fe3a5029111c0c676"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_percent_discount.py",
+      "sha256": "f729f55def2b1794225e80e7d83b0b264a1d279046143f4463749e90ec77e82a"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_recursive_config.py",
+      "sha256": "5d61ceb5fc01100e365bdb8c323249cfbecd54afbb5f483c041e7afc8a969181"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_reservation_sum.py",
+      "sha256": "0803d222b73c055df67fd931de646a69239523d29e9fef90f6e49941c40acbff"
+    },
+    {
+      "path": "app/evaluation/expanded/acceptance/test_ttl_equality.py",
+      "sha256": "12036fc4defe1794d8d4de1473e31f0a6a8f886594ab6f2b89f68474106f83d0"
+    },
+    {
+      "path": "app/evaluation/expanded/dataset.json",
+      "sha256": "2738892ac890891282a48d419f397a9eda0c93553b4daca9c73e2595f52263c9"
+    },
+    {
+      "path": "app/evaluation/expanded/dataset.strict.json",
+      "sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da"
+    },
+    {
+      "path": "app/evaluation/expanded/references.json",
+      "sha256": "ce6977c89ed616d3bfb845dac723c79b208f7852ffed6d7675e46385447f064a"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/slugs.py",
+      "sha256": "415f7df4aa2192774b883282f8678cb8798ea0a47ae469192e69cf67b1597240"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/accent-slug/tests/test_contract.py",
+      "sha256": "ffaecbe031e2ca0c41ec925639733aa5a21ebcfebc96c1444472bd490d8325b6"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/checkout.py",
+      "sha256": "defada81679ee393581280da32d0d7d31f1bdb8a21d83730643df184deddb072"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/money.py",
+      "sha256": "0ac2b5764f82a7db2bd13c7517f9110f37521bfb086d56294b7ee3863f0d5a13"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/checkout-two-files/tests/test_contract.py",
+      "sha256": "41495a7950bfe22b7ddc6d297338d90e63b85128b56fb6bed697e4f1c35335a3"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/exporter.py",
+      "sha256": "04c1b1c11bf0b922e66a5ce796baabb12be7ca8c99e01c18f50adb70aebf1905"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/csv-roundtrip/tests/test_contract.py",
+      "sha256": "294b53192e67ea04369f2cedd2641f1200113c94607aa0084d6b17354c52ff93"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/auth.py",
+      "sha256": "bb6f006a89c40254c4142d4ca3ae08e1e0cc79f3c925d05f798a440c990d45fd"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/expired-status/tests/test_contract.py",
+      "sha256": "e7f3e59742e01974c718730bba285228c02c73e6de4cef2a8ac8044ca30fa824"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/events.py",
+      "sha256": "f8d566a40203041909622ebb308a281972d1ef61f71714ec52be4dfd2bc76ed8"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/offset-to-utc/tests/test_contract.py",
+      "sha256": "2c02c345bdbe0bcce55aec320219559c03ced208b1406666ed3fbc711379af6d"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/pagination.py",
+      "sha256": "03cbe00df8241c68ceab601fa12256c051b68922fded4e4d9a233adcb3cbfe8f"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/one-based-page/tests/test_contract.py",
+      "sha256": "dd502c4f8354dd9bd8066e2988899c660201b5bc533784087bbcfa119dc7d4f3"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/pricing.py",
+      "sha256": "3bb72062a838a16a9c0277e8d26f5740a5ef6a83c14e623f39edf9d0535792c4"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/percent-discount/tests/test_contract.py",
+      "sha256": "f33ad1562355afcb3a406dda0dbaa8c4ff17f180df46420db307558d6c22ffa8"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/config.py",
+      "sha256": "6d316f33c380dfc1449209a972e1e842d6498862ce385d0168b9a2b58a0187ab"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/recursive-config/tests/test_contract.py",
+      "sha256": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/inventory.py",
+      "sha256": "65d49042236c9e256663732056066ea302476fb89a4f6bbe1e95b7754732848b"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/reservation-sum/tests/test_contract.py",
+      "sha256": "2812be59506e03ae09050eb3bcc486c4fa43a7650fbd86c6f203bdde61a6cd41"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/README.md",
+      "sha256": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/cache.py",
+      "sha256": "8f7a3adaea52a6bc0bd10ac13ae648bcbb1cca5fc3c51956c6c36a7cc7fbb73c"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/legacy_examples.py",
+      "sha256": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025"
+    },
+    {
+      "path": "app/evaluation/expanded/repos/ttl-equality/tests/test_contract.py",
+      "sha256": "cdb9dfe18c755cd72b92c4789ca7967e8c5ddafaafcfa443087e66eea344d5ec"
+    },
+    {
+      "path": "app/evaluation/feedback.py",
+      "sha256": "7f244fbc91fc6612175e5d7c58044e50cb6e17cf2cdb4c2af8f1d33c6f0dbfb9"
+    },
+    {
+      "path": "app/evaluation/historical.py",
+      "sha256": "861a08b8c6da443dd1ffdad2e5ceb7448e865be6fb3018d869b044f9a3f410ea"
+    },
+    {
+      "path": "app/evaluation/historical_cases/__init__.py",
+      "sha256": "30ffc57ae8bbed585c59de9f477ee426bf00937885a55e38d541c11762e37e66"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_dotenv_empty_comment.py.txt",
+      "sha256": "7dfe00621f6bb7f6fa8ccda77158bcdc93e3faead020a5fb1177f800a07daa05"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_itsdangerous_overflow.py.txt",
+      "sha256": "e6b93881c5f63a737702767e65d13f08d4269da365d7559bcb70edb1e5cd820d"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_jsonpointer_large.py.txt",
+      "sha256": "3ec0d2b162d9f464cf9ea715b66e0ad04e6e646bfa0dade71e4da7b2b30971e2"
+    },
+    {
+      "path": "app/evaluation/historical_cases/acceptance/test_slugify_uppercase.py.txt",
+      "sha256": "5940adefa85161dbb4eadaf9e7ad9b28a5698e960b306f88803ccd26ff4f15c3"
+    },
+    {
+      "path": "app/evaluation/historical_cases/spec.json",
+      "sha256": "2f2731e5e3d55c1ddb1a4bca6b1d5a23106bbae462c43b1afb263aee01bcb696"
+    },
+    {
+      "path": "app/evaluation/native_collection.py",
+      "sha256": "bd0122c614a1addc5ca8f8ee0d3aa2a10de0369f8bdceece117499f12adb6c71"
+    },
+    {
+      "path": "app/evaluation/runner.py",
+      "sha256": "be4ca823deaf08fb084554844b623078a8cb4060a60159fbec1aec7e80decbd6"
+    },
+    {
+      "path": "app/graph/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/graph/workflow.py",
+      "sha256": "0a4c35772641dd73ab183eb6b7f2713d5ab126fd1a07128da200c94e6a504329"
+    },
+    {
+      "path": "app/mcp_server/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/mcp_server/server.py",
+      "sha256": "f67f7022e502fc92e955391e45f90d783247e9fc7343f41cba82342383265c67"
+    },
+    {
+      "path": "app/models/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/models/budgets.py",
+      "sha256": "ee3445f6614573dfc01674c1b3b780ac9249831c7573e966cb2361f65f5cf635"
+    },
+    {
+      "path": "app/models/reliability.py",
+      "sha256": "a88edbefe1a4c08635317950e3d71be6a2c567cde5ba5af8949bae47e4da4a5e"
+    },
+    {
+      "path": "app/models/schemas.py",
+      "sha256": "47faef7b156569d1f11903373fa5003f16b32b7e2cb828b842d690385520760e"
+    },
+    {
+      "path": "app/sandbox/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/sandbox/output.py",
+      "sha256": "264117e93581601330ae8ad1029042643c1297006f4e7740bc426467abc382da"
+    },
+    {
+      "path": "app/sandbox/reports.py",
+      "sha256": "05c8e50d9152e03b7c2a062efd50d31f2b66e503af1f2058985dd78b303d9f4b"
+    },
+    {
+      "path": "app/sandbox/runner.py",
+      "sha256": "86b6ad0ca6ed00532c84f6192d0feb86e8514e5c6c81db01a9450d044add16cd"
+    },
+    {
+      "path": "app/services/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/services/attempts.py",
+      "sha256": "0955b7401f14b6fd27514f524c280d9d1c36bbfd7cba5a5df5785a382665cd82"
+    },
+    {
+      "path": "app/services/budget_audit.py",
+      "sha256": "5eaea062764bdafc91344274bbc42474c01b21b122ab90f3f461d5807c147054"
+    },
+    {
+      "path": "app/services/budgets.py",
+      "sha256": "99dcc0def6ccfacf4101d0ad4990fb351eddf9b3b23ff4014522460c51185441"
+    },
+    {
+      "path": "app/services/github.py",
+      "sha256": "512d01ad670091152e5aa03e13d423bf79a4d87d6834dd4cc16542c617c0110d"
+    },
+    {
+      "path": "app/services/provider_circuit.py",
+      "sha256": "6f9a4afc85cdf42f6e68444cde7be250a54efd14c864f4dcb86759b6f28a1112"
+    },
+    {
+      "path": "app/services/publication.py",
+      "sha256": "f35379ebaa8f9702f8efb4a7b7f8ccd58f74f5dc50a4dcdbad2f61be6313e56c"
+    },
+    {
+      "path": "app/services/regressions.py",
+      "sha256": "7312e6b8cf103a297439305236a82125d062aab58ed0f551878d32f5c17ff9e6"
+    },
+    {
+      "path": "app/services/tasks.py",
+      "sha256": "8d53027e30e2ba9fc5785c93d42870c15e36cc85643af740a969b85b56a7bec0"
+    },
+    {
+      "path": "app/services/transactions.py",
+      "sha256": "8dac34019b9964993282678f1d3bf54c60d7e7e0506fc93b682fa9a339a1a408"
+    },
+    {
+      "path": "app/tools/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/tools/repository.py",
+      "sha256": "8858adc36d144e36a517a5322fa1f91f44123d434ce2a90e3c26810cd15388a0"
+    }
+  ],
+  "short_path_preflight_sha256": "e3ec0872e8e9faef0a86c3ca057ca649ae3a435700c78de3dd8cd3280f28c2c9",
+  "verified_full_junit_sha256": "be9f86cb1e0d966523103f6a1afd0884c1ae9969ee001ec41d96262b36aa9b86",
+  "worker_sha256": "80deaf02191bdd915b006b9c6c8b1c226f563e8840673fc77e90e8a4671b6fd9",
+  "model_max_output_tokens": 8192,
+  "task_storage": "E:/Agent/nc21r2",
+  "controller_sha256": "4e39211e37d3cc2dec2e148d43c745843a418a22faff677af34c3d25d6628bef",
+  "corpus": "E:\\multi-agent\\.repopilot\\connectivity-collection-20261020\\corpus",
+  "lock_sha256": "e4beb9618cca2911356187266b726b8fe4eb618143c46ffa626142b238b4b348",
+  "image": "sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d",
+  "model_name": "deepseek-4.1-flash-background",
+  "model_base_url": "https://gw.lunaroute.com/v1",
+  "budget_limits": {
+    "wall_seconds": 360,
+    "model_requests": 8,
+    "observed_tokens": 100000,
+    "sandbox_runs": 10,
+    "artifact_bytes": 268435456,
+    "result_bytes": 8388608
+  },
+  "pilot": [
+    {
+      "id": "01-jsonpointer-large-index-multi_full-legacy",
+      "phase": "pilot",
+      "case_id": "jsonpointer-large-index",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "02-jsonpointer-large-index-multi_full-quality",
+      "phase": "pilot",
+      "case_id": "jsonpointer-large-index",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "03-itsdangerous-date-overflow-multi_full-quality",
+      "phase": "pilot",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "04-itsdangerous-date-overflow-multi_full-legacy",
+      "phase": "pilot",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "legacy",
+      "mode": "multi_full"
+    }
+  ],
+  "formal": [
+    {
+      "id": "01-jsonpointer-large-index-single-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-large-index",
+      "variant": "legacy",
+      "mode": "single"
+    },
+    {
+      "id": "02-jsonpointer-large-index-multi_no_review-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-large-index",
+      "variant": "legacy",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "03-jsonpointer-large-index-multi_full-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-large-index",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "04-jsonpointer-large-index-multi_no_review-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-large-index",
+      "variant": "quality",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "05-jsonpointer-large-index-multi_full-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-large-index",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "06-jsonpointer-large-index-single-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-large-index",
+      "variant": "quality",
+      "mode": "single"
+    },
+    {
+      "id": "07-itsdangerous-date-overflow-single-quality",
+      "phase": "formal",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "quality",
+      "mode": "single"
+    },
+    {
+      "id": "08-itsdangerous-date-overflow-multi_no_review-quality",
+      "phase": "formal",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "quality",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "09-itsdangerous-date-overflow-multi_full-quality",
+      "phase": "formal",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "10-itsdangerous-date-overflow-multi_no_review-legacy",
+      "phase": "formal",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "legacy",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "11-itsdangerous-date-overflow-multi_full-legacy",
+      "phase": "formal",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "12-itsdangerous-date-overflow-single-legacy",
+      "phase": "formal",
+      "case_id": "itsdangerous-date-overflow",
+      "variant": "legacy",
+      "mode": "single"
+    },
+    {
+      "id": "13-dotenv-empty-comment-single-legacy",
+      "phase": "formal",
+      "case_id": "dotenv-empty-comment",
+      "variant": "legacy",
+      "mode": "single"
+    },
+    {
+      "id": "14-dotenv-empty-comment-multi_no_review-legacy",
+      "phase": "formal",
+      "case_id": "dotenv-empty-comment",
+      "variant": "legacy",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "15-dotenv-empty-comment-multi_full-legacy",
+      "phase": "formal",
+      "case_id": "dotenv-empty-comment",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "16-dotenv-empty-comment-multi_no_review-quality",
+      "phase": "formal",
+      "case_id": "dotenv-empty-comment",
+      "variant": "quality",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "17-dotenv-empty-comment-multi_full-quality",
+      "phase": "formal",
+      "case_id": "dotenv-empty-comment",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "18-dotenv-empty-comment-single-quality",
+      "phase": "formal",
+      "case_id": "dotenv-empty-comment",
+      "variant": "quality",
+      "mode": "single"
+    },
+    {
+      "id": "19-slugify-uppercase-translations-single-quality",
+      "phase": "formal",
+      "case_id": "slugify-uppercase-translations",
+      "variant": "quality",
+      "mode": "single"
+    },
+    {
+      "id": "20-slugify-uppercase-translations-multi_no_review-quality",
+      "phase": "formal",
+      "case_id": "slugify-uppercase-translations",
+      "variant": "quality",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "21-slugify-uppercase-translations-multi_full-quality",
+      "phase": "formal",
+      "case_id": "slugify-uppercase-translations",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "22-slugify-uppercase-translations-multi_no_review-legacy",
+      "phase": "formal",
+      "case_id": "slugify-uppercase-translations",
+      "variant": "legacy",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "23-slugify-uppercase-translations-multi_full-legacy",
+      "phase": "formal",
+      "case_id": "slugify-uppercase-translations",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "24-slugify-uppercase-translations-single-legacy",
+      "phase": "formal",
+      "case_id": "slugify-uppercase-translations",
+      "variant": "legacy",
+      "mode": "single"
+    },
+    {
+      "id": "25-jsonpointer-subclass-join-single-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-subclass-join",
+      "variant": "legacy",
+      "mode": "single"
+    },
+    {
+      "id": "26-jsonpointer-subclass-join-multi_no_review-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-subclass-join",
+      "variant": "legacy",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "27-jsonpointer-subclass-join-multi_full-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-subclass-join",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "28-jsonpointer-subclass-join-multi_no_review-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-subclass-join",
+      "variant": "quality",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "29-jsonpointer-subclass-join-multi_full-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-subclass-join",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "30-jsonpointer-subclass-join-single-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-subclass-join",
+      "variant": "quality",
+      "mode": "single"
+    },
+    {
+      "id": "31-jsonpointer-assignment-errors-single-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-assignment-errors",
+      "variant": "quality",
+      "mode": "single"
+    },
+    {
+      "id": "32-jsonpointer-assignment-errors-multi_no_review-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-assignment-errors",
+      "variant": "quality",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "33-jsonpointer-assignment-errors-multi_full-quality",
+      "phase": "formal",
+      "case_id": "jsonpointer-assignment-errors",
+      "variant": "quality",
+      "mode": "multi_full"
+    },
+    {
+      "id": "34-jsonpointer-assignment-errors-multi_no_review-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-assignment-errors",
+      "variant": "legacy",
+      "mode": "multi_no_review"
+    },
+    {
+      "id": "35-jsonpointer-assignment-errors-multi_full-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-assignment-errors",
+      "variant": "legacy",
+      "mode": "multi_full"
+    },
+    {
+      "id": "36-jsonpointer-assignment-errors-single-legacy",
+      "phase": "formal",
+      "case_id": "jsonpointer-assignment-errors",
+      "variant": "legacy",
+      "mode": "single"
+    }
+  ],
+  "pilot_seconds": 1800,
+  "formal_seconds": 3600,
+  "hard_cell_seconds": 660,
+  "primary_metric": "Original tests unchanged, fixed failing baseline, awaiting approval, candidate suite and hidden holdout passed, SAME added test fail-to-pass witness demonstrated for BOTH variants.",
+  "formal_admission": "All four pilot cells completed; no provider/circuit/unknown-usage/infrastructure stops; at least one strict success per variant.",
+  "stop_rules": "First provider failure/circuit, unknown or pending usage, worker failure, Docker unavailable, config/runtime/corpus change, or phase deadline stops remaining cells. No replay, retry replacement, publication, or approval.",
+  "limits": "Observed-token thresholds are not monetary caps. New gateway aliases do not prove weights. Known historical cases measure calibration, not unseen generalization. Formal phase conditional, pilot not pooled into it."
+}

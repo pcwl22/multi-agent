@@ -1,0 +1,290 @@
+[
+  {
+    "path": "E:\\multi-agent\\.repopilot\\provider-reliability-20261020\\data\\probe-01",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "d88dc820707dc7bfbaeb4d4aaa276b72a7cd4e8f0d7bf571e36f43dc9f11e671",
+      "binding_sha256": "c1382a887203cd60f2652f7ed00a778915d60854941861b46c31e886b8ad12b8",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\provider-reliability-20261020\\data\\probe-02",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "7d05e5b985a76b044e5e2222b609dfb7b18f6b0669ed875c2dd2b1214900902a",
+      "binding_sha256": "2c18968b5cbce57571a77ddcd694f29e5ce02ab5a254ae3a62c18232e02fbcf9",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 1,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unconfirmed_dispatch",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\connectivity-collection-20261020\\live-results\\fresh-nonstreaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "2e38479c6e7244827297156b0f6c7492800eca26ffdd866af63b3c859f09c89d",
+      "binding_sha256": "5bce562ea3826170870a2bf1747bb0460b9aecb148e9272d908cb832422a542e",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\venlacy-sol-20261020\\live-results\\fresh-nonstreaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "f2152d50e82d892c8a754d4cbf17ef88f50d9650682bfb13ec952ba6850a7e40",
+      "binding_sha256": "ee94e607173c7178ab0694644994b6b50600bb2145f3d8456b2061815bd06f6c",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\model-availability-20261021\\deepseek\\live-results\\fresh-nonstreaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "8278f1e9533133c577174b2b5fb72ff7711f42f0de22b6c2c3e0aff03647e43d",
+      "binding_sha256": "ac924ec4f6b6cdfb40cb6cf8e8bc549710ca4242bf54f782055463250f42c9e1",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\model-availability-20261021\\sol\\live-results\\fresh-nonstreaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "b5e40df82222ded0c752eb0f7fd00ed4c454a85f4a7f270e20afd6c9cb7d5ad2",
+      "binding_sha256": "c1a872435d5996011b0df2bc18d5e847110fe6a4df07cb5dc56d166ea0280ada",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\model-availability-20261021-r2\\deepseek\\live-results\\fresh-nonstreaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "e3f40f206c2cc13342c2f824dd74f02d26b928eebbc683378ac4e2d73a449e1d",
+      "binding_sha256": "7dd5f818b66942642cc110dbafe2a229bc16098cf9379a4bf6452f50906f51d1",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 1072,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\model-availability-20261021-r2\\deepseek\\live-results\\fresh-streaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "bf2ee31d67720addda8da1e06b8133c7a15e700199ef6e672f08b21c0cd463fa",
+      "binding_sha256": "b85c644857763793dc64aadc98625047ced52e2d5effc0d2f4de352826c25f6f",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 1064,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\model-availability-20261021-r2\\sol\\live-results\\fresh-nonstreaming",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "929d2eac888b30b50fc92807a5f32963eeeda4034b1e2d720679e0070fd54c64",
+      "binding_sha256": "a2f7fac2950c782083f990d9163f1423ab20f0fea154d45b328e9c12e9a86ec1",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "unknown",
+      "usage_unknown": true,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\new-channel-evaluation-20261021\\pilot\\01-jsonpointer-large-index-multi_full-legacy\\data\\tasks\\2701e16a-5144-4f1d-ae79-a581701fdf1d",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "7a9cab65acea24e2c3a09e47a898b26ab6dd0ad8f39409e473e42310827d7555",
+      "binding_sha256": "fb180022eeb078b3840bdc67491880b12136e8806e3a25a62c7b3c95ddac5830",
+      "model_request_reservations": 2,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 10400,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\new-channel-evaluation-20261021\\pilot\\02-jsonpointer-large-index-multi_full-quality\\data\\tasks\\48312c7c-eb0f-465f-b563-411b63375f52",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "0fc07ba7a96a3a18d21da3244602a6321042231f73713a8a3084388f456f7a69",
+      "binding_sha256": "b4da9375917604aa72d9253e726bc55eb8638d81a55d238ae48c05d9d4dde0ea",
+      "model_request_reservations": 4,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 36329,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\multi-agent\\.repopilot\\new-channel-evaluation-20261021\\pilot\\03-itsdangerous-date-overflow-multi_full-quality\\data\\tasks\\e54e137d-b35d-4b53-9e62-6e5403ac14ca",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "681fbde7bc4fdb55bae84efa5f5ed004c50d52ee7288b1e24794b5946f2083d6",
+      "binding_sha256": "4e2efd60623d5a3d0e963d222bcd4c6d012a8ca877f7a07d738d187ff668adfa",
+      "model_request_reservations": 0,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 0,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\Agent\\nc21r2\\p\\01\\tasks\\7954c8e2-cd38-461b-9f50-4386a3942740",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "df9925b0132219dbae51168b696c656746594e9d088264a020dc5c2c08fc25c3",
+      "binding_sha256": "9fb852f01e95c7bdf0527608c139d500340745337f035def01615f9874644517",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 9288,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\Agent\\nc21r2\\p\\02\\tasks\\8211afc1-9180-4091-9955-f3da4cfeaf4a",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "3a31786f7df4078b02ae12da1cc15737e6f4bb5011c334030927bb56d416a44d",
+      "binding_sha256": "96e4bdc96d6aa3bbf3b21955104823c0e3815d91b542e835a7421287be9cc2be",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 9288,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\Agent\\nc21r2\\p\\03\\tasks\\c40177a7-4131-472a-8de7-ee8ad189283d",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "486b281fea876305228db8e1d917839d406380c95a7d1968187502bac256910c",
+      "binding_sha256": "a9b70281effa74f2ef67b87b8bd5a5ea2598f077e42bd3ce48dc6c2db6f0fce8",
+      "model_request_reservations": 1,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 10193,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  },
+  {
+    "path": "E:\\Agent\\nc21r2\\p\\04\\tasks\\343fb11f-5cad-4810-8120-55bc0cefe5af",
+    "audit": {
+      "version": 1,
+      "ledger_sha256": "c682d8ea283d3fed4f6b4ed53d32d6f5a44fff4209b894f91db6216af7963fae",
+      "binding_sha256": "d041d083cf8a3e73d45bfbc2f9129c210be6254c75b3d9041bea91ea951f12c6",
+      "model_request_reservations": 2,
+      "sandbox_run_reservations": 0,
+      "pending_model_reservations": 0,
+      "pending_sandbox_reservations": 0,
+      "observed_tokens": 23396,
+      "usage_status": "complete",
+      "usage_unknown": false,
+      "billing_status": "not_reconciled",
+      "automatic_replay_allowed": false,
+      "scope": "Sealed local ledger only. Reservations do not prove dispatch or billing; observed tokens do not establish invoice totals."
+    }
+  }
+]

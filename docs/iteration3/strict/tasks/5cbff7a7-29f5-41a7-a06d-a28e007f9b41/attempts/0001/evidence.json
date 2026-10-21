@@ -1,0 +1,72 @@
+{
+  "candidate_id": "7937c9f2-8ca8-403f-925e-41f99482af86",
+  "candidate_number": 1,
+  "diff": "--- a/pricing.py\n+++ b/pricing.py\n@@ -1,2 +1,2 @@\n def discounted_total(amount, discount_percent):\n-    return round(amount * (1 - discount_percent), 2)\n+    return round(amount * (1 - discount_percent / 100), 2)\n--- a/tests/test_discounted_total_regression.py\n+++ b/tests/test_discounted_total_regression.py\n@@ -0,0 +1,40 @@\n+from pricing import discounted_total\n+\n+\n+def test_issue_literal_example():\n+    # 100 with discount 20 must equal 80\n+    result = discounted_total(100, 20)\n+    assert result == 80\n+    assert isinstance(result, float)\n+\n+\n+def test_zero_amount_preserved():\n+    result = discounted_total(0, 20)\n+    assert result == 0\n+    assert isinstance(result, float)\n+\n+\n+def test_no_discount_preserved():\n+    result = discounted_total(12.5, 0)\n+    assert result == 12.5\n+    assert isinstance(result, float)\n+\n+\n+def test_boundary_zero_percent():\n+    assert discounted_total(100, 0) == 100\n+\n+\n+def test_boundary_full_percent():\n+    assert discounted_total(100, 100) == 0\n+\n+\n+def test_percentage_semantics():\n+    # 50% off 200 is 100\n+    assert discounted_total(200, 50) == 100\n+    # 10% off 50 is 45\n+    assert discounted_total(50, 10) == 45\n+\n+\n+def test_rounding_preserved():\n+    # 33% off 10 is 6.7\n+    assert discounted_total(10, 33) == 6.7\n",
+  "diff_digest": "9988bbe10cc4f3b26c242121616d531aab47f145e2d7beb317a47515697c62c6",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 1,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "7937c9f2-8ca8-403f-925e-41f99482af86",
+      "candidate_number": 1,
+      "changed_files": [
+        "pricing.py",
+        "tests/test_discounted_total_regression.py"
+      ],
+      "contract_tests": [
+        "discounted_total(100, 20) == 80 and result is float -> tests/test_discounted_total_regression.py::test_issue_literal_example",
+        "discounted_total(0, 20) == 0 (zero amount preserved) and result is float -> tests/test_discounted_total_regression.py::test_zero_amount_preserved",
+        "discounted_total(12.5, 0) == 12.5 (no discount preserved) and result is float -> tests/test_discounted_total_regression.py::test_no_discount_preserved",
+        "discounted_total(100, 0) == 100 (lower boundary 0 percent) -> tests/test_discounted_total_regression.py::test_boundary_zero_percent",
+        "discounted_total(100, 100) == 0 (upper boundary 100 percent) -> tests/test_discounted_total_regression.py::test_boundary_full_percent",
+        "discounted_total(200, 50) == 100 and discounted_total(50, 10) == 45 (percentage semantics) -> tests/test_discounted_total_regression.py::test_percentage_semantics",
+        "discounted_total(10, 33) == 6.7 (2-decimal rounding preserved) -> tests/test_discounted_total_regression.py::test_rounding_preserved"
+      ],
+      "edits": [
+        {
+          "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)",
+          "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)",
+          "path": "pricing.py"
+        },
+        {
+          "new": "from pricing import discounted_total\n\n\ndef test_issue_literal_example():\n    # 100 with discount 20 must equal 80\n    result = discounted_total(100, 20)\n    assert result == 80\n    assert isinstance(result, float)\n\n\ndef test_zero_amount_preserved():\n    result = discounted_total(0, 20)\n    assert result == 0\n    assert isinstance(result, float)\n\n\ndef test_no_discount_preserved():\n    result = discounted_total(12.5, 0)\n    assert result == 12.5\n    assert isinstance(result, float)\n\n\ndef test_boundary_zero_percent():\n    assert discounted_total(100, 0) == 100\n\n\ndef test_boundary_full_percent():\n    assert discounted_total(100, 100) == 0\n\n\ndef test_percentage_semantics():\n    # 50% off 200 is 100\n    assert discounted_total(200, 50) == 100\n    # 10% off 50 is 45\n    assert discounted_total(50, 10) == 45\n\n\ndef test_rounding_preserved():\n    # 33% off 10 is 6.7\n    assert discounted_total(10, 33) == 6.7\n",
+          "old": "",
+          "path": "tests/test_discounted_total_regression.py"
+        }
+      ],
+      "rationale": "The bug: `discounted_total` treats `discount_percent` as a fraction (multiplying by `1 - discount_percent`) instead of a percentage. For `discounted_total(100, 20)` it returns `round(100 * (1 - 20), 2) = -1900.0`, but the contract requires `80`. The fix divides the percentage by 100 so the discount is applied as a percentage. Zero amount and no-discount behavior are preserved: `discounted_total(0, 20)` -> `round(0 * 0.8, 2) = 0` and `discounted_total(12.5, 0)` -> `round(12.5 * 1.0, 2) = 12.5`. Existing rounding to 2 decimals is preserved. New regression tests are added in a fresh file `tests/test_discounted_total_regression.py` (not in existing_test_paths) covering the literal example, boundaries 0 and 100, preservation cases, and result types."
+    }
+  ],
+  "recorded_digest": "9988bbe10cc4f3b26c242121616d531aab47f145e2d7beb317a47515697c62c6",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "7937c9f2-8ca8-403f-925e-41f99482af86",
+      "candidate_number": 1,
+      "duration_seconds": 1.106327899997268,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 8,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "........                                                                 [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n8 passed in 0.09s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pricing.py": "a75ffa764bc0e13bf700a6019d07cb69e77dea2b91ed49c2adba5da231e76d08",
+    "tests/test_contract.py": "f33ad1562355afcb3a406dda0dbaa8c4ff17f180df46420db307558d6c22ffa8",
+    "tests/test_discounted_total_regression.py": "7aacb601bf9f932361e9a6589d81e0db8fc913fb49e5bd137bc5bd3c61b53ed2"
+  }
+}

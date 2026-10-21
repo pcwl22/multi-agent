@@ -1,0 +1,208 @@
+{
+  "candidate_id": "8d3f4044-088b-499a-bd1e-610d41f6db61",
+  "candidate_number": 1,
+  "diff": "--- a/config.py\n+++ b/config.py\n@@ -1,4 +1,18 @@\n+import copy\n+from collections.abc import Mapping\n+\n+\n def merge_config(defaults, overrides):\n-    result = dict(defaults)\n-    result.update(overrides)\n+    result = {}\n+    for key, value in defaults.items():\n+        result[key] = copy.deepcopy(value)\n+    for key, value in overrides.items():\n+        if (\n+            key in result\n+            and isinstance(result[key], Mapping)\n+            and isinstance(value, Mapping)\n+        ):\n+            result[key] = merge_config(result[key], value)\n+        else:\n+            result[key] = copy.deepcopy(value)\n     return result\n--- a/tests/test_merge_config_regression.py\n+++ b/tests/test_merge_config_regression.py\n@@ -0,0 +1,106 @@\n+from config import merge_config\n+\n+\n+def test_simple_override_preserved():\n+    assert merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3}\n+    assert merge_config({}, {}) == {}\n+\n+\n+def test_nested_mapping_is_merged_recursively():\n+    base = {\"db\": {\"host\": \"localhost\", \"port\": 5432, \"opts\": {\"ssl\": False}}}\n+    overrides = {\"db\": {\"port\": 5433, \"opts\": {\"ssl\": True}}}\n+    result = merge_config(base, overrides)\n+    assert result == {\n+        \"db\": {\"host\": \"localhost\", \"port\": 5433, \"opts\": {\"ssl\": True}}\n+    }\n+\n+\n+def test_leaf_override_wins():\n+    result = merge_config({\"a\": {\"b\": 1}}, {\"a\": {\"b\": 2}})\n+    assert result[\"a\"][\"b\"] == 2\n+\n+\n+def test_keys_only_in_base_are_preserved():\n+    result = merge_config({\"a\": 1, \"b\": 2}, {\"b\": 3})\n+    assert result == {\"a\": 1, \"b\": 3}\n+\n+\n+def test_keys_only_in_overrides_are_added():\n+    result = merge_config({\"a\": 1}, {\"b\": 2})\n+    assert result == {\"a\": 1, \"b\": 2}\n+\n+\n+def test_lists_are_replaced_not_concatenated():\n+    base = {\"items\": [1, 2, 3]}\n+    overrides = {\"items\": [4, 5]}\n+    result = merge_config(base, overrides)\n+    assert result[\"items\"] == [4, 5]\n+\n+\n+def test_nested_lists_are_replaced_not_concatenated():\n+    base = {\"cfg\": {\"items\": [1, 2]}}\n+    overrides = {\"cfg\": {\"items\": [3]}}\n+    result = merge_config(base, overrides)\n+    assert result[\"cfg\"][\"items\"] == [3]\n+\n+\n+def test_base_input_is_not_mutated():\n+    base = {\"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n+    overrides = {\"db\": {\"host\": \"remote\", \"opts\": {\"ssl\": True}}, \"items\": [3]}\n+    base_snapshot = {\n+        \"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}},\n+        \"items\": [1, 2],\n+    }\n+    merge_config(base, overrides)\n+    assert base == base_snapshot\n+\n+\n+def test_overrides_input_is_not_mutated():\n+    base = {\"db\": {\"host\": \"localhost\"}}\n+    overrides = {\"db\": {\"host\": \"remote\", \"opts\": {\"ssl\": True}}, \"items\": [3]}\n+    overrides_snapshot = {\n+        \"db\": {\"host\": \"remote\", \"opts\": {\"ssl\": True}},\n+        \"items\": [3],\n+    }\n+    merge_config(base, overrides)\n+    assert overrides == overrides_snapshot\n+\n+\n+def test_result_does_not_share_nested_objects_with_base():\n+    base = {\"db\": {\"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n+    overrides = {\"other\": {\"x\": 1}}\n+    result = merge_config(base, overrides)\n+    result[\"db\"][\"opts\"][\"ssl\"] = True\n+    result[\"items\"].append(99)\n+    assert base[\"db\"][\"opts\"][\"ssl\"] is False\n+    assert base[\"items\"] == [1, 2]\n+\n+\n+def test_result_does_not_share_nested_objects_with_overrides():\n+    base = {\"a\": 1}\n+    overrides = {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [3]}\n+    result = merge_config(base, overrides)\n+    result[\"db\"][\"opts\"][\"ssl\"] = False\n+    result[\"items\"].append(99)\n+    assert overrides[\"db\"][\"opts\"][\"ssl\"] is True\n+    assert overrides[\"items\"] == [3]\n+\n+\n+def test_returned_lists_are_independent_copies():\n+    base = {\"items\": [1, 2]}\n+    overrides = {\"items\": [3]}\n+    result = merge_config(base, overrides)\n+    assert result[\"items\"] is not overrides[\"items\"]\n+    assert result[\"items\"] is not base[\"items\"]\n+    result[\"items\"].append(4)\n+    assert overrides[\"items\"] == [3]\n+    assert base[\"items\"] == [1, 2]\n+\n+\n+def test_returned_mapping_is_a_new_object():\n+    base = {\"a\": 1}\n+    overrides = {\"b\": 2}\n+    result = merge_config(base, overrides)\n+    assert result is not base\n+    assert result is not overrides\n+    assert isinstance(result, dict)\n",
+  "diff_digest": "89b2fbcd0bbc9c87c461e024e9e8fa2f8134430acddedb0ab792eaa41b9aa738",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "8d3f4044-088b-499a-bd1e-610d41f6db61",
+      "candidate_number": 1,
+      "changed_files": [
+        "config.py",
+        "tests/test_merge_config_regression.py"
+      ],
+      "contract_tests": [
+        "merge_config(base, overrides) returns a mapping containing all keys from base and overrides -> test_keys_only_in_base_are_preserved and test_keys_only_in_overrides_are_added assert exact dict equality including both key sets.",
+        "For keys present in both inputs where both values are mappings, the result contains a recursive merge of the two mappings -> test_nested_mapping_is_merged_recursively asserts result == {'db': {'host': 'localhost', 'port': 5433, 'opts': {'ssl': True}}}, preserving base-only nested keys while applying nested overrides.",
+        "At leaf keys, the value from overrides wins over the value from base -> test_leaf_override_wins asserts result['a']['b'] == 2 (int) from overrides.",
+        "Keys only present in base are preserved in the result -> test_keys_only_in_base_are_preserved asserts result == {'a': 1, 'b': 3}.",
+        "Keys only present in overrides are added to the result -> test_keys_only_in_overrides_are_added asserts result == {'a': 1, 'b': 2}.",
+        "List values are replaced by the overrides list, not concatenated with the base list -> test_lists_are_replaced_not_concatenated asserts result['items'] == [4, 5] and test_nested_lists_are_replaced_not_concatenated asserts result['cfg']['items'] == [3].",
+        "merge_config does not mutate the base input mapping or any of its nested objects -> test_base_input_is_not_mutated asserts base == base_snapshot after the call.",
+        "merge_config does not mutate the overrides input mapping or any of its nested objects -> test_overrides_input_is_not_mutated asserts overrides == overrides_snapshot after the call.",
+        "The returned mapping does not share nested mutable objects with base or overrides; mutating the result does not affect either input -> test_result_does_not_share_nested_objects_with_base and test_result_does_not_share_nested_objects_with_overrides mutate result nested dicts/lists and assert inputs unchanged; test_returned_lists_are_independent_copies asserts identity inequality and post-mutation input stability.",
+        "Simple (non-nested) overrides continue to behave as before -> test_simple_override_preserved asserts merge_config({'a': 1}, {'a': 2, 'b': 3}) == {'a': 2, 'b': 3} and merge_config({}, {}) == {}.",
+        "Returned value is a new independent mapping object -> test_returned_mapping_is_a_new_object asserts result is not base, result is not overrides, and isinstance(result, dict)."
+      ],
+      "edits": [
+        {
+          "new": "import copy\nfrom collections.abc import Mapping\n\n\ndef merge_config(defaults, overrides):\n    result = {}\n    for key, value in defaults.items():\n        result[key] = copy.deepcopy(value)\n    for key, value in overrides.items():\n        if (\n            key in result\n            and isinstance(result[key], Mapping)\n            and isinstance(value, Mapping)\n        ):\n            result[key] = merge_config(result[key], value)\n        else:\n            result[key] = copy.deepcopy(value)\n    return result",
+          "old": "def merge_config(defaults, overrides):\n    result = dict(defaults)\n    result.update(overrides)\n    return result",
+          "path": "config.py"
+        },
+        {
+          "new": "from config import merge_config\n\n\ndef test_simple_override_preserved():\n    assert merge_config({\"a\": 1}, {\"a\": 2, \"b\": 3}) == {\"a\": 2, \"b\": 3}\n    assert merge_config({}, {}) == {}\n\n\ndef test_nested_mapping_is_merged_recursively():\n    base = {\"db\": {\"host\": \"localhost\", \"port\": 5432, \"opts\": {\"ssl\": False}}}\n    overrides = {\"db\": {\"port\": 5433, \"opts\": {\"ssl\": True}}}\n    result = merge_config(base, overrides)\n    assert result == {\n        \"db\": {\"host\": \"localhost\", \"port\": 5433, \"opts\": {\"ssl\": True}}\n    }\n\n\ndef test_leaf_override_wins():\n    result = merge_config({\"a\": {\"b\": 1}}, {\"a\": {\"b\": 2}})\n    assert result[\"a\"][\"b\"] == 2\n\n\ndef test_keys_only_in_base_are_preserved():\n    result = merge_config({\"a\": 1, \"b\": 2}, {\"b\": 3})\n    assert result == {\"a\": 1, \"b\": 3}\n\n\ndef test_keys_only_in_overrides_are_added():\n    result = merge_config({\"a\": 1}, {\"b\": 2})\n    assert result == {\"a\": 1, \"b\": 2}\n\n\ndef test_lists_are_replaced_not_concatenated():\n    base = {\"items\": [1, 2, 3]}\n    overrides = {\"items\": [4, 5]}\n    result = merge_config(base, overrides)\n    assert result[\"items\"] == [4, 5]\n\n\ndef test_nested_lists_are_replaced_not_concatenated():\n    base = {\"cfg\": {\"items\": [1, 2]}}\n    overrides = {\"cfg\": {\"items\": [3]}}\n    result = merge_config(base, overrides)\n    assert result[\"cfg\"][\"items\"] == [3]\n\n\ndef test_base_input_is_not_mutated():\n    base = {\"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n    overrides = {\"db\": {\"host\": \"remote\", \"opts\": {\"ssl\": True}}, \"items\": [3]}\n    base_snapshot = {\n        \"db\": {\"host\": \"localhost\", \"opts\": {\"ssl\": False}},\n        \"items\": [1, 2],\n    }\n    merge_config(base, overrides)\n    assert base == base_snapshot\n\n\ndef test_overrides_input_is_not_mutated():\n    base = {\"db\": {\"host\": \"localhost\"}}\n    overrides = {\"db\": {\"host\": \"remote\", \"opts\": {\"ssl\": True}}, \"items\": [3]}\n    overrides_snapshot = {\n        \"db\": {\"host\": \"remote\", \"opts\": {\"ssl\": True}},\n        \"items\": [3],\n    }\n    merge_config(base, overrides)\n    assert overrides == overrides_snapshot\n\n\ndef test_result_does_not_share_nested_objects_with_base():\n    base = {\"db\": {\"opts\": {\"ssl\": False}}, \"items\": [1, 2]}\n    overrides = {\"other\": {\"x\": 1}}\n    result = merge_config(base, overrides)\n    result[\"db\"][\"opts\"][\"ssl\"] = True\n    result[\"items\"].append(99)\n    assert base[\"db\"][\"opts\"][\"ssl\"] is False\n    assert base[\"items\"] == [1, 2]\n\n\ndef test_result_does_not_share_nested_objects_with_overrides():\n    base = {\"a\": 1}\n    overrides = {\"db\": {\"opts\": {\"ssl\": True}}, \"items\": [3]}\n    result = merge_config(base, overrides)\n    result[\"db\"][\"opts\"][\"ssl\"] = False\n    result[\"items\"].append(99)\n    assert overrides[\"db\"][\"opts\"][\"ssl\"] is True\n    assert overrides[\"items\"] == [3]\n\n\ndef test_returned_lists_are_independent_copies():\n    base = {\"items\": [1, 2]}\n    overrides = {\"items\": [3]}\n    result = merge_config(base, overrides)\n    assert result[\"items\"] is not overrides[\"items\"]\n    assert result[\"items\"] is not base[\"items\"]\n    result[\"items\"].append(4)\n    assert overrides[\"items\"] == [3]\n    assert base[\"items\"] == [1, 2]\n\n\ndef test_returned_mapping_is_a_new_object():\n    base = {\"a\": 1}\n    overrides = {\"b\": 2}\n    result = merge_config(base, overrides)\n    assert result is not base\n    assert result is not overrides\n    assert isinstance(result, dict)\n",
+          "old": "",
+          "path": "tests/test_merge_config_regression.py"
+        }
+      ],
+      "rationale": "merge_config currently does a shallow dict update, so nested mappings are replaced wholesale and nested objects are shared with the inputs. The fix implements a recursive merge: when both base and overrides hold mappings at the same key, recurse; otherwise the override value wins (lists included, replaced not concatenated). To guarantee independence, every value placed into the result is deep-copied, so neither input is mutated and no nested mutable object is shared with either input. Simple non-nested overrides keep their existing behavior. New regression tests in tests/test_merge_config_regression.py cover nested merge, leaf precedence, base-only/override-only keys, list replacement, input non-mutation, and output independence."
+    }
+  ],
+  "recorded_digest": "89b2fbcd0bbc9c87c461e024e9e8fa2f8134430acddedb0ab792eaa41b9aa738",
+  "regression_results": [],
+  "repair_feedback": [],
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "8d3f4044-088b-499a-bd1e-610d41f6db61",
+      "candidate_number": 1,
+      "cases": [
+        {
+          "classname": "tests.test_contract",
+          "details": "",
+          "file": "tests/test_contract.py",
+          "line": 4,
+          "message": "",
+          "name": "test_existing_contract",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 4,
+          "message": "",
+          "name": "test_simple_override_preserved",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 9,
+          "message": "",
+          "name": "test_nested_mapping_is_merged_recursively",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 18,
+          "message": "",
+          "name": "test_leaf_override_wins",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 23,
+          "message": "",
+          "name": "test_keys_only_in_base_are_preserved",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 28,
+          "message": "",
+          "name": "test_keys_only_in_overrides_are_added",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 33,
+          "message": "",
+          "name": "test_lists_are_replaced_not_concatenated",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 40,
+          "message": "",
+          "name": "test_nested_lists_are_replaced_not_concatenated",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 47,
+          "message": "",
+          "name": "test_base_input_is_not_mutated",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 58,
+          "message": "",
+          "name": "test_overrides_input_is_not_mutated",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 69,
+          "message": "",
+          "name": "test_result_does_not_share_nested_objects_with_base",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 79,
+          "message": "",
+          "name": "test_result_does_not_share_nested_objects_with_overrides",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 89,
+          "message": "",
+          "name": "test_returned_lists_are_independent_copies",
+          "status": "passed"
+        },
+        {
+          "classname": "tests.test_merge_config_regression",
+          "details": "",
+          "file": "tests/test_merge_config_regression.py",
+          "line": 100,
+          "message": "",
+          "name": "test_returned_mapping_is_a_new_object",
+          "status": "passed"
+        }
+      ],
+      "cases_truncated": false,
+      "diff_digest": "89b2fbcd0bbc9c87c461e024e9e8fa2f8134430acddedb0ab792eaa41b9aa738",
+      "duration_seconds": 1.047276299999794,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 14,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "..............                                                           [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n14 passed in 0.12s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "config.py": "28c3d9d1731edc133cee4053629b092cbff7498f5f79e9d8cac7ad5101748ff6",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_contract.py": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590",
+    "tests/test_merge_config_regression.py": "fac19a5a7e1090bb36cf68be784237f3a1f178754705b084b3a06955af6163c8"
+  }
+}

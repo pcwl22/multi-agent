@@ -1,0 +1,82 @@
+{
+  "kind": "post_hoc_independent_contract_replay",
+  "model_calls": 0,
+  "repairs_unchanged": true,
+  "note": "Original frozen oracle remains intact. New oracle covers the explicitly stated Python range input; applies to the same 90 saved repairs, not 90 new model attempts.",
+  "source_dataset_sha256": "26dcb91786dae3d8e665d5d84065a1c128572c1e3fbe95793e0103bbbf0273f9",
+  "strict_dataset_sha256": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+  "runs": 90,
+  "accepted": 84,
+  "reference_result": {
+    "status": "passed",
+    "exit_code": 0,
+    "stdout": "..........                                                               [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n10 passed in 0.08s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 10,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 0.9416919999985112,
+    "evidence": "docker"
+  },
+  "modes": {
+    "single": {
+      "accepted": 27,
+      "runs": 30
+    },
+    "multi_no_review": {
+      "accepted": 30,
+      "runs": 30
+    },
+    "multi_full": {
+      "accepted": 27,
+      "runs": 30
+    }
+  },
+  "changed_outcomes": [
+    {
+      "task_id": "94f59a47-8eaa-48e6-93c4-27dc3ed67776",
+      "case_id": "one-based-page",
+      "mode": "single",
+      "repeat": 0,
+      "status": "failed"
+    },
+    {
+      "task_id": "f33bfe80-4b78-4118-9ccc-c28f1b58d583",
+      "case_id": "one-based-page",
+      "mode": "multi_full",
+      "repeat": 0,
+      "status": "failed"
+    },
+    {
+      "task_id": "169368de-37ab-4d1e-928b-48b9ad61ca7f",
+      "case_id": "one-based-page",
+      "mode": "multi_full",
+      "repeat": 1,
+      "status": "failed"
+    },
+    {
+      "task_id": "a4987cf0-ffda-427a-b386-35a4389abdae",
+      "case_id": "one-based-page",
+      "mode": "single",
+      "repeat": 1,
+      "status": "failed"
+    },
+    {
+      "task_id": "4c8cb6c6-efee-4cd2-bf72-8daf8eee2ff7",
+      "case_id": "one-based-page",
+      "mode": "multi_full",
+      "repeat": 2,
+      "status": "failed"
+    },
+    {
+      "task_id": "44330690-158c-4415-bc6b-a0bf24d452ee",
+      "case_id": "one-based-page",
+      "mode": "single",
+      "repeat": 2,
+      "status": "failed"
+    }
+  ]
+}

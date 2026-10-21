@@ -1,0 +1,47 @@
+{
+  "kind": "native pre-registration diagnostic",
+  "formal": false,
+  "model_list_confirmed": true,
+  "status": "passed",
+  "model_requested": "deepseek-v4.1-flash",
+  "stats": {
+    "calls": 1,
+    "input_tokens": 648,
+    "output_tokens": 1037,
+    "adapter": "live",
+    "usage_complete": true,
+    "model_requested": "deepseek-v4.1-flash",
+    "streaming": true,
+    "rate_limit_wait_seconds": 0.0,
+    "model_reported": "deepseek-v4.1-flash",
+    "provider_response_id": null,
+    "duration_seconds": 17.36437649999789
+  },
+  "budget": {
+    "enabled": true,
+    "limits": {
+      "wall_seconds": 900.0,
+      "model_requests": 2,
+      "observed_tokens": 10000,
+      "sandbox_runs": 10,
+      "artifact_bytes": 268435456,
+      "result_bytes": 8388608
+    },
+    "deadline": 1792397991.989394,
+    "remaining_seconds": 130.58593344688416,
+    "model_requests": 1,
+    "sandbox_runs": 0,
+    "observed_tokens": 1685,
+    "usage_complete": true,
+    "pending_reservations": 0
+  },
+  "schema": "Plan",
+  "plan_fields": [
+    "issue_summary",
+    "suspected_modules",
+    "search_strategy",
+    "repair_steps",
+    "validation_strategy",
+    "acceptance_contracts"
+  ]
+}

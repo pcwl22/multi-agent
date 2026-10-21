@@ -1,0 +1,53 @@
+--- a/inventory.py
++++ b/inventory.py
+@@ -1,3 +1,5 @@
+ def available_units(stock, reservations):
+-    reserved = dict(reservations)
++    reserved = {}
++    for sku, qty in reservations:
++        reserved[sku] = reserved.get(sku, 0) + qty
+     return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}
+--- a/tests/test_available_units_regression.py
++++ b/tests/test_available_units_regression.py
+@@ -0,0 +1,41 @@
++from inventory import available_units
++
++
++def test_repeated_sku_reservations_are_summed():
++    # Issue example: {'A': 10} with [('A', 2), ('A', 3)] leaves {'A': 5}
++    result = available_units({"A": 10}, [("A", 2), ("A", 3)])
++    assert result == {"A": 5}
++    assert isinstance(result, dict)
++    assert isinstance(result["A"], int)
++
++
++def test_repeated_sku_reservations_clamp_at_zero():
++    result = available_units({"A": 4}, [("A", 2), ("A", 3)])
++    assert result == {"A": 0}
++    assert isinstance(result["A"], int)
++
++
++def test_unknown_sku_reservations_are_ignored():
++    result = available_units({"A": 10}, [("B", 5), ("A", 2), ("B", 1)])
++    assert result == {"A": 8}
++    assert "B" not in result
++
++
++def test_inputs_are_preserved():
++    stock = {"A": 10, "B": 3}
++    reservations = [("A", 2), ("A", 3), ("B", 1)]
++    stock_copy = dict(stock)
++    reservations_copy = list(reservations)
++    available_units(stock, reservations)
++    assert stock == stock_copy
++    assert reservations == reservations_copy
++
++
++def test_empty_inputs():
++    result = available_units({}, [])
++    assert result == {}
++    assert isinstance(result, dict)
++
++
++def test_single_reservation_still_works():
++    assert available_units({"A": 10}, [("A", 2)]) == {"A": 8}

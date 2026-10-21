@@ -1,0 +1,158 @@
+"""Independent immutable-ledger and metric checks; local report only."""
+import hashlib
+import json
+import shutil
+import subprocess
+import xml.etree.ElementTree as ET
+from collections import Counter
+from pathlib import Path
+
+from app.evaluation.connectivity import runtime_digest
+from app.evaluation.historical import verify
+from app.services.budget_audit import audit_ledger
+from dotenv import dotenv_values
+
+from app.tools.repository import Repository, is_test_file
+
+Q = Path(__file__).parent
+ROOT = Path('E:/multi-agent')
+W = Path('E:/Agent/rp-wire21')
+OUT = ROOT/'docs/provider-wire-20261021'
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save(path, value):
+    path.write_bytes((json.dumps(value, ensure_ascii=False, indent=2)+'\n').encode())
+
+
+def main():
+    p, report, rows = read(Q/'plan.json'), read(Q/'report.json'), read(Q/'records.json')
+    assert sha(Q/'plan.json') == report['plan_sha256']
+    assert sha(Q/'controller.py') == p['controller_sha256']
+    assert sha(Q/'diagnostic.py') == p['diagnostic_sha256']
+    assert sha(Q/'repair.py') == p['worker_sha256']
+    assert runtime_digest() == p['runtime_sha256'] and sha(Q/'wheel-full.xml') == p['verified_junit_sha256']
+    assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=W).strip()
+    old = read(Q/'prior-ledgers.json')
+    assert len(old) == 16
+    for item in old:
+        assert audit_ledger(Path(item['path'])) == item['audit']
+    corpus = Path(p['corpus'])
+    lock = verify(corpus, p['lock_sha256'])
+    checked, events, failures, patches, interrupted = [], [], [], [], []
+    for row in rows:
+        if row['status'] != 'completed':
+            if row['status'] == 'dispatch_uncertain':
+                root = Q/'diagnostics'/row['id'] if row['kind'] == 'diagnostic' else Path(p['task_storage'])/'p'/row['id'][:2]
+                for path in root.rglob('budget.sqlite3'):
+                    interrupted.append({'id': row['id'], 'audit': audit_ledger(path.parent)})
+            continue
+        if row['kind'] == 'diagnostic':
+            audit = audit_ledger(Q/'diagnostics'/row['id'])
+            assert audit == row['ledger'] and audit['model_request_reservations'] == 1
+            stats = row['stats']
+            last = (stats.get('structured_attempts') or [{}])[-1]
+            success = bool(last.get('parse_status') == 'parsed' and last.get('finish_reason') in {'stop', 'tool_calls', 'function_call'}
+                           and row['wire_matches_plan'] and not audit['usage_unknown'])
+            assert success == (row['outcome'] == 'passed')
+            checked.append({'id': row['id'], 'kind': 'diagnostic', 'audit': audit,
+                            'passed_recomputed': success, 'wire_matches_plan': row['wire_matches_plan']})
+            events.append({'id': row['id'], 'kind': 'diagnostic', 'stats': stats, 'wire': row['wire']})
+            if not success:
+                failures.append({'id': row['id'], 'kind': 'diagnostic', 'error_type': row['error_type'],
+                    'output_failure': stats.get('output_failure'), 'provider_failure': stats.get('failure'),
+                    'structured_attempts': stats.get('structured_attempts'), 'response_shapes': stats.get('response_shapes')})
+            continue
+        folder = Q/'pilot'/row['id']
+        state = read(folder/'state.json')
+        audit = audit_ledger(Path(state['task_path']))
+        assert audit == row['ledger'] and audit['model_request_reservations'] == row['model_calls']
+        if state['execution_status'] == 'creation_failed':
+            assert not row['strict_success']
+            failures.append({'id': row['id'], 'kind': 'creation_failed', 'failures': state['creation_failures']})
+            continue
+        source = next(c for c in lock['cases'] if c['case']['id'] == row['case_id'])
+        repo = Repository(state['workspace_path'])
+        unchanged = all(sha(repo.path(name)) == value for name, value in source['source_manifest'].items() if is_test_file(name))
+        assert unchanged == row['original_tests_unchanged']
+        current = next((t for t in reversed(state['test_results']) if t.get('candidate_id') == state['candidate_id']), None)
+        strict = bool(unchanged and row['baseline_verified'] and state['execution_status'] == 'awaiting_approval'
+            and current and current['status'] == 'passed' and row['acceptance'] and row['acceptance']['status'] == 'passed'
+            and row['regression_witness'] and row['regression_witness']['status'] == 'demonstrated')
+        assert strict == row['strict_success']
+        checked.append({'id': row['id'], 'kind': 'repair', 'audit': audit, 'strict_success_recomputed': strict,
+                        'original_tests_unchanged': unchanged})
+        patches.append({'id': row['id'], 'diff': state['diff'], 'diff_digest': state['diff_digest']})
+        events.extend({'id': row['id'], 'kind': 'repair', 'stats': e} for e in state['execution_history'] if e['node'] == 'model')
+        if not strict:
+            failures.append({'id': row['id'], 'kind': 'repair', 'status': state['execution_status'], 'error': state['error'],
+                'provider_failure': state.get('failure'), 'budget_failure': state.get('budget_failure'),
+                'patch_feedback': state.get('patch_feedback'), 'repair_feedback': state.get('repair_feedback'),
+                'reviews': state.get('review_results'), 'witness': row['regression_witness']})
+    suites = list(ET.parse(Q/'wheel-full.xml').getroot().iter('testsuite'))
+    counts = {k: sum(int(s.get(k, 0)) for s in suites) for k in ['tests', 'failures', 'errors', 'skipped']}
+    assert counts == {'tests': 413, 'failures': 0, 'errors': 0, 'skipped': 2}
+    artifact = read(Q/'runtime-artifact.json')
+    reasoning = Counter(shape['reasoning_status'] for item in events for shape in item['stats'].get('response_shapes', []))
+    OUT.mkdir(parents=True, exist_ok=False)
+    for name in ['plan.json', 'plan.sha256', 'report.json', 'records.json', 'prior-ledgers.json',
+                 'controls-binding.json', 'runtime-artifact.json', 'wheel-full.xml']:
+        shutil.copy2(Q/name, OUT/name)
+    if (Q/'selection.json').exists():
+        shutil.copy2(Q/'selection.json', OUT/'selection.json')
+    for name in ['controller.py', 'diagnostic.py', 'repair.py', 'seal.py']:
+        shutil.copy2(Q/name, OUT/(name+'.txt'))
+    shutil.copy2(W/'docs/provider-wire-compatibility.md', OUT/'implementation-notes.md')
+    save(OUT/'verification.json', {'checked_cells': checked, 'interrupted_ledgers': interrupted,
+        'full_suite': counts, 'passed': 411, 'existing_tests_unchanged': 92, 'new_controlled_tests': 22,
+        'package_app_files': 120, 'source_wheel_install_match': True, 'old_sixteen_ledgers_unchanged': True,
+        'reasoning_breakdown_status_counts': dict(reasoning), 'configuration_unchanged': report['configuration_unchanged']})
+    save(OUT/'model-events.json', events)
+    save(OUT/'failure-analysis.json', failures)
+    save(OUT/'candidate-patches.json', patches)
+    patch = subprocess.check_output(['git', 'diff', '--binary', '77707d67e3f0e9b7ccff74ff8ed7361e09a4bca4', p['runtime_commit']], cwd=W)
+    (OUT/'implementation.patch').write_bytes(patch)
+    lines = ['# 提供方参数兼容优化与真实验证（2026-10-21）', '',
+        f"运行时固定提交 `{p['runtime_commit']}`，模型 `{p['model_name']}`，通道 `{p['model_base_url']}`。", '',
+        '新增显式 opt-in Token 参数方言与关闭思考开关；默认仍使用 max_completion_tokens 和 provider_default，不根据别名推断支持，不增加自动回退。预算约束、length 拒绝、原测试保护、严格 fail-to-pass 见证和人工发布审批保持。新增响应形态只记录 SDK 可见字符/工具调用计数及有效 reasoning 用量，不记录正文、工具参数或推理正文；缺失不补零。', '',
+        '完整安装包回归 **411 passed、2 skipped**，显式启用 Docker；22 项新增受控 SDK/HTTP/SSE 用例。92 个既有测试/辅助文件未改，120 个包内应用文件逐字节匹配源码与安装。Ruff 和补丁格式检查通过。受控测试不冒充真实模型证据。', '',
+        '## 冻结的真实参数对照', '',
+        '同一公开历史 Issue 的 Plan 输入，三组均保持工具 schema、named tool 选择、parallel_tool_calls=False 和 2048 输出上限；每组独立非流式/流式各一次。A=默认参数；B=仅 max_tokens；C=max_tokens + thinking.disabled。只有 A/B 均未通过双模式完整输出时才执行 C。选择通过双模式的最小改动配置；发生连接/提供方错误、用量未知或中断即停止，不回退替换。', '',
+        '| 单元 | 结果 | 实际 HTTP 参数 | 实际思考请求 | 结束原因 | 解析 | 已知 Token | Reasoning 用量 |',
+        '|---|---|---|---|---|---|---:|---|']
+    for row in rows:
+        if row['kind'] != 'diagnostic':
+            continue
+        stats = row.get('stats', {})
+        last = (stats.get('structured_attempts') or [{}])[-1]
+        shape = (stats.get('response_shapes') or [{}])[-1]
+        wire = (row.get('wire') or [{}])[-1]
+        status = row.get('outcome', row['status'])
+        reasoning_value = str(shape.get('reasoning_tokens')) if shape.get('reasoning_status') == 'reported' else shape.get('reasoning_status', '未观测')
+        lines.append(f"| {row['id']} | {status} | {wire.get('limit_parameter', '未发送')} | {wire.get('thinking', '未发送')} | {last.get('finish_reason', '未观测')} | {last.get('parse_status', '未观测')} | {row.get('ledger', {}).get('observed_tokens', 0)} | {reasoning_value} |")
+    lines.extend(['', f"选择结果：`{report['selected_profile']}`；停止原因：`{report['stop_reason']}`。真实诊断共 {report['diagnostic_requests']} 次请求、{report['diagnostic_known_tokens']} 已观测 Token。", '',
+        'HTTP 观测来自实际 SDK 请求钩子，只保存允许列表字段，不读取 Authorization 或保存原始请求正文。它能证明客户端发出的参数，不能证明代理最终转发或提供方确实遵守了思考开关。响应计数仅限通用 SDK 保留的字段，不能把正文为空、缺失 reasoning 统计或工具参数未记录当成没有生成或零费用。', '',
+        '## 条件真实修复验证', '',
+        f"预定 2 个全新 multi_full / legacy-policy 历史任务，实际完成 {report['repairs_completed']} 项，严格成功 {report['strict_repairs']} 项，{report['repair_requests']} 次请求、{report['repair_known_tokens']} 已观测 Token。选中配置用于修复时显式设置 4096 输出上限。未选择通过的配置时，两个任务保持未执行，不算两次模型修复失败。", '',
+        '严格成功要求原始测试不变、固定失败基线成立、候选待人工审批、原始套件与隐藏验收通过，以及同一新增测试在原版失败、当前候选通过。目标代码只在固定 Docker 镜像执行；24 项控制复用同一语料/镜像已封存证据，不称为本轮重新运行。', '',
+        '每个诊断单元仅 1 次请求预留、75 秒边界预算、45 秒 SDK 超时、32768 已观测 Token 阈值；135 秒独立进程硬时限。诊断阶段最多 900 秒。每个修复任务最多 360 秒、8 请求预留、100000 已观测 Token、10 次任务 Docker；额外隐藏验收和回放各有独立单次 Docker 预算，工作进程硬时限 660 秒，修复阶段最多 1800 秒。这些阈值不是金额硬限，缺失用量保持未知，不退款或重发。', '',
+        '根私有 `.env` 未改，旧 16 份账本保持摘要；质量开关默认关闭，没有启动完整历史矩阵，没有批准候选或写 GitHub。小额探测和两项已知案例不证明持续稳定性、底层权重、修复质量改善或未见仓库泛化，所有失败/条件未执行保留。', '',
+        '参数与诊断依据见 [实现说明](implementation-notes.md)，其中链接 OpenAI 官方参数/Token 文档和 DeepSeek 接口说明；官方接口规范不是当前第三方通道符合规范的证明。', ''])
+    (OUT/'report.md').write_bytes('\n'.join(lines).encode())
+    values = dotenv_values(ROOT/'.env')
+    keys = [values[k] for k in ['OPENAI_API_KEY', 'DEEPSEEK_API_KEY', 'SOL_API_KEY'] if values.get(k)]
+    assert not any(key.encode() in f.read_bytes() for f in OUT.rglob('*') if f.is_file() for key in keys)
+    manifest = [{'path': f.relative_to(OUT).as_posix(), 'sha256': sha(f)} for f in sorted(OUT.rglob('*')) if f.is_file()]
+    save(OUT/'evidence-manifest.json', {'files': manifest})
+    print(json.dumps({'sealed': True, 'report': str(OUT/'report.md'), 'reasoning_breakdown_status_counts': dict(reasoning)}))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-10-20T01:34:48.600952+00:00",
+  "kind": "additional execution-scope limitation, not an input change",
+  "affected_cases": [
+    {
+      "case_id": "jsonpointer-large-index",
+      "entrypoint": "tests.py",
+      "original_test_file_sha256": "99300a74a31a1321515782334cd68e21b2558f3d1e934b558c3675673375c06f"
+    },
+    {
+      "case_id": "jsonpointer-subclass-join",
+      "entrypoint": "tests.py",
+      "original_test_file_sha256": "0f865c62352ce0fde46f1904810d29ec0e9906db0cdf87ff4953d7ee9980c7bf"
+    },
+    {
+      "case_id": "jsonpointer-assignment-errors",
+      "entrypoint": "tests.py",
+      "original_test_file_sha256": "374ecf5fa5ff3afc2743cf98c94d9f8704d3aeeceb9b7ece3afe5561f81f3671"
+    }
+  ],
+  "scope": "The original Python test files are preserved byte-for-byte. The standardized pytest TestCase adapter does not call upstream unittest.load_tests and therefore does not execute its extra doctest suite. Results are scoped to the collected TestCase/pytest suite, not the entire native upstream CI/test matrix. No model tasks, corpus, oracles or primary denominators were changed.",
+  "supplemental_doctest_execution": "not performed"
+}

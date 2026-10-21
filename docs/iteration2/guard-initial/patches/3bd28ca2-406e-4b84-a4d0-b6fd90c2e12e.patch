@@ -1,0 +1,59 @@
+--- a/inventory.py
++++ b/inventory.py
+@@ -1,3 +1,6 @@
+ def available_units(stock, reservations):
+-    reserved = dict(reservations)
+-    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}
++    available = dict(stock)
++    for sku, qty in reservations:
++        if sku in available:
++            available[sku] = max(0, available[sku] - qty)
++    return available
+--- a/tests/test_inventory_regression.py
++++ b/tests/test_inventory_regression.py
+@@ -0,0 +1,45 @@
++from inventory import available_units
++
++
++def test_repeated_sku_reservations_are_all_subtracted():
++    assert available_units({"A": 10}, [("A", 2), ("A", 3)]) == {"A": 5}
++
++
++def test_repeated_sku_does_not_collapse_to_last_value():
++    # dict(reservations) would collapse to the last entry (3) giving 7.
++    assert available_units({"A": 10}, [("A", 2), ("A", 3)]) == {"A": 5}
++
++
++def test_over_reservation_clamps_at_zero():
++    assert available_units({"A": 4}, [("A", 2), ("A", 3)]) == {"A": 0}
++
++
++def test_unknown_sku_reservations_are_ignored():
++    assert available_units({"A": 10}, [("B", 5)]) == {"A": 10}
++    assert available_units({"A": 10}, [("A", 2), ("B", 5)]) == {"A": 8}
++
++
++def test_input_stock_mapping_is_not_mutated():
++    stock = {"A": 10}
++    available_units(stock, [("A", 2), ("A", 3)])
++    assert stock == {"A": 10}
++
++
++def test_input_reservations_sequence_is_not_mutated():
++    reservations = [("A", 2), ("A", 3)]
++    available_units({"A": 10}, reservations)
++    assert reservations == [("A", 2), ("A", 3)]
++
++
++def test_return_type_and_keys_match_stock():
++    stock = {"A": 10, "B": 5}
++    result = available_units(stock, [("A", 2)])
++    assert isinstance(result, dict)
++    assert set(result.keys()) == set(stock.keys())
++    assert result == {"A": 8, "B": 5}
++
++
++def test_single_reservation_and_distinct_skus_preserved():
++    assert available_units({"A": 10}, [("A", 2)]) == {"A": 8}
++    assert available_units({"A": 10, "B": 5}, [("A", 2), ("B", 5)]) == {"A": 8, "B": 0}
++    assert available_units({}, []) == {}

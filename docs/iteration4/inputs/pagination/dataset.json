@@ -1,0 +1,8 @@
+[
+  {
+    "id": "one-based-page",
+    "issue": "paginate in pagination.py uses one-based page numbers. For range(1,8), page 2 size 2 must return [3,4]. Preserve empty/invalid inputs and return [] beyond the last page. Add a new regression test file.",
+    "repository": "../../app/evaluation/expanded/repos/one-based-page",
+    "acceptance": "test_pagination_sequence_acceptance.py"
+  }
+]

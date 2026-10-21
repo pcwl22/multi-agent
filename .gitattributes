@@ -2,3 +2,42 @@
 *.png binary
 *.jpg binary
 *.whl binary
+*.webm binary
+# Unified diff context lines intentionally contain one leading space, including blank lines.
+*.patch -whitespace
+# Historical pilot holdouts retain their frozen raw bytes across platforms.
+docs/iteration2/pilots/acceptance/*.py.txt -text whitespace=cr-at-eol
+# Upstream license formatting is retained verbatim.
+docs/iteration2/pilots/*-LICENSE.txt -whitespace
+
+# Preserve preregistered historical case and hidden-oracle bytes across checkouts.
+app/evaluation/historical_cases/*.json -text whitespace=cr-at-eol
+app/evaluation/historical_cases/acceptance/*.txt -text whitespace=cr-at-eol
+
+# Keep frozen historical evaluation evidence JSON byte-identical in Git.
+docs/historical-evaluation-20261019/*.json -text whitespace=cr-at-eol
+
+# Preserve preregistered repair-quality comparison inputs and evidence.
+docs/repair-quality-20261020/*.json -text whitespace=cr-at-eol
+docs/repair-quality-20261020/spec/*.json -text whitespace=cr-at-eol
+docs/repair-quality-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
+
+# Preserve the finite V2 calibration evidence exactly.
+docs/repair-quality-v2-20261020/*.json -text whitespace=cr-at-eol
+
+# Preserve the provider reliability probe evidence exactly.
+docs/provider-reliability-20261020/*.json -text whitespace=cr-at-eol
+
+# Preserve this stage's frozen diagnostics, collection inventories and probe evidence.
+docs/connectivity-collection-20261020/*.json -text whitespace=cr-at-eol
+docs/connectivity-collection-20261020/spec/*.json -text whitespace=cr-at-eol
+docs/connectivity-collection-20261020/spec/acceptance/*.txt -text whitespace=cr-at-eol
+
+# Keep sealed output-diagnostics evidence byte-identical, including original XML failures.
+docs/output-diagnostics-20261021/** -text whitespace=cr-at-eol
+docs/output-diagnostics-20261021/initial-source-full.xml -whitespace
+docs/output-diagnostics-20261021/*.patch -whitespace
+
+# Preserve this stage's exact parameter experiment and diagnostic evidence.
+docs/provider-wire-20261021/** -text whitespace=cr-at-eol
+docs/provider-wire-20261021/*.patch -whitespace

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "model_name": "deepseek-v4.1-flash",
+  "model_base_url": "https://muyuan.do/v1",
+  "timeout_seconds": 45,
+  "observed_tokens_per_cell": 4096,
+  "runtime_sha256": "887179f68c0846bb6282263a25957fae766bd19bcb8a43cfee146acd8656aa9e",
+  "payload": {
+    "issue_description": "Connectivity probe only. Return a short Plan about checking connectivity. No repository exists; no tools or code execution."
+  }
+}

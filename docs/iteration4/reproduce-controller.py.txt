@@ -1,0 +1,35 @@
+"""Frozen local-only evaluation controller; secrets live only in this process."""
+import getpass,hashlib,json,logging,subprocess,sys
+from pathlib import Path
+sys.path.insert(0,str(Path.cwd()))
+from pydantic import SecretStr
+from app.config.settings import Settings
+from app.evaluation.runner import run_evaluation
+logging.getLogger('repopilot.graph').setLevel(logging.CRITICAL)
+plan=json.loads(Path('docs/iteration4/preregistered-validation.json').read_text(encoding='utf8'))
+subprocess.run(['git','diff','--exit-code',plan['runtime_code_commit'],'--','app','frontend','scripts','tests','sandbox'],check=True)
+for job in [plan['diagnostic'],*plan['jobs']]:
+ assert hashlib.sha256(Path(job['dataset']).read_bytes()).hexdigest()==job['dataset_sha256']
+ assert not Path(job['output']).exists() and not Path(job['data']).exists()
+secret=getpass.getpass('Provider key (hidden): ')
+if not secret:raise SystemExit('No credential supplied')
+try:
+ print('CREDENTIAL_READY; type RUN for fixed diagnostic',flush=True)
+ if input()!='RUN':raise SystemExit('Not started')
+ for index,job in enumerate([plan['diagnostic'],*plan['jobs']]):
+  if index==1:
+   print('DIAGNOSTIC_DONE; type CONTINUE after reviewing fixed gate',flush=True)
+   if input()!='CONTINUE':raise SystemExit('Comparison not started')
+   subprocess.run(['git','diff','--exit-code',plan['runtime_code_commit'],'--','app','frontend','scripts','tests','sandbox'],check=True)
+  settings=Settings(model_mode='live',model_name=plan['model'],model_base_url=plan['endpoint'],openai_api_key=SecretStr(secret),github_token=None,
+    repository_root=Path(job['root']).resolve(),data_dir=Path(job['data']).resolve(),max_retries=plan['max_retries'],retry_workspace_policy=job['policy'],
+    model_min_interval=plan['model_min_interval'],model_timeout=plan['model_timeout'],test_timeout=plan['test_timeout'],sandbox_image=job['image'])
+  print(json.dumps({'starting':job['name'],'planned_tasks':job['runs']}),flush=True)
+  report=run_evaluation(settings,settings.repository_root,Path(job['output']),job['repeats'],dataset_file=Path(job['dataset']),workers=job['workers'])
+  assert report['corpus_sha256']==job['corpus_sha256']
+  print(json.dumps({'completed':job['name'],'modes':report['modes']}),flush=True)
+except Exception as exc:
+ print(json.dumps({'error_type':type(exc).__name__,'message':str(exc).replace(secret,'[REDACTED]')[:1000]}),flush=True)
+finally:
+ secret=None
+ print('CREDENTIAL_SESSION_CLOSED',flush=True)

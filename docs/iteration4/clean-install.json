@@ -1,0 +1,28 @@
+{
+  "status": "local unpublished candidate",
+  "runtime_code_commit": "2e6b0f2d5e7619be6bce91849ea741f82a7986d1",
+  "wheel": "dist/iteration4-2e6b0f2/repopilot-0.1.0-py3-none-any.whl",
+  "wheel_sha256": "a6976150797636f8d1b7755ea26d8d9afffd900b64507965cd4c932fc03ddf1f",
+  "tests": {
+    "source": {
+      "passed": 159,
+      "skipped": 1,
+      "seconds": 223.86
+    },
+    "isolated_wheel": {
+      "passed": 159,
+      "skipped": 1,
+      "seconds": 186.62
+    }
+  },
+  "system_site_packages": false,
+  "isolated_parent_and_recovery_worker_import_verified": true,
+  "pip_check": "passed",
+  "ruff": "passed",
+  "preexisting_test_files_unchanged": 52,
+  "original_corpus_and_strict_holdouts_unchanged": true,
+  "completed_before_formal_comparison": true,
+  "shell": "bundled pwsh 7.6.5; 7.6.3 not separately verified",
+  "host_python": "3.13.5",
+  "docker_target_python": "3.12.14"
+}

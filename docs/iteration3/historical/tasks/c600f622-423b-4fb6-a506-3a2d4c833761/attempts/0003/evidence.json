@@ -1,0 +1,154 @@
+{
+  "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+  "candidate_number": 3,
+  "diff": "--- a/src/itsdangerous/timed.py\n+++ b/src/itsdangerous/timed.py\n@@ -124,7 +124,15 @@\n         # split the value and the timestamp.\n         if sig_error is not None:\n             if ts_int is not None:\n-                ts_dt = self.timestamp_to_datetime(ts_int)\n+                try:\n+                    ts_dt = self.timestamp_to_datetime(ts_int)\n+                except (ValueError, OverflowError, OSError):\n+                    # The decoded timestamp is outside the range supported\n+                    # by datetime, so it is malformed. Report it as such\n+                    # rather than leaking the datetime error.\n+                    raise BadTimeSignature(\n+                        \"Malformed timestamp\", payload=value, date_signed=None\n+                    )\n \n             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)\n \n--- a/tests/test_itsdangerous/test_timed_malformed_regression.py\n+++ b/tests/test_itsdangerous/test_timed_malformed_regression.py\n@@ -0,0 +1,139 @@\n+import pytest\n+\n+from itsdangerous import BadSignature\n+from itsdangerous import BadTimeSignature\n+from itsdangerous import SignatureExpired\n+from itsdangerous import TimedSerializer\n+from itsdangerous import TimestampSigner\n+\n+\n+# A signed value whose decoded timestamp is far outside datetime's\n+# supported year range. The signature is invalid, so unsign takes the\n+# invalid-signature path and must not leak a datetime ValueError.\n+MALFORMED_SIGNED = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n+\n+\n+@pytest.fixture\n+def signer():\n+    return TimestampSigner(\"secret-key\")\n+\n+\n+@pytest.fixture\n+def serializer():\n+    return TimedSerializer(\"secret-key\")\n+\n+\n+# Contract 1: invalid signature + out-of-range decoded timestamp raises\n+# BadTimeSignature instead of leaking a datetime ValueError.\n+def test_malformed_timestamp_raises_bad_time_signature(signer):\n+    with pytest.raises(BadTimeSignature) as exc_info:\n+        signer.unsign(MALFORMED_SIGNED)\n+\n+    assert \"Malformed\" in str(exc_info.value)\n+\n+\n+def test_malformed_timestamp_does_not_leak_value_error(signer):\n+    try:\n+        signer.unsign(MALFORMED_SIGNED)\n+    except BadTimeSignature:\n+        pass\n+    except ValueError as e:  # pragma: no cover - regression guard\n+        pytest.fail(f\"leaked datetime ValueError: {e!r}\")\n+    else:  # pragma: no cover - regression guard\n+        pytest.fail(\"expected BadTimeSignature\")\n+\n+\n+# Contract 2: payload equals the original payload passed to unsign.\n+def test_malformed_timestamp_payload_is_original(signer):\n+    with pytest.raises(BadTimeSignature) as exc_info:\n+        signer.unsign(MALFORMED_SIGNED)\n+\n+    assert exc_info.value.payload == b\"value\"\n+    assert isinstance(exc_info.value.payload, bytes)\n+\n+\n+# Contract 3: date_signed is None for malformed timestamps.\n+def test_malformed_timestamp_date_signed_is_none(signer):\n+    with pytest.raises(BadTimeSignature) as exc_info:\n+        signer.unsign(MALFORMED_SIGNED)\n+\n+    assert exc_info.value.date_signed is None\n+\n+\n+# Contract 4: valid roundtrips still return the original payload and a\n+# correct date_signed.\n+def test_valid_roundtrip_returns_payload_and_timestamp(signer):\n+    signed = signer.sign(b\"value\")\n+    value, ts = signer.unsign(signed, return_timestamp=True)\n+\n+    assert value == b\"value\"\n+    assert isinstance(value, bytes)\n+    assert ts is not None\n+    assert ts.tzinfo is not None\n+\n+\n+def test_valid_roundtrip_without_timestamp(signer):\n+    signed = signer.sign(b\"value\")\n+    assert signer.unsign(signed) == b\"value\"\n+\n+\n+# Contract 5: ordinary invalid signatures with decodable timestamps still\n+# raise BadTimeSignature with the expected date_signed metadata.\n+def test_ordinary_invalid_signature_keeps_date_signed(signer):\n+    signed = signer.sign(b\"value\")\n+    value_part, ts_part, sig_part = signed.rsplit(b\".\", 2)\n+    bad = b\".\".join([value_part, ts_part, b\"x\" * len(sig_part)])\n+\n+    with pytest.raises(BadTimeSignature) as exc_info:\n+        signer.unsign(bad)\n+\n+    assert exc_info.value.payload == b\"value\"\n+    assert exc_info.value.date_signed is not None\n+\n+\n+# Contract 6: expiry behavior (max_age) is preserved.\n+def test_expired_signature_raises_signature_expired(signer):\n+    signed = signer.sign(b\"value\")\n+\n+    with pytest.raises(SignatureExpired) as exc_info:\n+        signer.unsign(signed, max_age=-1)\n+\n+    assert exc_info.value.payload == b\"value\"\n+    assert exc_info.value.date_signed is not None\n+\n+\n+def test_future_signature_raises_signature_expired(signer):\n+    # Sign using a timestamp in the future so that the computed age is\n+    # negative, which must raise SignatureExpired.\n+    signer.get_timestamp = lambda: 2**31\n+    signed = signer.sign(b\"value\")\n+    signer.get_timestamp = lambda: 0\n+\n+    with pytest.raises(SignatureExpired) as exc_info:\n+        signer.unsign(signed, max_age=10)\n+\n+    assert exc_info.value.payload == b\"value\"\n+    assert exc_info.value.date_signed is not None\n+\n+\n+# Contract 7: TimedSerializer.loads retains its BadSignature-family error\n+# contract, raising BadTimeSignature for malformed timestamps.\n+def test_timed_serializer_malformed_timestamp_raises_bad_time_signature(serializer):\n+    with pytest.raises(BadTimeSignature) as exc_info:\n+        serializer.loads(MALFORMED_SIGNED)\n+\n+    assert isinstance(exc_info.value, BadSignature)\n+    assert exc_info.value.payload == b\"value\"\n+    assert exc_info.value.date_signed is None\n+\n+\n+def test_timed_serializer_valid_roundtrip(serializer):\n+    signed = serializer.dumps({\"a\": 1})\n+    assert serializer.loads(signed) == {\"a\": 1}\n+\n+\n+def test_timed_serializer_expired_raises_signature_expired(serializer):\n+    signed = serializer.dumps({\"a\": 1})\n+\n+    with pytest.raises(SignatureExpired):\n+        serializer.loads(signed, max_age=-1)\n",
+  "diff_digest": "3ab16a46d7d37a4ca8b4452e0028257d8717a8dc38b1dbd8a53c14fce46ab9b8",
+  "execution_status": "failed",
+  "matches_recorded": true,
+  "model_calls_total": 5,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+      "candidate_number": 3,
+      "changed_files": [
+        "src/itsdangerous/timed.py",
+        "tests/test_itsdangerous/test_timed_malformed_regression.py"
+      ],
+      "contract_tests": [
+        "Contract 1 (invalid signature + out-of-range timestamp raises BadTimeSignature, not ValueError): test_malformed_timestamp_raises_bad_time_signature asserts pytest.raises(BadTimeSignature) and 'Malformed' in str(exc); test_malformed_timestamp_does_not_leak_value_error fails if a ValueError escapes.",
+        "Contract 2 (payload equals original payload, bytes): test_malformed_timestamp_payload_is_original asserts exc_info.value.payload == b'value' and isinstance(..., bytes).",
+        "Contract 3 (date_signed is None for malformed timestamps): test_malformed_timestamp_date_signed_is_none asserts exc_info.value.date_signed is None.",
+        "Contract 4 (valid roundtrips return original payload and correct date_signed): test_valid_roundtrip_returns_payload_and_timestamp asserts value == b'value', isinstance(value, bytes), ts is not None, ts.tzinfo is not None; test_valid_roundtrip_without_timestamp asserts signer.unsign(signed) == b'value'.",
+        "Contract 5 (ordinary invalid signatures keep date_signed metadata): test_ordinary_invalid_signature_keeps_date_signed corrupts only the signature, asserts payload == b'value' and date_signed is not None.",
+        "Contract 6 (expiry behavior preserved): test_expired_signature_raises_signature_expired asserts SignatureExpired with payload b'value' and date_signed not None for max_age=-1; test_future_signature_raises_signature_expired signs with a future timestamp and asserts SignatureExpired with payload b'value' and date_signed not None.",
+        "Contract 7 (TimedSerializer.loads retains BadSignature-family contract): test_timed_serializer_malformed_timestamp_raises_bad_time_signature asserts BadTimeSignature (isinstance BadSignature), payload == b'value', date_signed is None; test_timed_serializer_valid_roundtrip asserts loads(dumps({'a': 1})) == {'a': 1}; test_timed_serializer_expired_raises_signature_expired asserts SignatureExpired for max_age=-1.",
+        "Contract 8 (new regression tests added, existing tests unmodified): all assertions live in the NEW file tests/test_itsdangerous/test_timed_malformed_regression.py; no existing test file is edited."
+      ],
+      "edits": [
+        {
+          "new": "        # Signature is *not* okay. Raise a proper error now that we have\n        # split the value and the timestamp.\n        if sig_error is not None:\n            if ts_int is not None:\n                try:\n                    ts_dt = self.timestamp_to_datetime(ts_int)\n                except (ValueError, OverflowError, OSError):\n                    # The decoded timestamp is outside the range supported\n                    # by datetime, so it is malformed. Report it as such\n                    # rather than leaking the datetime error.\n                    raise BadTimeSignature(\n                        \"Malformed timestamp\", payload=value, date_signed=None\n                    )\n\n            raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)",
+          "old": "        # Signature is *not* okay. Raise a proper error now that we have\n        # split the value and the timestamp.\n        if sig_error is not None:\n            if ts_int is not None:\n                ts_dt = self.timestamp_to_datetime(ts_int)\n\n            raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)",
+          "path": "src/itsdangerous/timed.py"
+        },
+        {
+          "new": "import pytest\n\nfrom itsdangerous import BadSignature\nfrom itsdangerous import BadTimeSignature\nfrom itsdangerous import SignatureExpired\nfrom itsdangerous import TimedSerializer\nfrom itsdangerous import TimestampSigner\n\n\n# A signed value whose decoded timestamp is far outside datetime's\n# supported year range. The signature is invalid, so unsign takes the\n# invalid-signature path and must not leak a datetime ValueError.\nMALFORMED_SIGNED = b\"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY\"\n\n\n@pytest.fixture\ndef signer():\n    return TimestampSigner(\"secret-key\")\n\n\n@pytest.fixture\ndef serializer():\n    return TimedSerializer(\"secret-key\")\n\n\n# Contract 1: invalid signature + out-of-range decoded timestamp raises\n# BadTimeSignature instead of leaking a datetime ValueError.\ndef test_malformed_timestamp_raises_bad_time_signature(signer):\n    with pytest.raises(BadTimeSignature) as exc_info:\n        signer.unsign(MALFORMED_SIGNED)\n\n    assert \"Malformed\" in str(exc_info.value)\n\n\ndef test_malformed_timestamp_does_not_leak_value_error(signer):\n    try:\n        signer.unsign(MALFORMED_SIGNED)\n    except BadTimeSignature:\n        pass\n    except ValueError as e:  # pragma: no cover - regression guard\n        pytest.fail(f\"leaked datetime ValueError: {e!r}\")\n    else:  # pragma: no cover - regression guard\n        pytest.fail(\"expected BadTimeSignature\")\n\n\n# Contract 2: payload equals the original payload passed to unsign.\ndef test_malformed_timestamp_payload_is_original(signer):\n    with pytest.raises(BadTimeSignature) as exc_info:\n        signer.unsign(MALFORMED_SIGNED)\n\n    assert exc_info.value.payload == b\"value\"\n    assert isinstance(exc_info.value.payload, bytes)\n\n\n# Contract 3: date_signed is None for malformed timestamps.\ndef test_malformed_timestamp_date_signed_is_none(signer):\n    with pytest.raises(BadTimeSignature) as exc_info:\n        signer.unsign(MALFORMED_SIGNED)\n\n    assert exc_info.value.date_signed is None\n\n\n# Contract 4: valid roundtrips still return the original payload and a\n# correct date_signed.\ndef test_valid_roundtrip_returns_payload_and_timestamp(signer):\n    signed = signer.sign(b\"value\")\n    value, ts = signer.unsign(signed, return_timestamp=True)\n\n    assert value == b\"value\"\n    assert isinstance(value, bytes)\n    assert ts is not None\n    assert ts.tzinfo is not None\n\n\ndef test_valid_roundtrip_without_timestamp(signer):\n    signed = signer.sign(b\"value\")\n    assert signer.unsign(signed) == b\"value\"\n\n\n# Contract 5: ordinary invalid signatures with decodable timestamps still\n# raise BadTimeSignature with the expected date_signed metadata.\ndef test_ordinary_invalid_signature_keeps_date_signed(signer):\n    signed = signer.sign(b\"value\")\n    value_part, ts_part, sig_part = signed.rsplit(b\".\", 2)\n    bad = b\".\".join([value_part, ts_part, b\"x\" * len(sig_part)])\n\n    with pytest.raises(BadTimeSignature) as exc_info:\n        signer.unsign(bad)\n\n    assert exc_info.value.payload == b\"value\"\n    assert exc_info.value.date_signed is not None\n\n\n# Contract 6: expiry behavior (max_age) is preserved.\ndef test_expired_signature_raises_signature_expired(signer):\n    signed = signer.sign(b\"value\")\n\n    with pytest.raises(SignatureExpired) as exc_info:\n        signer.unsign(signed, max_age=-1)\n\n    assert exc_info.value.payload == b\"value\"\n    assert exc_info.value.date_signed is not None\n\n\ndef test_future_signature_raises_signature_expired(signer):\n    # Sign using a timestamp in the future so that the computed age is\n    # negative, which must raise SignatureExpired.\n    signer.get_timestamp = lambda: 2**31\n    signed = signer.sign(b\"value\")\n    signer.get_timestamp = lambda: 0\n\n    with pytest.raises(SignatureExpired) as exc_info:\n        signer.unsign(signed, max_age=10)\n\n    assert exc_info.value.payload == b\"value\"\n    assert exc_info.value.date_signed is not None\n\n\n# Contract 7: TimedSerializer.loads retains its BadSignature-family error\n# contract, raising BadTimeSignature for malformed timestamps.\ndef test_timed_serializer_malformed_timestamp_raises_bad_time_signature(serializer):\n    with pytest.raises(BadTimeSignature) as exc_info:\n        serializer.loads(MALFORMED_SIGNED)\n\n    assert isinstance(exc_info.value, BadSignature)\n    assert exc_info.value.payload == b\"value\"\n    assert exc_info.value.date_signed is None\n\n\ndef test_timed_serializer_valid_roundtrip(serializer):\n    signed = serializer.dumps({\"a\": 1})\n    assert serializer.loads(signed) == {\"a\": 1}\n\n\ndef test_timed_serializer_expired_raises_signature_expired(serializer):\n    signed = serializer.dumps({\"a\": 1})\n\n    with pytest.raises(SignatureExpired):\n        serializer.loads(signed, max_age=-1)\n",
+          "old": "",
+          "path": "tests/test_itsdangerous/test_timed_malformed_regression.py"
+        }
+      ],
+      "rationale": "The previous candidate's fix in timed.py is correct and matches the issue: on the invalid-signature path, when the decoded timestamp cannot be converted to a datetime (out of range), raise BadTimeSignature with the original payload and date_signed=None. The single test failure was in the candidate's own NEW test file: `test_future_signature_raises_signature_expired` used `max_age=10**9`, which does NOT trigger the `age < 0` branch (age is ~0, not negative), so no SignatureExpired is raised. The correct way to exercise the future-signature branch is to sign with a future timestamp. I keep the timed.py fix and rewrite the regression tests to correctly cover all acceptance contracts, including a proper future-signature expiry test that manipulates the signer's clock."
+    }
+  ],
+  "recorded_digest": "3ab16a46d7d37a4ca8b4452e0028257d8717a8dc38b1dbd8a53c14fce46ab9b8",
+  "retry_count": 2,
+  "reviews": [
+    {
+      "approved": false,
+      "attempt": 3,
+      "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+      "candidate_number": 3,
+      "concerns": [
+        "Cannot verify MALFORMED_SIGNED decodes to a timestamp outside datetime's supported range from the provided context; if it does not, the regression tests would pass trivially without exercising the new except branch.",
+        "The new test file is placed at tests/test_itsdangerous/test_timed_malformed_regression.py rather than tests/test_timed.py as stated in the plan; acceptable per issue but worth noting.",
+        "Tests assert BadTimeSignature is raised but do not demonstrate that the pre-fix code would have leaked a ValueError, so they are weak regression guards for the specific bug.",
+        "The except clause catches OSError/OverflowError in addition to ValueError; this is broader than the issue's stated ValueError but reasonable and does not change valid-path semantics."
+      ],
+      "contract_checks": [
+        {
+          "evidence": "timed.py now wraps self.timestamp_to_datetime(ts_int) in try/except (ValueError, OverflowError, OSError) and raises BadTimeSignature('Malformed timestamp', payload=value, date_signed=None) on the sig_error path. test_malformed_timestamp_raises_bad_time_signature and test_malformed_timestamp_does_not_leak_value_error cover this.",
+          "requirement": "TimestampSigner.unsign with an invalid signature whose decoded timestamp is outside datetime's supported year range raises BadTimeSignature instead of leaking a datetime ValueError.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Code passes payload=value where value is result.rsplit(sep,1)[0]; test_malformed_timestamp_payload_is_original asserts payload == b'value' and bytes type.",
+          "requirement": "The raised BadTimeSignature for a malformed timestamp has payload equal to the original payload passed to unsign.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Code passes date_signed=None; test_malformed_timestamp_date_signed_is_none asserts date_signed is None.",
+          "requirement": "The raised BadTimeSignature for a malformed timestamp has date_signed equal to None.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Valid path unchanged; test_valid_roundtrip_returns_payload_and_timestamp and test_valid_roundtrip_without_timestamp assert payload and tz-aware timestamp.",
+          "requirement": "Valid TimestampSigner roundtrips continue to return the original payload and correct date_signed.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Non-exception path still raises BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt); test_ordinary_invalid_signature_keeps_date_signed asserts date_signed is not None.",
+          "requirement": "Ordinary invalid signatures with decodable timestamps still raise BadTimeSignature with the expected date_signed metadata.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Expiry code unchanged; test_expired_signature_raises_signature_expired and test_future_signature_raises_signature_expired assert SignatureExpired with payload and date_signed.",
+          "requirement": "Expiry behavior (max_age) is preserved: expired signatures raise BadTimeSignature with the appropriate date_signed.",
+          "satisfied": true
+        },
+        {
+          "evidence": "TimedSerializer.loads catches BadSignature and re-raises last_exception; test_timed_serializer_malformed_timestamp_raises_bad_time_signature asserts BadTimeSignature isinstance BadSignature with payload b'value' and date_signed None.",
+          "requirement": "TimedSerializer.loads retains its BadSignature-family error contract, raising BadTimeSignature for malformed timestamps.",
+          "satisfied": true
+        },
+        {
+          "evidence": "Diff adds only tests/test_itsdangerous/test_timed_malformed_regression.py; no existing test files are edited.",
+          "requirement": "New regression tests are added and existing tests are not modified.",
+          "satisfied": true
+        }
+      ],
+      "summary": "The fix in src/itsdangerous/timed.py catches datetime range errors on the invalid-signature path and raises BadTimeSignature with payload=value and date_signed=None, matching the issue. New regression tests were added in a new file. However, the tests rely on a hardcoded MALFORMED_SIGNED constant whose decoded timestamp must actually be out of datetime's range; I cannot verify that constant's decoded value from the provided context, and the test file path differs from the plan's stated tests/test_timed.py (though the issue only requires new tests, not a specific path). More importantly, the malformed-timestamp branch is only reachable when ts_int is not None AND the signature is invalid; the tests do not independently prove the ValueError would otherwise leak (they only assert BadTimeSignature is raised). The core code change appears correct and preserves other paths."
+    }
+  ],
+  "tests": [
+    {
+      "attempt": 3,
+      "candidate_id": "35024e28-dbb1-4dae-864b-03a29718d131",
+      "candidate_number": 3,
+      "duration_seconds": 2.7311048000010487,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73",
+      "output_truncated": false,
+      "passed": 309,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": "........................................................................ [ 23%]\n........................................................................ [ 46%]\n........................................................................ [ 69%]\n........................................................................ [ 93%]\n.....................                                                    [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n309 passed in 1.77s\n"
+    }
+  ],
+  "workspace_manifest": {
+    ".github/ISSUE_TEMPLATE/bug-report.md": "e6d1426b6b411756b6e19f5e5295d3d7b612096d6fb2031d75fc2c95c0c7adf4",
+    ".github/ISSUE_TEMPLATE/config.yml": "c295e44a6d6bb0d90f671c76bd3085e86f3b68c003b8caa629e4037a32fd82ae",
+    ".github/ISSUE_TEMPLATE/feature-request.md": "ea4803f6beac34770cc6e97d814000b660ee3e6b5a9aef0b3c30a8253327ddbe",
+    ".github/dependabot.yml": "fe27cc0e9c91980474bf2e6c4bbb7c035bb71b781c7fff67a4fa142fbe6c4eed",
+    ".github/pull_request_template.md": "37497840677a8fe41c0e24ec7dde8b298a728fcbf94dc62eee29326bbd49ca84",
+    ".github/workflows/lock.yaml": "5fc1d4f5675af21028d0991a4e4031a24b595bc752ec26f64e57a29baf6dd0ba",
+    ".github/workflows/tests.yaml": "826ac9315b8a5f799d1c5c1ed0e539d4c712d00c3d3efafe06a0331055e9f20a",
+    ".pre-commit-config.yaml": "317dd46df0c651b3846672a6eb9cd2bd99fb9ee2c4180403067b0b6bff6cd8dc",
+    ".readthedocs.yaml": "dd47a46c7c3027f89216b0a9c2f2ea91275cc7dd2717f6a271a661a29beb2b1a",
+    "docs/conf.py": "e9c9a774550ec6be222e0c22bd567e3bd9c8a62108ecc15440664c7293c56421",
+    "requirements/dev.txt": "9145bb9beacb66cc8afbadf3f7e8c072720ab612829bcdf3798183fa6cbc9175",
+    "requirements/docs.txt": "e9176c806bef70ffc3f125ad50e0b8c185ff17b09feef50495fb298086d091ce",
+    "requirements/tests.txt": "b92045676485e00d0a9bc0d616c43ddd648d79b1f8e5c5caf0c9e04fc29d152c",
+    "requirements/typing.txt": "2547f0b8b24813999134631da0a7af2a791e6c550b188857ea965bd97e787901",
+    "setup.py": "8aa2813abd149d4452ece61db88878318dc440e5e7a9b6313d1a2d126b998a4d",
+    "src/itsdangerous/__init__.py": "8b92dbebbcded5744cf602bc1346fe3c753b0e5bc3f0a06e2b6e3a1017d055a8",
+    "src/itsdangerous/_json.py": "c0886cffbfbf5d9a259b2afe26f28d8b2fcb80071f7af611d2a84255d948860f",
+    "src/itsdangerous/encoding.py": "a6087ceac9c70bbe9d3cb3429cf96b8d1e526982ff33c1fe81646288b35b8425",
+    "src/itsdangerous/exc.py": "545c663f694ca12245ab134ccd6a27aacdf944e208e3e7ef0817c6d2fd5391bb",
+    "src/itsdangerous/serializer.py": "ce0675f94ef4e631c3a6deb6c7fa662c976bc842833406ede54909b6791c092c",
+    "src/itsdangerous/signer.py": "4141f4897d229fe393a6d3005ca539cd633098e0979f57ec0ecb9b5e219d14de",
+    "src/itsdangerous/timed.py": "126d76b8a7a358bbe648da995e79cfaa7c95585b4cc7ef30e421c07f5cd3287c",
+    "src/itsdangerous/url_safe.py": "e5b0b88d228e8d6351916ac5b1e89f5955d49c79cf83038b44e8e23b06fe79ea",
+    "tests/test_itsdangerous/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests/test_itsdangerous/test_encoding.py": "af71dbee0825fc8ae947b6c789b05f2331afe60efae2aee5145727446385c3f0",
+    "tests/test_itsdangerous/test_serializer.py": "5ef59b554372efb4ae56b77ecbcef3e1c7f3c25eb7b9b0fd19697565833334ff",
+    "tests/test_itsdangerous/test_signer.py": "219c2a399adc874f14534d1311e950c1e29b2c7d05d037770701b2af258b97a2",
+    "tests/test_itsdangerous/test_timed.py": "16b7af71ba9fb4f0df39f968a6aa7c3ceed8455e424738835a6cffb011773a37",
+    "tests/test_itsdangerous/test_timed_malformed_regression.py": "fcc6676cc8c947a6b27cca5c4c18a274c45bc73e129f6620d324208844ea1758",
+    "tests/test_itsdangerous/test_url_safe.py": "64d2afc9ab467f209549841f0d87125243d646e011c725818eda8e75ad4d830d"
+  }
+}

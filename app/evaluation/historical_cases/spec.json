@@ -1,0 +1,54 @@
+[
+  {
+    "id": "jsonpointer-large-index",
+    "upstream": "jsonpointer",
+    "url": "https://github.com/stefankoegl/python-json-pointer",
+    "before_commit": "8c0bfdd3b9b3c42c1cfec7334ab6bcaf8cad1353",
+    "fix_commit": "b8fbae380c74795b42de3e5a569519ab2dc8e8a8",
+    "repaired_files": [
+      "jsonpointer.py"
+    ],
+    "issue": "jsonpointer.py leaks ValueError when a valid numeric array index exceeds Python's integer digit conversion limit. All public resolve, to_last and set operations must raise JsonPointerException for invalid sequence indices; resolve with a default must return that exact default. Numeric object member keys remain strings, however long. Preserve ordinary array indices, end-of-list handling and input mutation behavior. Add NEW regression tests.",
+    "acceptance": "test_jsonpointer_large.py.txt",
+    "collection_entrypoint": "tests.py"
+  },
+  {
+    "id": "itsdangerous-date-overflow",
+    "upstream": "itsdangerous",
+    "url": "https://github.com/pallets/itsdangerous",
+    "before_commit": "85b1e3b76e0e37473dc286450ada725cd02981b4",
+    "fix_commit": "37f09970fa32a330a6660ded3abdb264086531b5",
+    "repaired_files": [
+      "src/itsdangerous/timed.py"
+    ],
+    "issue": "TimestampSigner.unsign in src/itsdangerous/timed.py leaks a datetime ValueError when an invalid signature contains a decoded timestamp outside datetime's supported year range. Report BadTimeSignature with the original payload and date_signed=None for malformed timestamps on the invalid-signature path. Preserve valid roundtrips, ordinary invalid-signature date_signed metadata and expiry behavior. The public timed serializer must retain its BadSignature-family error contract too. Add NEW regression tests; do not edit existing tests.",
+    "acceptance": "test_itsdangerous_overflow.py.txt",
+    "collection_entrypoint": null
+  },
+  {
+    "id": "dotenv-empty-comment",
+    "upstream": "dotenv",
+    "url": "https://github.com/theskumar/python-dotenv",
+    "before_commit": "49515afee2d50c33cad9419b3800b3a0dc93fc59",
+    "fix_commit": "f5485a61eefa5e686d6d5bdc7aa9ad6b104b1e92",
+    "repaired_files": [
+      "src/dotenv/parser.py"
+    ],
+    "issue": "python-dotenv treats an unquoted empty value followed by whitespace and an inline comment as the comment text. KEY= # comment and a tab-separated comment should give an empty string. Keep KEY=#literal and hashes inside nonempty or quoted values literal as appropriate. Preserve keys without equals as None, adjacent lines, export bindings, CRLF, dotenv_values stream parsing and load_dotenv override behavior. Add NEW regression tests without editing original tests.",
+    "acceptance": "test_dotenv_empty_comment.py.txt",
+    "collection_entrypoint": null
+  },
+  {
+    "id": "slugify-uppercase-translations",
+    "upstream": "slugify",
+    "url": "https://github.com/un33k/python-slugify",
+    "before_commit": "0116509edb107e503443bb4cdbeb088ee71e40cc",
+    "fix_commit": "a243ccdc6d2b650b83782e03893e8f117356aeff",
+    "repaired_files": [
+      "slugify/special.py"
+    ],
+    "issue": "slugify.special.add_uppercase_char returns before processing every original translation, so PRE_TRANSLATIONS lacks uppercase variants for later German and other non-Latin characters. Process every original pair, retain existing uppercase entries without duplicates and keep the existing capitalization convention and ordinary slugify/smart_truncate behavior. The public PRE_TRANSLATIONS and replacement-enabled slugify must agree. Add NEW regression tests; do not edit the original test.py.",
+    "acceptance": "test_slugify_uppercase.py.txt",
+    "collection_entrypoint": "test.py"
+  }
+]

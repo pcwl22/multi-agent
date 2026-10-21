@@ -1,0 +1,54 @@
+[
+  {
+    "phase": "pilot",
+    "id": "01-jsonpointer-large-index-multi_full-legacy",
+    "status": "failed",
+    "error": "Model output failed schema validation twice",
+    "provider_failure": null,
+    "budget_failure": null,
+    "patch_feedback": [],
+    "repair_feedback": [],
+    "review_results": [],
+    "regression_witness": null,
+    "test_status": null,
+    "hidden_status": null
+  },
+  {
+    "phase": "pilot",
+    "id": "02-jsonpointer-large-index-multi_full-quality",
+    "status": "failed",
+    "error": "Patch rejected: [Errno 2] No such file or directory: 'E:\\\\multi-agent\\\\.repopilot\\\\new-channel-evaluation-20261021\\\\pilot\\\\02-jsonpointer-large-index-multi_full-quality\\\\data\\\\tasks\\\\48312c7c-eb0f-465f-b563-411b63375f52\\\\attempts\\\\0001\\\\workspace\\\\tests\\\\test_overlimit_index.py.repopilot-8ce256d5-25ae-4048-b3ae-795ba9b43b17.tmp'",
+    "provider_failure": null,
+    "budget_failure": null,
+    "patch_feedback": [],
+    "repair_feedback": [],
+    "review_results": [],
+    "regression_witness": null,
+    "test_status": null,
+    "hidden_status": null
+  },
+  {
+    "phase": "pilot",
+    "id": "03-itsdangerous-date-overflow-multi_full-quality",
+    "worker_failed": true,
+    "workflow_status": "creation_failed",
+    "model_calls": 0,
+    "creation_failures": [
+      {
+        "type": "FileNotFoundError",
+        "winerror": 206,
+        "message": "[WinError 206] 文件名或扩展名太长。: 'E:\\\\multi-agent\\\\.repopilot\\\\new-channel-evaluation-20261021\\\\pilot\\\\03-itsdangerous-date-overflow-multi_full-quality\\\\data\\\\tasks\\\\e54e137d-b35d-4b53-9e62-6e5403ac14ca\\\\attempts\\\\preparing-30243142-4185-4fe4-b3d4-8d6460cd5345\\\\baseline\\\\.github\\\\ISSUE_TEMPLATE'",
+        "timestamp": 1792544533.564917,
+        "attempt": 1
+      },
+      {
+        "type": "FileNotFoundError",
+        "winerror": 206,
+        "message": "[WinError 206] 文件名或扩展名太长。: 'E:\\\\multi-agent\\\\.repopilot\\\\new-channel-evaluation-20261021\\\\pilot\\\\03-itsdangerous-date-overflow-multi_full-quality\\\\data\\\\tasks\\\\e54e137d-b35d-4b53-9e62-6e5403ac14ca\\\\attempts\\\\preparing-38f83b30-8423-4159-af89-3ad57c1bb19c\\\\baseline\\\\.github\\\\ISSUE_TEMPLATE'",
+        "timestamp": 1792544533.7141175,
+        "attempt": 2
+      }
+    ],
+    "error": "Task creation failed: [WinError 206] 文件名或扩展名太长。: 'E:\\\\multi-agent\\\\.repopilot\\\\new-channel-evaluation-20261021\\\\pilot\\\\03-itsdangerous-date-overflow-multi_full-quality\\\\data\\\\tasks\\\\e54e137d-b35d-4b53-9e62-6e5403ac14ca\\\\attempts\\\\preparing-38f83b30-8423-4159-af89-3ad57c1bb19c\\\\baseline\\\\.github\\\\ISSUE_TEMPLATE'"
+  }
+]

@@ -1,0 +1,73 @@
+{
+  "candidate_id": "e2717e26-4fb5-41ae-afd8-252af3d6d032",
+  "candidate_number": 1,
+  "diff": "--- a/pagination.py\n+++ b/pagination.py\n@@ -1,5 +1,5 @@\n def paginate(items, page, page_size):\n     if page < 1 or page_size < 1:\n         return []\n-    start = page * page_size\n+    start = (page - 1) * page_size\n     return items[start : start + page_size]\n--- a/tests/test_pagination_regression.py\n+++ b/tests/test_pagination_regression.py\n@@ -0,0 +1,61 @@\n+from pagination import paginate\n+\n+\n+def test_page_two_size_two_returns_third_and_fourth():\n+    result = paginate(range(1, 8), 2, 2)\n+    assert result == [3, 4]\n+    assert isinstance(result, list)\n+\n+\n+def test_page_one_size_two_returns_first_two():\n+    result = paginate(range(1, 8), 1, 2)\n+    assert result == [1, 2]\n+    assert isinstance(result, list)\n+\n+\n+def test_last_partial_page_returns_remaining():\n+    result = paginate(range(1, 8), 4, 2)\n+    assert result == [7]\n+    assert isinstance(result, list)\n+\n+\n+def test_page_beyond_last_returns_empty():\n+    result = paginate(range(1, 8), 5, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_empty_input_returns_empty():\n+    result = paginate([], 1, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_non_positive_page_returns_empty():\n+    result = paginate([1, 2], 0, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_non_positive_page_size_returns_empty():\n+    result = paginate([1, 2], 1, 0)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_negative_page_returns_empty():\n+    result = paginate([1, 2, 3], -1, 2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_negative_page_size_returns_empty():\n+    result = paginate([1, 2, 3], 1, -2)\n+    assert result == []\n+    assert isinstance(result, list)\n+\n+\n+def test_one_based_semantics_with_list_input():\n+    result = paginate([10, 20, 30, 40, 50], 2, 2)\n+    assert result == [30, 40]\n+    assert isinstance(result, list)\n",
+  "diff_digest": "28db0109c08bb8fac8b263c6b8d26acf927dc060c1dad2d0a67a9ebe439d519c",
+  "execution_status": "running",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "e2717e26-4fb5-41ae-afd8-252af3d6d032",
+      "candidate_number": 1,
+      "changed_files": [
+        "pagination.py",
+        "tests/test_pagination_regression.py"
+      ],
+      "contract_tests": [
+        "paginate(range(1,8), page=2, size=2) returns [3,4] (one-based page numbering) -> test_page_two_size_two_returns_third_and_fourth asserts result == [3, 4] and isinstance(result, list).",
+        "paginate(range(1,8), page=1, size=2) returns [1,2] -> test_page_one_size_two_returns_first_two asserts result == [1, 2] and isinstance(result, list).",
+        "paginate(range(1,8), page=4, size=2) returns [7] (last partial page) -> test_last_partial_page_returns_remaining asserts result == [7] and isinstance(result, list).",
+        "paginate(range(1,8), page=5, size=2) returns [] (beyond last page) -> test_page_beyond_last_returns_empty asserts result == [] and isinstance(result, list).",
+        "Empty input returns [] -> test_empty_input_returns_empty asserts paginate([], 1, 2) == [] and isinstance(result, list).",
+        "Invalid inputs (non-positive page) return [] -> test_non_positive_page_returns_empty asserts paginate([1,2], 0, 2) == [] and test_negative_page_returns_empty asserts paginate([1,2,3], -1, 2) == [], both with isinstance(result, list).",
+        "Invalid inputs (non-positive size) return [] -> test_non_positive_page_size_returns_empty asserts paginate([1,2], 1, 0) == [] and test_negative_page_size_returns_empty asserts paginate([1,2,3], 1, -2) == [], both with isinstance(result, list).",
+        "Existing public callers of paginate continue to work with one-based semantics -> test_one_based_semantics_with_list_input asserts paginate([10,20,30,40,50], 2, 2) == [30, 40] and isinstance(result, list); existing tests/test_contract.py assertions paginate([], 1, 2) == [] and paginate([1,2], 0, 2) == [] remain satisfied."
+      ],
+      "edits": [
+        {
+          "new": "    start = (page - 1) * page_size\n    return items[start : start + page_size]",
+          "old": "    start = page * page_size\n    return items[start : start + page_size]",
+          "path": "pagination.py"
+        },
+        {
+          "new": "from pagination import paginate\n\n\ndef test_page_two_size_two_returns_third_and_fourth():\n    result = paginate(range(1, 8), 2, 2)\n    assert result == [3, 4]\n    assert isinstance(result, list)\n\n\ndef test_page_one_size_two_returns_first_two():\n    result = paginate(range(1, 8), 1, 2)\n    assert result == [1, 2]\n    assert isinstance(result, list)\n\n\ndef test_last_partial_page_returns_remaining():\n    result = paginate(range(1, 8), 4, 2)\n    assert result == [7]\n    assert isinstance(result, list)\n\n\ndef test_page_beyond_last_returns_empty():\n    result = paginate(range(1, 8), 5, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_empty_input_returns_empty():\n    result = paginate([], 1, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_non_positive_page_returns_empty():\n    result = paginate([1, 2], 0, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_non_positive_page_size_returns_empty():\n    result = paginate([1, 2], 1, 0)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_negative_page_returns_empty():\n    result = paginate([1, 2, 3], -1, 2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_negative_page_size_returns_empty():\n    result = paginate([1, 2, 3], 1, -2)\n    assert result == []\n    assert isinstance(result, list)\n\n\ndef test_one_based_semantics_with_list_input():\n    result = paginate([10, 20, 30, 40, 50], 2, 2)\n    assert result == [30, 40]\n    assert isinstance(result, list)\n",
+          "old": "",
+          "path": "tests/test_pagination_regression.py"
+        }
+      ],
+      "rationale": "The bug is in pagination.py: `start = page * page_size` treats page numbers as zero-based, so page=2, size=2 starts at index 4 (returning [5,6]) instead of index 2 ([3,4]). Fix by computing `start = (page - 1) * page_size`, making page numbers one-based. The guard `if page < 1 or page_size < 1: return []` already preserves empty/invalid inputs and, combined with slicing, naturally returns [] for pages beyond the last page. Existing test tests/test_contract.py remains valid: paginate([], 1, 2) == [] and paginate([1,2], 0, 2) == []. A new regression test file tests/test_pagination_regression.py is added covering all acceptance contracts with exact inputs and result types."
+    }
+  ],
+  "recorded_digest": "28db0109c08bb8fac8b263c6b8d26acf927dc060c1dad2d0a67a9ebe439d519c",
+  "retry_count": 1,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "e2717e26-4fb5-41ae-afd8-252af3d6d032",
+      "candidate_number": 1,
+      "duration_seconds": 0.9891234999995504,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 1,
+      "failed": 4,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 7,
+      "skipped": 0,
+      "status": "failed",
+      "stderr": "",
+      "stdout": ".FFFF......                                                              [100%]\n=================================== FAILURES ===================================\n_______________ test_page_two_size_two_returns_third_and_fourth ________________\n\n    def test_page_two_size_two_returns_third_and_fourth():\n        result = paginate(range(1, 8), 2, 2)\n>       assert result == [3, 4]\nE       assert range(3, 5) == [3, 4]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:6: AssertionError\n___________________ test_page_one_size_two_returns_first_two ___________________\n\n    def test_page_one_size_two_returns_first_two():\n        result = paginate(range(1, 8), 1, 2)\n>       assert result == [1, 2]\nE       assert range(1, 3) == [1, 2]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:12: AssertionError\n___________________ test_last_partial_page_returns_remaining ___________________\n\n    def test_last_partial_page_returns_remaining():\n        result = paginate(range(1, 8), 4, 2)\n>       assert result == [7]\nE       assert range(7, 8) == [7]\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:18: AssertionError\n_____________________ test_page_beyond_last_returns_empty ______________________\n\n    def test_page_beyond_last_returns_empty():\n        result = paginate(range(1, 8), 5, 2)\n>       assert result == []\nE       assert range(8, 8) == []\nE         \nE         Use -v to get more diff\n\ntests/test_pagination_regression.py:24: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_pagination_regression.py::test_page_two_size_two_returns_third_and_fourth\nFAILED tests/test_pagination_regression.py::test_page_one_size_two_returns_first_two\nFAILED tests/test_pagination_regression.py::test_last_partial_page_returns_remaining\nFAILED tests/test_pagination_regression.py::test_page_beyond_last_returns_empty\n4 failed, 7 passed in 0.16s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "pagination.py": "e55c3c1dd6ea02153297bcdf80660137b8ec8b72ee655b362966100f91b8ce19",
+    "tests/test_contract.py": "dd502c4f8354dd9bd8066e2988899c660201b5bc533784087bbcfa119dc7d4f3",
+    "tests/test_pagination_regression.py": "12b3efdbf923de4037bf3216e6d41f60ea297e611a73947cb0fb89757f487cc2"
+  }
+}

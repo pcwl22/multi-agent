@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "path": "diagnosis.json",
+      "sha256": "5a01504eb8c713090bf27e9ab09e0ac89ccae83021952e0757d1a35c36bd4f93"
+    },
+    {
+      "path": "diagnosis.md",
+      "sha256": "48eedc2b7e954e0f8e61dee5b7c229f717e519f3a455410c7dacef81d2b4d5db"
+    }
+  ],
+  "original_evidence_manifest_sha256": "cb98e9a3d551cc3be0becf9a5333d1a8b7d55857980ece9ae89169742ecfd6d4"
+}

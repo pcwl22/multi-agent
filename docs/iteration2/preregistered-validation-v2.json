@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-10-16T06:55:26.449589+00:00",
+  "code_commit": "7abd716",
+  "planned_runs": [
+    {
+      "name": "final-strict",
+      "cases": 10,
+      "modes": 3,
+      "repeats": 1,
+      "runs": 30
+    },
+    {
+      "name": "pagination-target",
+      "cases": 1,
+      "modes": 3,
+      "repeats": 3,
+      "runs": 9
+    },
+    {
+      "name": "historical-pilots",
+      "cases": 2,
+      "modes": 3,
+      "repeats": 1,
+      "runs": 6
+    }
+  ],
+  "datasets_sha256": {
+    "app/evaluation/expanded/dataset.strict.json": "7653967fac65a6a63b143792650277a375a6281b6d1aec01fa070803084189da",
+    ".repopilot/guard-target/dataset.json": "7d00f1241601c25d5dce824fa74fac51631237482933d7d2e9545cdd6acc1c2d",
+    ".repopilot/pilots/corpus/dataset.json": "b7e04741ba6d84c5e99f2da9ffc3a844e00fb3178051ca110083899462901466"
+  },
+  "failures_stay_in_denominator": true,
+  "no_oracle_changes": true,
+  "no_remote_writes": true,
+  "supersedes_for_final_runtime": "preregistered-validation.json",
+  "reason": "Actual live validation exposed a coverage-gate false rejection on source-only retries. Preserve the original planned 30-run attempt as guard-initial, without replacement. Corrected final validation uses the same frozen corpus/oracle and planned 30+9+6 attempts in fresh directories.",
+  "guard_initial_results_preserved": true,
+  "additional_pre_run_correction": "Protect legacy tests.py/test.py and use the same test-path policy for repair and holdout."
+}

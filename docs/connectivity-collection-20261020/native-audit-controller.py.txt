@@ -1,0 +1,81 @@
+"""Trusted evaluator controller: Git reads on host, all upstream imports in Docker."""
+import hashlib
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+W = Path('E:/Agent/repopilot-connectivity-v2-20261020')
+Q = Path('E:/multi-agent/.repopilot/connectivity-collection-20261020')
+sys.path.insert(0, str(W))
+from app.config.settings import Settings
+from app.evaluation.historical import controls, prepare, verify
+
+def save(name, data):
+    (Q / name).write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+assert not (Q / 'corpus').exists()
+shutil.copytree('E:/multi-agent/.repopilot/quality-20261020/spec', Q / 'spec')
+lock_sha = prepare(Path('E:/multi-agent/.repopilot/history-20261019/upstream'), Q / 'corpus',
+                   Q / 'spec/spec.json', collection_protocol='native-v2')
+save('corpus-identity.json', {'lock_sha256': lock_sha, 'protocol': 'unittest-load-tests-v2'})
+lock = verify(Q / 'corpus', lock_sha)
+old_lock = json.loads(Path('E:/multi-agent/.repopilot/quality-20261020/corpus/lock.json').read_text(encoding='utf-8'))
+assert {r['case']['id'] for r in lock['cases']} == {r['case']['id'] for r in old_lock['cases']}
+for row in lock['cases']:
+    old = next(r for r in old_lock['cases'] if r['case']['id'] == row['case']['id'])
+    assert row['original_tests'] == old['original_tests']
+settings = Settings(_env_file=None, sandbox_image='sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d', test_timeout=90)
+result = controls(Q / 'corpus', Q / 'controls', lock_sha, settings)
+assert result['all_eligible'], result
+
+independent = '''import importlib,io,json,unittest
+module=importlib.import_module(ENTRYPOINT)
+loader=unittest.TestLoader()
+suite=loader.loadTestsFromModule(module)
+def flatten(s):
+    for t in s:
+        if isinstance(t,unittest.TestSuite): yield from flatten(t)
+        else: yield t.id()
+ids=list(flatten(suite))
+result=unittest.TextTestRunner(stream=io.StringIO()).run(suite)
+status={i:'passed' for i in ids}
+for test,_ in result.failures+result.errors+[(t,'') for t in result.unexpectedSuccesses]: status[test.id()]='failed'
+for test,_ in result.skipped+result.expectedFailures: status[test.id()]='skipped'
+print('NATIVE_INVENTORY='+json.dumps(dict(ids=ids,status=status,testsRun=result.testsRun,loader_errors=len(loader.errors))))
+'''
+rows = []
+for row in lock['cases']:
+    case = row['case']
+    if not case['collection_entrypoint']:
+        continue
+    control = next(r for r in result['cases'] if r['id'] == case['id'])
+    for folder, key in [('sources', 'baseline_suite'), ('references', 'reference_suite')]:
+        root = Q / 'corpus' / folder / case['id']
+        code = independent.replace('ENTRYPOINT', repr(Path(case['collection_entrypoint']).stem))
+        completed = subprocess.run(['docker','run','--rm','--network=none','--log-driver=none',
+            '--cpus=1','--memory=512m','--memory-swap=512m','--pids-limit=64','--cap-drop=ALL',
+            '--security-opt=no-new-privileges','--user=65534:65534','--read-only',
+            '--tmpfs','/tmp:rw,noexec,nosuid,size=64m','--mount',f'type=bind,source={root},target=/workspace,readonly',
+            '--workdir=/workspace','--env=PYTHONDONTWRITEBYTECODE=1','--env=PYTHONPATH=/workspace:/workspace/src',
+            '--env=HOME=/tmp',settings.sandbox_image,'python','-c',code], capture_output=True, timeout=90, check=True)
+        output = completed.stdout.decode('utf-8')
+        raw = output.split('NATIVE_INVENTORY=',1)[1].splitlines()[0]
+        native = json.loads(raw)
+        assert not native['loader_errors']
+        pytest_status = {}
+        for item in control[key]['cases']:
+            if item['name'].startswith('test_original_collection['):
+                ident = item['name'][len('test_original_collection['):-1]
+                ident = ident.replace('_repopilot_native.', Path(case['collection_entrypoint']).stem + '.', 1)
+                pytest_status[ident] = item['status']
+        assert pytest_status == native['status'], (case['id'], folder, pytest_status, native)
+        rows.append({'id': case['id'], 'snapshot': folder, 'native_count': len(native['ids']),
+            'native_tests_run': native['testsRun'], 'pytest_native_count': len(pytest_status),
+            'inventory_and_outcomes_match': True, 'native': native})
+        print(json.dumps({'native_inventory':case['id'], 'snapshot':folder, 'count':len(native['ids'])}), flush=True)
+save('native-inventory.json', {'lock_sha256':lock_sha,'independent_docker_runs':len(rows),'snapshots':rows,
+    'original_test_manifests_unchanged':True, 'extra_pytest_integrity_item_per_bridge':1})
+verify(Q / 'corpus', lock_sha)
+print(json.dumps({'all_controls_eligible':result['all_eligible'],'independent_snapshots':len(rows)}),flush=True)

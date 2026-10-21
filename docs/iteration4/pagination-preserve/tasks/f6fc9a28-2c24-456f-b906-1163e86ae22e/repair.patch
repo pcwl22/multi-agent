@@ -1,0 +1,113 @@
+--- a/pagination.py
++++ b/pagination.py
+@@ -1,5 +1,5 @@
+ def paginate(items, page, page_size):
+     if page < 1 or page_size < 1:
+         return []
+-    start = page * page_size
+-    return items[start : start + page_size]
++    start = (page - 1) * page_size
++    return list(items[start : start + page_size])
+--- a/tests/test_pagination_one_based.py
++++ b/tests/test_pagination_one_based.py
+@@ -0,0 +1,45 @@
++from pagination import paginate
++
++
++def test_issue_example_range_page2_size2():
++    # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]
++    result = paginate(range(1, 8), 2, 2)
++    assert result == [3, 4]
++    assert isinstance(result, list)
++
++
++def test_page_numbers_are_one_based():
++    # page=1 returns the first `size` items
++    assert paginate(range(1, 8), 1, 2) == [1, 2]
++    assert paginate(range(1, 8), 2, 2) == [3, 4]
++    assert paginate(range(1, 8), 3, 2) == [5, 6]
++
++
++def test_last_page_partial():
++    # range(1, 8) has 7 items; page 4 size 2 -> [7]
++    assert paginate(range(1, 8), 4, 2) == [7]
++
++
++def test_page_beyond_last_page_returns_empty():
++    assert paginate(range(1, 8), 5, 2) == []
++    assert paginate(range(1, 8), 100, 2) == []
++
++
++def test_empty_input_returns_empty():
++    assert paginate([], 1, 2) == []
++    assert paginate([], 2, 2) == []
++
++
++def test_invalid_page_returns_empty():
++    assert paginate([1, 2, 3], 0, 2) == []
++    assert paginate([1, 2, 3], -1, 2) == []
++
++
++def test_invalid_page_size_returns_empty():
++    assert paginate([1, 2, 3], 1, 0) == []
++    assert paginate([1, 2, 3], 1, -2) == []
++
++
++def test_returns_list_type():
++    assert isinstance(paginate([1, 2, 3], 1, 2), list)
++    assert isinstance(paginate([], 1, 2), list)
+--- a/tests/test_pagination_regression.py
++++ b/tests/test_pagination_regression.py
+@@ -0,0 +1,52 @@
++from pagination import paginate
++
++
++def test_issue_example_range_page2_size2_returns_list():
++    # Exact literal example from the issue: range(1, 8), page=2, size=2 -> [3, 4]
++    result = paginate(range(1, 8), 2, 2)
++    assert result == [3, 4]
++    assert isinstance(result, list)
++
++
++def test_page_numbers_are_one_based():
++    # page=1 returns the first `size` items
++    assert paginate(range(1, 8), 1, 2) == [1, 2]
++    assert paginate(range(1, 8), 2, 2) == [3, 4]
++    assert paginate(range(1, 8), 3, 2) == [5, 6]
++
++
++def test_last_page_partial_returns_list():
++    # range(1, 8) has 7 items; page 4 size 2 -> [7]
++    result = paginate(range(1, 8), 4, 2)
++    assert result == [7]
++    assert isinstance(result, list)
++
++
++def test_page_beyond_last_page_returns_empty_list():
++    result = paginate(range(1, 8), 5, 2)
++    assert result == []
++    assert isinstance(result, list)
++    assert paginate(range(1, 8), 100, 2) == []
++
++
++def test_empty_input_returns_empty_list():
++    result = paginate([], 1, 2)
++    assert result == []
++    assert isinstance(result, list)
++    assert paginate([], 2, 2) == []
++
++
++def test_invalid_page_returns_empty_list():
++    assert paginate([1, 2, 3], 0, 2) == []
++    assert paginate([1, 2, 3], -1, 2) == []
++
++
++def test_invalid_page_size_returns_empty_list():
++    assert paginate([1, 2, 3], 1, 0) == []
++    assert paginate([1, 2, 3], 1, -2) == []
++
++
++def test_list_input_returns_list():
++    result = paginate([1, 2, 3, 4], 2, 2)
++    assert result == [3, 4]
++    assert isinstance(result, list)

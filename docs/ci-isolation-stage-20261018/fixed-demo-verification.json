@@ -1,0 +1,8 @@
+{
+  "verification_copy": "E:\\multi-agent\\.repopilot\\ci-fixed-demo-verification",
+  "purpose": "Run all tests with the editable demo already repaired, while dedicated CI input remains buggy",
+  "demo_original_sha256": "c904c668f95ff36bae8c43fc4db15663b4cab00660cbd2555bde1b2949bd399e",
+  "demo_fixed_sha256": "54138922cb0691dd584a0548b06946ed97db5841fbc985f2a016c2657075a4c0",
+  "fixture_unchanged": true,
+  "copied_files": 1474
+}

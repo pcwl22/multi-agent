@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-10-16T09:31:21.758221+00:00",
+  "runtime_code_commit": "2e6b0f2d5e7619be6bce91849ea741f82a7986d1",
+  "unique_live_task_ids": 99,
+  "diagnostic_separate": 9,
+  "formal_comparison_tasks": 90,
+  "current_oracle_and_dataset_bytes_match_archived_inputs": true,
+  "same_docker_image_ids_for_each_policy_pair": true,
+  "docker_image_ids": {
+    "diagnostic": [
+      "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73"
+    ],
+    "strict-preserve": [
+      "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384"
+    ],
+    "strict-isolated": [
+      "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384"
+    ],
+    "pagination-isolated": [
+      "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384"
+    ],
+    "pagination-preserve": [
+      "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384"
+    ],
+    "historical-preserve": [
+      "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73"
+    ],
+    "historical-isolated": [
+      "sha256:e36190cfaab2cc97dd090eec35a91e7e413b75d6b8d128b617165beff9a2ce73"
+    ]
+  },
+  "fresh_wheel_completed_before_first_formal_event": true,
+  "first_formal_event_utc": "2026-10-16T08:55:31.145072+00:00",
+  "runtime_changes_during_live_evaluation": 0,
+  "remote_writes": 0,
+  "controller_exited_and_credential_session_closed": true
+}

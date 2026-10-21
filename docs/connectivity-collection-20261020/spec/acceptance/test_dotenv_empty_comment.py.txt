@@ -1,0 +1,37 @@
+"""Evaluator-only oracle: never included in the repair workspace."""
+import io
+import os
+from pathlib import Path
+
+import pytest
+import dotenv
+from dotenv import dotenv_values, load_dotenv
+
+
+def test_source_is_workspace():
+    assert Path(dotenv.__file__).resolve().is_relative_to(Path(__file__).resolve().parents[1])
+
+
+@pytest.mark.parametrize('gap', [' ', '  ', '\t', ' \t'])
+@pytest.mark.parametrize('ending', ['\n', '\r\n', ''])
+def test_empty_inline_comment(gap, ending):
+    assert dotenv_values(stream=io.StringIO('KEY=' + gap + '# ignored' + ending)) == {'KEY': ''}
+
+
+@pytest.mark.parametrize('text,expected', [('K=#literal', '#literal'), ('K=a#b', 'a#b'),
+    ('K=a # trailing', 'a'), ('K=" # literal"', ' # literal'), ("K='#literal'", '#literal')])
+def test_literal_hash_contracts(text, expected):
+    assert dotenv_values(stream=io.StringIO(text)) == {'K': expected}
+
+
+def test_lines_none_and_export():
+    assert dotenv_values(stream=io.StringIO('MISSING\nexport EMPTY= # comment\nNEXT=value\n')) == {
+        'MISSING': None, 'EMPTY': '', 'NEXT': 'value'}
+
+
+def test_load_override(monkeypatch):
+    monkeypatch.setenv('EVAL_DOTENV_EMPTY', 'existing')
+    load_dotenv(stream=io.StringIO('EVAL_DOTENV_EMPTY= # comment'), override=False)
+    assert os.environ['EVAL_DOTENV_EMPTY'] == 'existing'
+    load_dotenv(stream=io.StringIO('EVAL_DOTENV_EMPTY= # comment'), override=True)
+    assert os.environ['EVAL_DOTENV_EMPTY'] == ''

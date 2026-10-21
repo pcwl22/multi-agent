@@ -1,0 +1,33 @@
+"""Create six short-path workspaces without running model or target code."""
+import json
+from pathlib import Path
+
+from app.services.budget_audit import audit_ledger
+
+from app.config.settings import Settings
+from app.models.schemas import TaskRequest
+from app.services.tasks import TaskService
+
+Q = Path(__file__).parent
+corpus = Path('E:/multi-agent/.repopilot/connectivity-collection-20261020/corpus')
+cases = json.loads((corpus / 'dataset.json').read_text(encoding='utf-8'))
+records = []
+for i, case in enumerate(cases):
+    settings = Settings(_env_file=None, repository_root=corpus / 'sources',
+        data_dir=Path('E:/Agent/nc21-pre') / f'{i:02d}', model_mode='mock',
+        retry_workspace_policy='isolated', patch_transactions=True, task_budgets=True,
+        repair_quality_checks=True)
+    service = TaskService(settings)
+    try:
+        task = service.create(TaskRequest(repository_path=str(corpus / case['repository']),
+                                         issue_description=case['issue'], mode='multi_full'))
+        assert task['execution_status'] == 'queued', task.get('error')
+        assert not task['model_calls']
+    finally:
+        service.close()
+    audit = audit_ledger(Path(task['task_path']))
+    assert audit['model_request_reservations'] == audit['sandbox_run_reservations'] == 0
+    records.append({'case': case['id'], 'status': task['execution_status'],
+                    'workspace': task['workspace_path'], 'audit': audit})
+(Q / 'short-path-preflight.json').write_text(json.dumps(records, indent=2)+'\n', encoding='utf-8')
+print(json.dumps({'workspace_creation_passed': len(records), 'model_calls': 0, 'sandbox_runs': 0}))

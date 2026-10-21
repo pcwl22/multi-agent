@@ -1,0 +1,66 @@
+{
+  "expired-status": {
+    "auth.py": {
+      "old": "def authenticate(token):\n    if token == \"expired\":\n        return 500, \"expired\"\n    if token == \"valid\":\n        return 200, \"alice\"\n    return 401, \"missing\"\n",
+      "new": "def authenticate(token):\n    if token == \"expired\":\n        return 401, \"expired\"\n    if token == \"valid\":\n        return 200, \"alice\"\n    return 401, \"missing\"\n"
+    }
+  },
+  "one-based-page": {
+    "pagination.py": {
+      "old": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = page * page_size\n    return items[start : start + page_size]\n",
+      "new": "def paginate(items, page, page_size):\n    if page < 1 or page_size < 1:\n        return []\n    start = (page - 1) * page_size\n    return items[start : start + page_size]\n"
+    }
+  },
+  "percent-discount": {
+    "pricing.py": {
+      "old": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent), 2)\n",
+      "new": "def discounted_total(amount, discount_percent):\n    return round(amount * (1 - discount_percent / 100), 2)\n"
+    }
+  },
+  "offset-to-utc": {
+    "events.py": {
+      "old": "from datetime import datetime, timezone\n\n\ndef parse_event_time(value):\n    parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n    return parsed.replace(tzinfo=timezone.utc)\n",
+      "new": "from datetime import datetime, timezone\n\n\ndef parse_event_time(value):\n    parsed = datetime.fromisoformat(value.replace(\"Z\", \"+00:00\"))\n    return (parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)\n"
+    }
+  },
+  "csv-roundtrip": {
+    "exporter.py": {
+      "old": "def export_rows(rows):\n    return \"\".join(\",\".join(str(cell) for cell in row) + \"\\n\" for row in rows)\n",
+      "new": "import csv\nimport io\n\ndef export_rows(rows):\n    output = io.StringIO(newline=\"\")\n    csv.writer(output, lineterminator=\"\\n\").writerows(rows)\n    return output.getvalue()\n"
+    }
+  },
+  "checkout-two-files": {
+    "money.py": {
+      "old": "def discounted(amount, percent):\n    return amount * (1 - percent)\n",
+      "new": "def discounted(amount, percent):\n    return amount * (1 - percent / 100)\n"
+    },
+    "checkout.py": {
+      "old": "from money import discounted\n\n\ndef invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + amount * tax_rate, 2)\n",
+      "new": "from money import discounted\n\n\ndef invoice_total(amount, discount_percent, tax_rate):\n    subtotal = discounted(amount, discount_percent)\n    return round(subtotal + subtotal * tax_rate, 2)\n"
+    }
+  },
+  "reservation-sum": {
+    "inventory.py": {
+      "old": "def available_units(stock, reservations):\n    reserved = dict(reservations)\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}\n",
+      "new": "def available_units(stock, reservations):\n    reserved = {}\n    for sku, quantity in reservations:\n        reserved[sku] = reserved.get(sku, 0) + quantity\n    return {sku: max(0, qty - reserved.get(sku, 0)) for sku, qty in stock.items()}\n"
+    }
+  },
+  "ttl-equality": {
+    "cache.py": {
+      "old": "def is_expired(inserted_at, ttl, now):\n    return now > inserted_at + ttl\n",
+      "new": "def is_expired(inserted_at, ttl, now):\n    return now >= inserted_at + ttl\n"
+    }
+  },
+  "accent-slug": {
+    "slugs.py": {
+      "old": "import re\n\n\ndef slugify(value):\n    return re.sub(r\"[^a-z0-9]+\", \"-\", value.lower()).strip(\"-\")\n",
+      "new": "import re\nimport unicodedata\n\ndef slugify(value):\n    value = unicodedata.normalize('NFKD', value).encode('ascii','ignore').decode('ascii')\n    return re.sub(r'[^a-z0-9]+', '-', value.lower()).strip('-')\n"
+    }
+  },
+  "recursive-config": {
+    "config.py": {
+      "old": "def merge_config(defaults, overrides):\n    result = dict(defaults)\n    result.update(overrides)\n    return result\n",
+      "new": "from copy import deepcopy\n\ndef merge_config(defaults, overrides):\n    result = deepcopy(defaults)\n    for key,value in overrides.items():\n        if isinstance(result.get(key),dict) and isinstance(value,dict):\n            result[key] = merge_config(result[key],value)\n        else:\n            result[key] = deepcopy(value)\n    return result\n"
+    }
+  }
+}

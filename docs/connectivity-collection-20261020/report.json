@@ -1,0 +1,302 @@
+{
+  "stage": "connectivity-collection-20261020",
+  "runtime_commit": "733369a4a199b61c930a84b951958fea18f3a553",
+  "worktree": "E:\\Agent\\repopilot-connectivity-v2-20261020",
+  "base_commit": "ffb04db5e8c4db7b1293251d5c6828ff65d19a25",
+  "sealed_at": "2026-10-20T08:20:06.293450+00:00",
+  "verification": {
+    "source_non_docker": {
+      "tests": 305,
+      "passed": 303,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 2,
+      "sha256": "c99a605c9a5cac76cf013ab62a9940693c4ced606138f888207c489eea4074ff"
+    },
+    "installed_wheel_full_docker_enabled": {
+      "tests": 377,
+      "passed": 375,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 2,
+      "sha256": "942eaa122238290f096d16cbc3354c950e2b3e2492389584c343e7aed13fccb6"
+    },
+    "new_test_cases": 34,
+    "new_docker_cases": 8,
+    "existing_test_files_unchanged": 85,
+    "native_control_runs": 24,
+    "native_independent_runs": 8,
+    "native_cases_eligible": 6,
+    "wheel_app_files": 118,
+    "source_wheel_install_match": true,
+    "demo_fixed_but_fixture_remains_broken": true,
+    "ruff": "passed",
+    "verification_environment_note": "Initial new-fixture run hit Windows WinError 206 before target execution. Fresh short basetemp resolved the verification path issue; no assertions changed. Production long-path behavior was not optimized in this stage."
+  },
+  "fresh_connectivity": {
+    "plan_sha256": "0ddba6819f43338ba25453c78707074f5f89d9ed51aeb1f1a6ba66a98f323569",
+    "planned_cells": 2,
+    "passed": 0,
+    "failed": 1,
+    "not_run": 1,
+    "model_request_reservations": 1,
+    "known_tokens_including_partial": 0,
+    "unknown_usage_cells": 1,
+    "connectivity_smoke_passed": false,
+    "repair_ability_evaluated": false,
+    "billing_reconciled": false,
+    "limitations": "Two smoke probes do not establish sustained availability or repair quality. Observed tokens are not a monetary spending cap. Old probes and budgets are never reopened."
+  },
+  "observed_failure": {
+    "diagnostics": {
+      "version": 1,
+      "phase": "response",
+      "exception_types": [
+        "APIStatusError",
+        "APIStatusError"
+      ],
+      "chain_truncated": false,
+      "streaming_requested": false,
+      "http_status": 503,
+      "request_id_sha256": null,
+      "response_completion": "unconfirmed",
+      "interpretation": "Exception classes identify a transport phase, not the billing outcome or server root cause."
+    },
+    "kind": "provider_unavailable",
+    "retryable": true,
+    "retry_after_seconds": 30.0
+  },
+  "model_duration_seconds": 1.506032100001903,
+  "sdk_versions": {
+    "openai": "2.45.0",
+    "httpx": "0.28.1",
+    "langchain-openai": "1.7.2"
+  },
+  "prior_unknown_usage_cells": 2,
+  "prior_pending_model_reservations": 1,
+  "prior_ledger_hashes_unchanged": true,
+  "prior_stage_json_files_unchanged": 53,
+  "old_results": [
+    {
+      "path": "docs/historical-evaluation-20261019/candidate-patches.json",
+      "sha256": "f572ff83bd7373933e1c7fdffddfd0bd186be958e8e1bde5872a36e59cc23e34"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/controls.json",
+      "sha256": "4af3c2beb0e222cbfc0d194579c21e38b6c831071d417466748b26f56be7a7fd"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/corpus-lock.json",
+      "sha256": "a02823542d0d9722d193349f28d37b148830820075fac99d94f13094fd2fc004"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/evidence-manifest.json",
+      "sha256": "5fbfb74402ee944769e655b8c8fb5c88e7833156467fa5d40806dfef1879be83"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/model-events.json",
+      "sha256": "fb7747f805c566cebdae1e102194d77cc61382dc38c894f4b005e311053124f8"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/native-diagnostic.json",
+      "sha256": "7f5b1c18d732ca9d9f7fcb964864c6d20b39fded2ab49b9387aba3475bca0dc9"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/preregistration.json",
+      "sha256": "2a1d0034f196b5389ee3d66ae2221edc820ed850760180cc6d933c7d68e8e247"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/report.json",
+      "sha256": "df0c335e0827c629cd5859a92ef2db032debaaa32526ff8406f905bc83429f58"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/review-results.json",
+      "sha256": "780be1363281ccb7b7dd77d12f63b2e2e2cb1ee2aad9e3e1f2443d40c0dd0c9b"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/runs.json",
+      "sha256": "3c11524dae985722f686f9e3107e33aaba9ac2a18008a5a57ed84b5af71fe9aa"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/verification.json",
+      "sha256": "9d0b97b2d48df9b98a9e8f1ae49aa535eff7e37bcd2272f83c222a03f7f9a1b3"
+    },
+    {
+      "path": "docs/historical-evaluation-20261019/wheel-artifact.json",
+      "sha256": "ad998d029940af3c7b9caba151f6efcde6f3a78bbcef3d58d4675c15c837d15e"
+    },
+    {
+      "path": "docs/repair-quality-20261020/candidate-patches.json",
+      "sha256": "e1306c9358c0aeca6c353b2d4439cb80064640ae507f5491d4854ff8a3f69ba5"
+    },
+    {
+      "path": "docs/repair-quality-20261020/controls.json",
+      "sha256": "90d2dfb5450097ae44698a589af96ea0c5648f99ab67de7d40f35655c4241790"
+    },
+    {
+      "path": "docs/repair-quality-20261020/corpus-lock.json",
+      "sha256": "697fd29863e7fac82f5b09b8870490f8d8a1393836e3e403562feaa176fd2caf"
+    },
+    {
+      "path": "docs/repair-quality-20261020/evidence-manifest.json",
+      "sha256": "6ca269a7fade7dbda7084f911df12512cff7aa43cabbba3206b83b1ea615484e"
+    },
+    {
+      "path": "docs/repair-quality-20261020/model-events.json",
+      "sha256": "64efebc82f3843fea37e4abd95841f6c9f3c44422cbe11ec9e9a17ab426d332a"
+    },
+    {
+      "path": "docs/repair-quality-20261020/native-diagnostic.json",
+      "sha256": "d7446fd2f795943fb244eb857faa014fe433d6c5b888f80adeb2effda8198548"
+    },
+    {
+      "path": "docs/repair-quality-20261020/preregistration.json",
+      "sha256": "254b42efb31a55036d04a3a46f67b18f8259442154231cd45dc9b671d9463a44"
+    },
+    {
+      "path": "docs/repair-quality-20261020/quality-events.json",
+      "sha256": "ae56f83c423272fd1d8a4aa01d0d7532e73efca95cd005b0ef8f4c1ba915d6a4"
+    },
+    {
+      "path": "docs/repair-quality-20261020/report.json",
+      "sha256": "3e11fac2f6efdfbcc03bc447437ce17bb978904851d98209627a471235aee14f"
+    },
+    {
+      "path": "docs/repair-quality-20261020/review-results.json",
+      "sha256": "bc49d66dabcc27fe95006d21a9e4974a202962252b620571ec7e0f3c886b02f1"
+    },
+    {
+      "path": "docs/repair-quality-20261020/runs.json",
+      "sha256": "e8f22223173fa30aeb58c6e79a19e5776ad12be9b12accba48e5ac7c3b400806"
+    },
+    {
+      "path": "docs/repair-quality-20261020/scope-note.json",
+      "sha256": "fce6f956d2a3a9de418bb3553fa721482ff40a39e5a1fb265cff115f68582b1a"
+    },
+    {
+      "path": "docs/repair-quality-20261020/selection-record.json",
+      "sha256": "688585e7f2c8018fd1d72c0f409a5b5c899fcf9dc9dd5a3470a50ddd958faa79"
+    },
+    {
+      "path": "docs/repair-quality-20261020/timing.json",
+      "sha256": "da75e59f0d376434df0bb980dfa100a2e1e713289ce3296806f4618ff66a8c5b"
+    },
+    {
+      "path": "docs/repair-quality-20261020/verification.json",
+      "sha256": "9c8a230ebc4094633d7949edbaa277baa60ad475aeec0850d785b17d9cf82a16"
+    },
+    {
+      "path": "docs/repair-quality-20261020/wheel-artifact.json",
+      "sha256": "3d2624ad500b0002d3f6734c7bee255dd2f67f0b0ba5af06e42f4d3482246091"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/candidate-patches.json",
+      "sha256": "0df6e256bc8e7cc8206c629b7209fe05d2c0efa8a09bc367b00dcc043a0f790d"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/controls.json",
+      "sha256": "90d2dfb5450097ae44698a589af96ea0c5648f99ab67de7d40f35655c4241790"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/corpus-lock.json",
+      "sha256": "697fd29863e7fac82f5b09b8870490f8d8a1393836e3e403562feaa176fd2caf"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/evidence-manifest.json",
+      "sha256": "c881e7fd93a74dce252ff3bf86a41c167fdec69abd8f259f343cc47af8a1ecea"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/model-events.json",
+      "sha256": "c8502f70f2a3171ccc7f08ad9d64f2f25c163f70b41339c3713252f99b3cdd54"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/preregistration.json",
+      "sha256": "2a0749ad146fe449fbce3aaff3fba4cd087905c4dc3b19f4495252c9ccca7303"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/quality-events.json",
+      "sha256": "0e8a5174cd84d8e8df1616b642c167f21c4ed63e99c7a97bf14517bb71651f48"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/report.json",
+      "sha256": "438cb7ec82ee48847292664abdb6e35f2f994bc067f479f1b2b2902f5aacaba2"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/review-results.json",
+      "sha256": "c170caa7969f8436e3b001f74b291e2b9df0d7f6efd239ddd3b4b62fb1fa4b68"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/runs.json",
+      "sha256": "6a59433ac527444400fd77288f1873d9b5158cdd90a4dbfcfdb008cb978e2d60"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/scope-note.json",
+      "sha256": "fce6f956d2a3a9de418bb3553fa721482ff40a39e5a1fb265cff115f68582b1a"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/timing.json",
+      "sha256": "a4eaf9a6fade25bfc77b0d0148fab266b30f7d6f09fce3449f071f0ceaf029a2"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/verification.json",
+      "sha256": "564caef863e6d59b52af292f9d411754b89212417387894f16b4b7a9c8e34089"
+    },
+    {
+      "path": "docs/repair-quality-v2-20261020/wheel-artifact.json",
+      "sha256": "4b9eac65d6057c0f558d9c5428230719d19c77aa0080182e27013f2792bc51a7"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/circuit-snapshot.json",
+      "sha256": "6215f53197eaddf6bdeb5e3adcfa2236da01d813f6c6e9456135422dba360a20"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/evidence-manifest.json",
+      "sha256": "2d618528886db9ff8393f6eed262ea6aa15f09c54132f5dacc5fdd4ed45b81aa"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/ledger-summaries.json",
+      "sha256": "da8ed390a7107b6406c8849641c10beefe5b13443d9f5c04c7432a54d6a63c41"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/original-timing.json",
+      "sha256": "fdf18d8309c3c526b99f88b48e9fecea258514bfa0e30848cf1d42aba6764cb6"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/preflight.json",
+      "sha256": "bf766967c8d2b9749da38de0bb4f6b99120a49b3f6970d8392c883457d5bf1fb"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/preregistration.json",
+      "sha256": "ed05d8e93566e9c72b8ea1bb75b0511d79c0e2f13a987168a233801abf99c34d"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/probe-records.json",
+      "sha256": "db7eb05f8eb16f64b7b955ced867ee191c86a7273f8c6d3ecaad4c3df5ec0271"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/raw-records-partial.json",
+      "sha256": "ec6f41be4a10ac387917fdecf25bc17033a3325a9f11dc9d10e9230195075afc"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/report.json",
+      "sha256": "c90344149c5ff64a5fdd3f075aeac13ca526784c432fd3d1335e369b7d2decb8"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/verification.json",
+      "sha256": "17f0b05860701e89065cd292a98f20d22009dabbbb08a5f452d2a730bc70665b"
+    },
+    {
+      "path": "docs/provider-reliability-20261020/wheel-artifact.json",
+      "sha256": "bfdb0665ae1b86f6f4910fce741465e0a2de1598e4d6f8ca2855625b4317fabd"
+    }
+  ],
+  "controller_io_note": "Windows child getpass read from the console; controller elapsed time includes waiting for hidden input. Model duration is recorded separately. Process guard did not trigger.",
+  "native_lock_sha256": "e4beb9618cca2911356187266b726b8fe4eb618143c46ffa626142b238b4b348",
+  "new_historical_repair_evaluation_started": false,
+  "repair_quality_default_enabled": false,
+  "improved_repair_ability_established": false,
+  "provider_billing_reconciled": false,
+  "unknown_request_replayed": false,
+  "github_writes": false,
+  "new_head_remote_ci_verified": false
+}

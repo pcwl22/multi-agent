@@ -1,0 +1,62 @@
+[
+  {
+    "id": "expired-status",
+    "issue": "authenticate in auth.py returns 500 for the expired token. Return (401, 'expired'), preserve valid and absent token behavior, and add a NEW regression test file.",
+    "repository": "repos/expired-status",
+    "acceptance": "test_expired_status.py"
+  },
+  {
+    "id": "one-based-page",
+    "issue": "paginate in pagination.py uses one-based page numbers. For range(1,8), page 2 size 2 must return [3,4]. Preserve empty/invalid inputs and return [] beyond the last page. Add a new regression test file.",
+    "repository": "repos/one-based-page",
+    "acceptance": "test_one_based_page.py"
+  },
+  {
+    "id": "percent-discount",
+    "issue": "discounted_total in pricing.py accepts percentage values from 0 to 100. 100 with discount 20 must equal 80. Preserve zero amount and no discount; add new regression tests.",
+    "repository": "repos/percent-discount",
+    "acceptance": "test_percent_discount.py"
+  },
+  {
+    "id": "offset-to-utc",
+    "issue": "parse_event_time in events.py must return the same instant in UTC. It currently discards nonzero timezone offsets: 2026-04-01T12:00:00+02:00 should be 10:00 UTC. Treat naive timestamps as UTC and preserve Z support. Add regression tests.",
+    "repository": "repos/offset-to-utc",
+    "acceptance": "test_offset_to_utc.py"
+  },
+  {
+    "id": "csv-roundtrip",
+    "issue": "export_rows in exporter.py must produce valid comma-delimited CSV, including cells containing commas, quotes and newlines, preserving Unicode and round-tripping with csv.reader. Preserve current empty and simple output, with LF line endings. Add regression tests; legacy_examples is unused.",
+    "repository": "repos/csv-roundtrip",
+    "acceptance": "test_csv_roundtrip.py"
+  },
+  {
+    "id": "checkout-two-files",
+    "issue": "Checkout totals have two related errors. money.py discount must interpret 20 as 20%, and checkout.py invoice_total must apply tax to the discounted subtotal, not the original amount. Example: 100, discount 20, tax 10% = 88. Both public functions must be correct, preserve no-discount/no-tax behavior and add new regression tests.",
+    "repository": "repos/checkout-two-files",
+    "acceptance": "test_checkout_two_files.py"
+  },
+  {
+    "id": "reservation-sum",
+    "issue": "available_units in inventory.py must subtract ALL reservation quantities for each SKU, including repeated SKU entries. Stock {'A':10} with [('A',2),('A',3)] leaves {'A':5}; clamp at zero and ignore reservations for unknown SKUs. Preserve inputs, add new regression tests.",
+    "repository": "repos/reservation-sum",
+    "acceptance": "test_reservation_sum.py"
+  },
+  {
+    "id": "ttl-equality",
+    "issue": "Cache entries must expire exactly at inserted_at + ttl, including zero TTL. is_expired in cache.py currently keeps them alive at that boundary. Preserve times before and after expiry; add regression tests.",
+    "repository": "repos/ttl-equality",
+    "acceptance": "test_ttl_equality.py"
+  },
+  {
+    "id": "accent-slug",
+    "issue": "slugify in slugs.py should transliterate Unicode combining accents before producing lowercase ASCII slugs. Café déjà vu should become cafe-deja-vu, and decomposed cafe + combining acute should match precomposed café. Preserve ASCII word separation, trim dashes, add new regression tests.",
+    "repository": "repos/accent-slug",
+    "acceptance": "test_accent_slug.py"
+  },
+  {
+    "id": "recursive-config",
+    "issue": "merge_config in config.py must recursively merge nested mappings, with overrides winning at leaves, and return independent data without mutating or sharing nested objects with either input. Lists are replaced, not concatenated. Preserve simple overrides and add new regression tests.",
+    "repository": "repos/recursive-config",
+    "acceptance": "test_recursive_config.py"
+  }
+]

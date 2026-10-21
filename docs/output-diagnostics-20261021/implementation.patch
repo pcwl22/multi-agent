@@ -1,0 +1,333 @@
+diff --git a/.env.example b/.env.example
+index 4749317..be9834b 100644
+--- a/.env.example
++++ b/.env.example
+@@ -10,6 +10,9 @@ REPOPILOT_MODEL_NAME=gpt-4.1-mini
+ REPOPILOT_MODEL_STREAMING=false
+ # Disable usage requests only if the provider rejects stream_options.
+ REPOPILOT_MODEL_STREAM_USAGE=true
++# Optional explicit per-response output ceiling (1..32768). Budgeted calls default
++# to 4096 when unset; remaining observed-token budget can lower the ceiling.
++# REPOPILOT_MODEL_MAX_OUTPUT_TOKENS=8192
+ # Include bounded workspace paths and remote subdirectory mappings.
+ REPOPILOT_MODEL_PATH_SCOPE=true
+ REPOPILOT_SANDBOX_IMAGE=repopilot-sandbox:local
+diff --git a/app/agents/model.py b/app/agents/model.py
+index 51335a1..31de6b9 100644
+--- a/app/agents/model.py
++++ b/app/agents/model.py
+@@ -8,6 +8,7 @@ from pydantic import BaseModel
+ from app.agents.demo_fixtures import select_fixture
+ from app.agents.failures import provider_failure
+ from app.agents.instructions import system_instructions
++from app.agents.output_diagnostics import observe_output
+ from app.agents.pacing import endpoint_pacer
+ from app.agents.quality import test_functions
+ from app.agents.transport import sdk_versions
+@@ -104,6 +105,7 @@ class LiveModel:
+         self.streaming = settings.model_streaming
+         self.pacer = endpoint_pacer(settings.model_base_url)
+         self.min_interval = settings.model_min_interval
++        self.max_output_tokens = settings.model_max_output_tokens
+         self.client = ChatOpenAI(
+             model=settings.model_name,
+             temperature=0,
+@@ -113,6 +115,7 @@ class LiveModel:
+             max_retries=1,
+             base_url=settings.model_base_url,
+             api_key=settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
++            **({'max_tokens': self.max_output_tokens} if self.max_output_tokens is not None else {}),
+         )
+ 
+     def generate(self, schema: type[T], payload: dict) -> tuple[T, dict]:
+@@ -122,6 +125,7 @@ class LiveModel:
+             "usage_complete": True, "model_requested": self.model_name,
+             "streaming": self.streaming, "rate_limit_wait_seconds": 0.0,
+             "transport_attempts": [],
++            "structured_attempts": [],
+             "sdk_versions": sdk_versions(),
+         }
+         messages = [("system", system_instructions(schema.__name__)),
+@@ -130,6 +134,7 @@ class LiveModel:
+             budget = current_budget()
+             reservation = None
+             attempt_id = None
++            output_limit = self.max_output_tokens
+             try:
+                 if budget:
+                     budget.check()
+@@ -139,10 +144,13 @@ class LiveModel:
+                 if budget or self.dispatch_gate:
+                     timeout = min(self.timeout, budget.remaining()) if budget else self.timeout
+                     root = self.client.root_client.with_options(max_retries=0, timeout=timeout)
++                    if budget:
++                        output_limit = min(self.max_output_tokens or 4096,
++                                           budget.limits.observed_tokens - budget.view()["observed_tokens"])
+                     client = self.client.model_copy(update={
+                         "root_client": root, "client": root.chat.completions,
+                         "request_timeout": timeout, "max_retries": 0,
+-                        **({"max_tokens": min(4096, budget.limits.observed_tokens - budget.view()["observed_tokens"])} if budget else {})})
++                        **({"max_tokens": output_limit} if output_limit is not None else {})})
+                 reserve = (lambda: budget.reserve("model_requests")) if budget else (lambda: None)
+                 if self.dispatch_gate:
+                     attempt_id, reservation = self.dispatch_gate.admit(reserve)
+@@ -187,15 +195,27 @@ class LiveModel:
+                 "outcome": "response_complete" if usage else "usage_missing", "usage_complete": bool(usage)})
+             if self.dispatch_gate:
+                 self.dispatch_gate.complete(attempt_id, missing)
++            parsed = None
++            parse_status = 'invalid' if response.get('parsing_error') is not None else 'missing'
+             if response["parsed"] is not None:
+-                stats["duration_seconds"] = time.monotonic() - started
+                 try:
+-                    return schema.model_validate(response["parsed"]), stats
++                    parsed = schema.model_validate(response["parsed"])
++                    parse_status = 'parsed'
+                 except ValueError:
+-                    pass
++                    parse_status = 'invalid'
++            observation = observe_output(schema.__name__, metadata, parse_status, output_limit)
++            stats['structured_attempts'].append(observation)
++            if observation['finish_reason'] == 'length':
++                stats['duration_seconds'] = time.monotonic() - started
++                stats['output_failure'] = {'kind': 'output_truncated', 'schema': observation['schema_name']}
++                raise ModelFailure('Model response reached its output limit; no automatic parse retry', stats)
++            if parsed is not None:
++                stats["duration_seconds"] = time.monotonic() - started
++                return parsed, stats
+             messages.append(("human", "Previous output failed schema validation. Return valid "
+                              f"{schema.__name__} structured output; attempt {attempt + 1}."))
+         stats["duration_seconds"] = time.monotonic() - started
++        stats['output_failure'] = {'kind': 'schema_invalid', 'schema': observation['schema_name']}
+         raise ModelFailure("Model output failed schema validation twice", stats)
+ 
+ 
+diff --git a/app/agents/output_diagnostics.py b/app/agents/output_diagnostics.py
+new file mode 100644
+index 0000000..7678bd1
+--- /dev/null
++++ b/app/agents/output_diagnostics.py
+@@ -0,0 +1,25 @@
++"""Allowlisted structured-output observations, without response or parser text."""
++from typing import Literal
++
++from pydantic import Field
++
++from app.models.schemas import StrictModel
++
++
++class StructuredOutputObservation(StrictModel):
++    schema_name: Literal['Plan', 'Patch', 'Review', 'other']
++    finish_reason: Literal['stop', 'length', 'tool_calls', 'function_call', 'content_filter', 'other', 'unknown']
++    parse_status: Literal['parsed', 'invalid', 'missing']
++    output_limit: int | None = Field(default=None, ge=1, le=32768)
++
++
++def observe_output(schema_name: str, metadata: dict, parse_status: str,
++                   output_limit: int | None) -> dict:
++    reason = metadata.get('finish_reason')
++    return StructuredOutputObservation(
++        schema_name=schema_name if schema_name in {'Plan', 'Patch', 'Review'} else 'other',
++        finish_reason=(reason if isinstance(reason, str) and reason in {
++            'stop', 'length', 'tool_calls', 'function_call', 'content_filter'
++        } else 'unknown' if reason is None else 'other'),
++        parse_status=parse_status, output_limit=output_limit,
++    ).model_dump()
+diff --git a/app/config/settings.py b/app/config/settings.py
+index 3ccb4a4..0f2584d 100644
+--- a/app/config/settings.py
++++ b/app/config/settings.py
+@@ -27,6 +27,7 @@ class Settings(BaseSettings):
+     budget_limits: BudgetLimits = Field(default_factory=BudgetLimits)
+     context_chars: int = Field(default=24000, ge=2000, le=100000)
+     model_timeout: float = Field(default=45, ge=1, le=180)
++    model_max_output_tokens: int | None = Field(default=None, ge=1, le=32768)
+     model_streaming: bool = False
+     model_stream_usage: bool = True
+     model_path_scope: bool = True
+diff --git a/docs/output-diagnostics-20261021.md b/docs/output-diagnostics-20261021.md
+new file mode 100644
+index 0000000..8de9e1a
+--- /dev/null
++++ b/docs/output-diagnostics-20261021.md
+@@ -0,0 +1,40 @@
++# Structured output limits and diagnostics
++
++Budgeted model calls keep the existing 4096-token per-response ceiling when no
++explicit setting is supplied. A deployment can opt into a different bounded
++ceiling for new requests:
++
++```dotenv
++REPOPILOT_MODEL_MAX_OUTPUT_TOKENS=8192
++```
++
++The setting accepts 1 through 32768. The remaining observed-token task allowance
++can lower it. Unbudgeted calls retain the previous provider default when the
++setting is unset. This ceiling is not a monetary cap: input tokens, reasoning
++tokens and provider accounting can affect actual usage. SDK retries remain
++disabled for budgeted or circuit-gated calls.
++
++Each returned response records a bounded structured-output observation: schema
++category, allowlisted finish reason, parsed/invalid/missing status, and applied
++output ceiling. Raw response content, tool arguments, parser exception messages,
++provider messages and arbitrary finish-reason strings are excluded.
++
++A provider-reported `finish_reason=length` stops the generation immediately with
++`output_failure.kind=output_truncated`, including when a partial result parses.
++It does not automatically resend the same request or open the provider connection
++circuit. Usage already received is retained; absent usage remains unknown and
++continues to block further dispatch under the task budget. Other invalid schema
++responses retain the existing maximum of two explicit attempts, both charged to
++the same task budget, and report `schema_invalid` if exhausted.
++
++The first live calibration on the new channel observed failed schema validation
++and responses consuming the full 4096 output-token allowance, but the previous
++runtime did not save a finish reason. Those observations alone do not establish
++truncation. New diagnostics are needed before attributing that historical failure
++to a token limit. Controlled HTTP/SSE tests are not evidence of live repair gains.
++
++Use short task-storage paths for Windows calibration. The first new-channel
++controller used a long descriptive path and encountered WinError 206 before a
++task workspace was created. Keep that failed batch sealed, record creation
++failure even without a workspace, and use a separately frozen new batch rather
++than resuming it. This change does not add general Windows long-path support.
+diff --git a/tests/integration/test_output_limit_diagnostics.py b/tests/integration/test_output_limit_diagnostics.py
+new file mode 100644
+index 0000000..20410ca
+--- /dev/null
++++ b/tests/integration/test_output_limit_diagnostics.py
+@@ -0,0 +1,134 @@
++"""Real SDK parsing with controlled HTTP/SSE; these are not live LLM tests."""
++import json
++import time
++
++import httpx
++import langchain_openai
++import pytest
++from langchain_openai import ChatOpenAI
++from pydantic import SecretStr, ValidationError
++
++from app.agents.model import LiveModel, ModelFailure
++from app.agents.output_diagnostics import observe_output
++from app.config.settings import Settings
++from app.models.budgets import BudgetLimits
++from app.models.schemas import Plan
++from app.services.budgets import BudgetExceeded, TaskBudget, budget_scope
++
++VALUE = dict(issue_summary='probe', suspected_modules=[], search_strategy=['inspect'],
++             repair_steps=['repair'], validation_strategy=['Docker'])
++
++
++def wire_response(streaming, reason, valid=True, include_usage=True):
++    arguments = json.dumps(VALUE) if valid else '{}'
++    base = {'id': 'controlled', 'created': 0, 'model': 'controlled'}
++    tool = {'id': 'call', 'type': 'function', 'function': {'name': 'Plan', 'arguments': arguments}}
++    if streaming:
++        chunks = [{**base, 'object': 'chat.completion.chunk', 'choices': [
++            {'index': 0, 'finish_reason': None, 'delta': {'role': 'assistant',
++                                                     'tool_calls': [{'index': 0, **tool}]}}]},
++            {**base, 'object': 'chat.completion.chunk', 'choices': [
++                {'index': 0, 'finish_reason': reason, 'delta': {}}]}]
++        if include_usage:
++            chunks.append({**base, 'object': 'chat.completion.chunk', 'choices': [],
++                           'usage': {'prompt_tokens': 7, 'completion_tokens': 11, 'total_tokens': 18}})
++        return httpx.Response(200, text=''.join('data: '+json.dumps(x)+'\n\n' for x in chunks)+'data: [DONE]\n\n',
++                              headers={'content-type': 'text/event-stream'})
++    body = {**base, 'object': 'chat.completion', 'choices': [{'index': 0, 'finish_reason': reason,
++            'message': {'role': 'assistant', 'content': None, 'tool_calls': [tool]}}]}
++    if include_usage:
++        body['usage'] = {'prompt_tokens': 7, 'completion_tokens': 11, 'total_tokens': 18}
++    return httpx.Response(200, json=body)
++
++
++def budget_at(path, tokens=20000):
++    return TaskBudget({'task_path': str(path), 'task_id': 'output-limit',
++        'budget_deadline': time.time()+30,
++        'budget_limits': BudgetLimits(model_requests=4, observed_tokens=tokens).model_dump()}, create=True)
++
++
++def connect(monkeypatch, client, **settings):
++    def constructor(**kwargs):
++        return ChatOpenAI(**kwargs, http_client=client)
++    monkeypatch.setattr(langchain_openai, 'ChatOpenAI', constructor)
++    return LiveModel(Settings(_env_file=None, model_name='controlled',
++                             openai_api_key=SecretStr('test-only-key'), **settings))
++
++
++@pytest.mark.parametrize('streaming', [False, True])
++@pytest.mark.parametrize('valid', [False, True])
++def test_length_finish_stops_without_parse_replay_and_retains_usage(tmp_path, monkeypatch, streaming, valid):
++    seen = []
++    def handler(request):
++        seen.append(json.loads(request.content))
++        return wire_response(streaming, 'length', valid)
++    budget = budget_at(tmp_path)
++    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
++        model = connect(monkeypatch, client, model_streaming=streaming, model_max_output_tokens=8192)
++        with budget_scope(budget), pytest.raises(ModelFailure) as caught:
++            model.generate(Plan, {'issue_description': 'probe'})
++    stats = caught.value.stats
++    assert len(seen) == stats['calls'] == budget.view()['model_requests'] == 1
++    assert stats['usage_complete'] and budget.view()['observed_tokens'] == 18
++    assert budget.view()['pending_reservations'] == 0
++    assert stats['output_failure']['kind'] == 'output_truncated'
++    assert stats['structured_attempts'][0]['finish_reason'] == 'length'
++    assert stats['structured_attempts'][0]['output_limit'] == 8192
++    assert 'failure' not in stats  # Truncation is not provider connectivity failure.
++    assert seen[0].get('max_completion_tokens', seen[0].get('max_tokens')) == 8192
++
++
++@pytest.mark.parametrize('configured,tokens,expected', [(None, 20000, 4096), (8192, 20000, 8192),
++                                                       (8192, 100, 100), (32, 20000, 32)])
++def test_effective_output_ceiling_respects_configuration_and_remaining_budget(tmp_path, monkeypatch, configured, tokens, expected):
++    seen = []
++    def handler(request):
++        seen.append(json.loads(request.content))
++        return wire_response(False, 'tool_calls')
++    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
++        model = connect(monkeypatch, client, model_max_output_tokens=configured)
++        with budget_scope(budget_at(tmp_path, tokens)):
++            value, stats = model.generate(Plan, {})
++    assert value.issue_summary == 'probe'
++    assert seen[0].get('max_completion_tokens', seen[0].get('max_tokens')) == expected
++    assert stats['structured_attempts'] == [{'schema_name': 'Plan', 'finish_reason': 'tool_calls',
++                                            'parse_status': 'parsed', 'output_limit': expected}]
++
++
++def test_nontruncated_invalid_schema_retains_bounded_two_attempts(tmp_path, monkeypatch):
++    seen = []
++    def handler(request):
++        seen.append(request)
++        return wire_response(False, 'tool_calls', valid=False)
++    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
++        model = connect(monkeypatch, client)
++        with budget_scope(budget_at(tmp_path)), pytest.raises(ModelFailure) as caught:
++            model.generate(Plan, {})
++    assert len(seen) == caught.value.stats['calls'] == 2
++    assert caught.value.stats['output_failure']['kind'] == 'schema_invalid'
++    assert all(x['parse_status'] == 'invalid' for x in caught.value.stats['structured_attempts'])
++
++
++def test_truncated_missing_usage_stays_unknown_and_cannot_be_replayed(tmp_path, monkeypatch):
++    budget = budget_at(tmp_path)
++    with httpx.Client(transport=httpx.MockTransport(lambda request: wire_response(False, 'length', include_usage=False))) as client:
++        model = connect(monkeypatch, client)
++        with budget_scope(budget), pytest.raises(ModelFailure) as caught:
++            model.generate(Plan, {})
++    assert caught.value.stats['calls'] == 1 and not caught.value.stats['usage_complete']
++    with pytest.raises(BudgetExceeded, match='usage incomplete'):
++        budget.check()
++
++
++def test_safe_observation_does_not_copy_provider_or_parser_text():
++    secret = 'private-provider-value'
++    observation = observe_output(secret, {'finish_reason': secret, 'body': secret}, 'invalid', 4096)
++    assert secret not in json.dumps(observation)
++    assert observation['schema_name'] == observation['finish_reason'] == 'other'
++    assert observe_output('Plan', {}, 'missing', None)['finish_reason'] == 'unknown'
++
++
++@pytest.mark.parametrize('limit', [0, -1, 32769])
++def test_output_limit_configuration_rejects_invalid_bounds(limit):
++    with pytest.raises(ValidationError):
++        Settings(_env_file=None, model_max_output_tokens=limit)

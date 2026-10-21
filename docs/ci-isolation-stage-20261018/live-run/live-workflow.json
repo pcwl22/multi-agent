@@ -1,0 +1,570 @@
+{
+  "task_id": "0d0355af-6df7-42ab-a0c2-998521e4fdd4",
+  "thread_id": "6bf6c869-3da6-46be-b0a6-75c403d3a536",
+  "issue_description": "Expired token returns HTTP 500 instead of 401 in /profile\n\nThis issue is a real GitHub integration test for RepoPilot, using an existing bug on main.\n\nBaseline commit: 306727811c5e9f7a777662bcdaec23c9d35c19c5\nTarget: demo_repository/auth.py\n\nObserved behavior:\nGET /profile with Authorization: Bearer expired raises HTTP 500 with detail \"Token expired\".\n\nExpected behavior and acceptance contracts:\n1. An expired token returns HTTP 401 with detail \"Token expired\".\n2. Missing or invalid authorization still returns HTTP 401 with detail \"Unauthorized\".\n3. Authorization: Bearer valid still returns HTTP 200 and {\"user\": \"alice\"}.\n4. Add NEW regression tests under demo_repository/tests. Do not modify or delete existing tests.\n\nKeep the repair limited to the authentication defect and its new regression tests. RepoPilot must run target code only in Docker. Any resulting PR remains draft and requires separate human approval of its candidate identity and exact diff digest. Do not merge or modify main directly.\n",
+  "repository_path": "E:\\multi-agent\\.repopilot\\github-real-20261018\\source-main",
+  "workspace_path": "E:\\multi-agent\\.repopilot\\ci-isolation-live\\data\\tasks\\0d0355af-6df7-42ab-a0c2-998521e4fdd4\\attempts\\0001\\workspace",
+  "task_path": "E:\\multi-agent\\.repopilot\\ci-isolation-live\\data\\tasks\\0d0355af-6df7-42ab-a0c2-998521e4fdd4",
+  "retry_workspace_policy": "isolated",
+  "baseline_manifest": {
+    "auth.py": "2376e1bc8705649e3f7d6e7c683f5ea62ef657d7f9918855f867c5ca6058ea7b",
+    "requirements.txt": "348e6a5d5ad61cc876b06c5346f4bc12cf79f284c8c155d2dceb5b01b532cf04",
+    "tests/test_auth.py": "422889de79c78c3cc2f3badb7dc2d6a65cd8011e86fe13b16f033379f399728f"
+  },
+  "creation_manifest": {
+    "auth.py": "2376e1bc8705649e3f7d6e7c683f5ea62ef657d7f9918855f867c5ca6058ea7b",
+    "requirements.txt": "348e6a5d5ad61cc876b06c5346f4bc12cf79f284c8c155d2dceb5b01b532cf04",
+    "tests/test_auth.py": "422889de79c78c3cc2f3badb7dc2d6a65cd8011e86fe13b16f033379f399728f"
+  },
+  "creation_attempts": 1,
+  "creation_failures": [],
+  "candidate_id": "d047d446-6b17-4659-b4ad-79b70fe8a4ec",
+  "candidate_number": 1,
+  "approved_candidate_id": null,
+  "previous_candidate_diff": "",
+  "attempt_history": [],
+  "mode": "multi_full",
+  "execution_status": "awaiting_approval",
+  "plan": {
+    "issue_summary": "GET /profile with an expired bearer token raises HTTP 500 with detail \"Token expired\" instead of HTTP 401. The defect lives in demo_repository/auth.py (workspace path auth.py). The fix must map expired-token errors to HTTP 401 with detail \"Token expired\", keep missing/invalid authorization at HTTP 401 with detail \"Unauthorized\", and keep a valid bearer token returning HTTP 200 with {\"user\": \"alice\"}. New regression tests go under tests/ without modifying existing tests.",
+    "suspected_modules": [
+      "auth.py",
+      "tests/test_auth.py"
+    ],
+    "search_strategy": [
+      "Read auth.py to locate the /profile route handler and the token validation/decoding logic.",
+      "Identify how expired tokens are detected (e.g., jwt.ExpiredSignatureError or an explicit expiry check) and how that exception currently propagates to a 500.",
+      "Inspect tests/test_auth.py to learn the existing test client setup, fixtures, and how tokens are generated, so new tests match existing conventions without editing them.",
+      "Check requirements.txt for the JWT/auth library in use (e.g., PyJWT) to confirm the exception type raised on expiry.",
+      "Search for any other callers of the token validation helper to ensure the fix does not change behavior for non-/profile endpoints."
+    ],
+    "repair_steps": [
+      "In auth.py, catch the expired-token condition in the /profile handler (or in the shared token validation helper) and raise/return HTTPException(status_code=401, detail=\"Token expired\").",
+      "Ensure the missing/invalid authorization path still raises HTTPException(status_code=401, detail=\"Unauthorized\") and is not accidentally caught by the new expired-token handling.",
+      "Ensure the valid-token path is unchanged and still returns HTTP 200 with body {\"user\": \"alice\"}.",
+      "Add a new test file under tests/ (e.g., tests/test_profile_expired_token.py) containing regression tests for: expired token -> 401 \"Token expired\"; missing header -> 401 \"Unauthorized\"; malformed/invalid token -> 401 \"Unauthorized\"; valid token -> 200 {\"user\": \"alice\"}.",
+      "Do not modify or delete tests/test_auth.py or any existing test.",
+      "Keep the change limited to the authentication defect and the new regression tests."
+    ],
+    "validation_strategy": [
+      "Run the full existing test suite to confirm no regressions in tests/test_auth.py and elsewhere.",
+      "Run the new regression tests covering expired token (401 \"Token expired\"), missing header (401 \"Unauthorized\"), invalid token (401 \"Unauthorized\"), and valid token (200 {\"user\": \"alice\"}).",
+      "Assert exact status codes and exact detail strings, not just truthiness, to satisfy the literal contracts.",
+      "Verify the valid-token response body equals {\"user\": \"alice\"} exactly.",
+      "Confirm via diff that only auth.py and the new test file changed, and that no existing test file was touched.",
+      "Run target code only in Docker per RepoPilot policy; do not merge or modify main."
+    ],
+    "acceptance_contracts": [
+      "GET /profile with Authorization: Bearer <expired token> returns HTTP status 401.",
+      "The 401 response for an expired token has detail exactly \"Token expired\".",
+      "GET /profile with no Authorization header returns HTTP 401 with detail exactly \"Unauthorized\".",
+      "GET /profile with an invalid/malformed Authorization header or token returns HTTP 401 with detail exactly \"Unauthorized\".",
+      "GET /profile with Authorization: Bearer <valid token> returns HTTP 200 and JSON body {\"user\": \"alice\"}.",
+      "New regression tests are added under tests/ and no existing test is modified or deleted.",
+      "The repair is limited to the authentication defect and its new regression tests."
+    ]
+  },
+  "located_files": [
+    "auth.py",
+    "tests/test_auth.py"
+  ],
+  "context": "\n--- FILE auth.py ---\nfrom fastapi import FastAPI, Header, HTTPException\n\napp = FastAPI()\n\n\ndef authenticate(authorization: str | None) -> dict:\n    if authorization == \"Bearer expired\":\n        raise HTTPException(status_code=500, detail=\"Token expired\")\n    if authorization != \"Bearer valid\":\n        raise HTTPException(status_code=401, detail=\"Unauthorized\")\n    return {\"user\": \"alice\"}\n\n\n@app.get(\"/profile\")\ndef profile(authorization: str | None = Header(default=None)) -> dict:\n    return authenticate(authorization)\n\n\n--- FILE tests/test_auth.py ---\nfrom auth import app\nfrom fastapi.testclient import TestClient\n\n\ndef test_valid_token():\n    assert TestClient(app).get(\"/profile\", headers={\"Authorization\": \"Bearer valid\"}).json() == {\n        \"user\": \"alice\"\n    }\n\n\ndef test_missing_token():\n    assert TestClient(app).get(\"/profile\").status_code == 401\n\n",
+  "patches": [
+    {
+      "rationale": "The defect is in auth.py: the expired-token branch raises HTTPException with status_code=500 instead of 401. Fix it to 401 with detail \"Token expired\". The missing/invalid path already returns 401 \"Unauthorized\", and the valid path returns {\"user\": \"alice\"} unchanged. Add a NEW regression test file under tests/ covering all four contracts with exact status codes, exact detail strings, and exact JSON body.",
+      "edits": [
+        {
+          "path": "auth.py",
+          "old": "    if authorization == \"Bearer expired\":\n        raise HTTPException(status_code=500, detail=\"Token expired\")",
+          "new": "    if authorization == \"Bearer expired\":\n        raise HTTPException(status_code=401, detail=\"Token expired\")"
+        },
+        {
+          "path": "tests/test_profile_expired_token.py",
+          "old": "",
+          "new": "from auth import app\nfrom fastapi.testclient import TestClient\n\n\nclient = TestClient(app)\n\n\ndef test_expired_token_returns_401_with_token_expired_detail():\n    response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer expired\"})\n    assert response.status_code == 401\n    assert response.json() == {\"detail\": \"Token expired\"}\n\n\ndef test_missing_authorization_returns_401_unauthorized():\n    response = client.get(\"/profile\")\n    assert response.status_code == 401\n    assert response.json() == {\"detail\": \"Unauthorized\"}\n\n\ndef test_invalid_token_returns_401_unauthorized():\n    response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer invalid\"})\n    assert response.status_code == 401\n    assert response.json() == {\"detail\": \"Unauthorized\"}\n\n\ndef test_malformed_authorization_header_returns_401_unauthorized():\n    response = client.get(\"/profile\", headers={\"Authorization\": \"NotBearer\"})\n    assert response.status_code == 401\n    assert response.json() == {\"detail\": \"Unauthorized\"}\n\n\ndef test_valid_token_returns_200_with_alice():\n    response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer valid\"})\n    assert response.status_code == 200\n    assert response.json() == {\"user\": \"alice\"}\n"
+        }
+      ],
+      "contract_tests": [
+        "tests/test_profile_expired_token.py::test_expired_token_returns_401_with_token_expired_detail asserts GET /profile with Authorization: Bearer expired returns status_code == 401 and JSON body exactly {\"detail\": \"Token expired\"}.",
+        "tests/test_profile_expired_token.py::test_missing_authorization_returns_401_unauthorized asserts GET /profile with no Authorization header returns status_code == 401 and JSON body exactly {\"detail\": \"Unauthorized\"}.",
+        "tests/test_profile_expired_token.py::test_invalid_token_returns_401_unauthorized asserts GET /profile with Authorization: Bearer invalid returns status_code == 401 and JSON body exactly {\"detail\": \"Unauthorized\"}.",
+        "tests/test_profile_expired_token.py::test_malformed_authorization_header_returns_401_unauthorized asserts GET /profile with a malformed Authorization header returns status_code == 401 and JSON body exactly {\"detail\": \"Unauthorized\"}.",
+        "tests/test_profile_expired_token.py::test_valid_token_returns_200_with_alice asserts GET /profile with Authorization: Bearer valid returns status_code == 200 and JSON body exactly {\"user\": \"alice\"}.",
+        "New regression tests live in the new file tests/test_profile_expired_token.py; existing tests/test_auth.py is untouched, and the only source change is the status code in auth.py's expired-token branch."
+      ],
+      "changed_files": [
+        "auth.py",
+        "tests/test_profile_expired_token.py"
+      ],
+      "applied": true,
+      "candidate_id": "d047d446-6b17-4659-b4ad-79b70fe8a4ec",
+      "candidate_number": 1
+    }
+  ],
+  "patch_feedback": [],
+  "test_results": [
+    {
+      "status": "passed",
+      "exit_code": 0,
+      "stdout": ".......                                                                  [100%]\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n-------------------- generated xml file: /results/junit.xml --------------------\n7 passed, 1 warning in 0.76s\n",
+      "stderr": "",
+      "output_truncated": false,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "passed": 7,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 2.252565400000094,
+      "evidence": "docker",
+      "cases": [
+        {
+          "file": "tests/test_auth.py",
+          "name": "test_valid_token",
+          "classname": "tests.test_auth",
+          "line": 5,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_auth.py",
+          "name": "test_missing_token",
+          "classname": "tests.test_auth",
+          "line": 11,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_profile_expired_token.py",
+          "name": "test_expired_token_returns_401_with_token_expired_detail",
+          "classname": "tests.test_profile_expired_token",
+          "line": 8,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_profile_expired_token.py",
+          "name": "test_missing_authorization_returns_401_unauthorized",
+          "classname": "tests.test_profile_expired_token",
+          "line": 14,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_profile_expired_token.py",
+          "name": "test_invalid_token_returns_401_unauthorized",
+          "classname": "tests.test_profile_expired_token",
+          "line": 20,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_profile_expired_token.py",
+          "name": "test_malformed_authorization_header_returns_401_unauthorized",
+          "classname": "tests.test_profile_expired_token",
+          "line": 26,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        },
+        {
+          "file": "tests/test_profile_expired_token.py",
+          "name": "test_valid_token_returns_200_with_alice",
+          "classname": "tests.test_profile_expired_token",
+          "line": 32,
+          "status": "passed",
+          "message": "",
+          "details": ""
+        }
+      ],
+      "cases_truncated": false,
+      "attempt": 1,
+      "diff_digest": "0b9648f8b053430d34d94a33b569320a16a4c99ae1e71e5c1852e343ef5bc924",
+      "candidate_id": "d047d446-6b17-4659-b4ad-79b70fe8a4ec",
+      "candidate_number": 1
+    }
+  ],
+  "repair_feedback": [],
+  "regression_results": [
+    {
+      "status": "demonstrated",
+      "generated_tests": [
+        "tests/test_profile_expired_token.py"
+      ],
+      "baseline_workspace": "E:\\multi-agent\\.repopilot\\ci-isolation-live\\data\\tasks\\0d0355af-6df7-42ab-a0c2-998521e4fdd4\\regression\\attempt-1-7ddae16d-0d48-4a70-8e8a-432b3d432e28",
+      "baseline_result": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "..F....                                                                  [100%]\n=================================== FAILURES ===================================\n___________ test_expired_token_returns_401_with_token_expired_detail ___________\n\n    def test_expired_token_returns_401_with_token_expired_detail():\n        response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer expired\"})\n>       assert response.status_code == 401\nE       assert 500 == 401\nE        +  where 500 = <Response [500 Internal Server Error]>.status_code\n\ntests/test_profile_expired_token.py:10: AssertionError\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1\n  /usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_profile_expired_token.py::test_expired_token_returns_401_with_token_expired_detail\n1 failed, 6 passed, 1 warning in 0.98s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 6,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 2.636855199999445,
+        "evidence": "docker",
+        "cases": [
+          {
+            "file": "tests/test_profile_expired_token.py",
+            "name": "test_expired_token_returns_401_with_token_expired_detail",
+            "classname": "tests.test_profile_expired_token",
+            "line": 8,
+            "status": "failed",
+            "message": "assert 500 == 401\n +  where 500 = <Response [500 Internal Server Error]>.status_code",
+            "details": "def test_expired_token_returns_401_with_token_expired_detail():\n        response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer expired\"})\n>       assert response.status_code == 401\nE       assert 500 == 401\nE        +  where 500 = <Response [500 Internal Server Error]>.status_code\n\ntests/test_profile_expired_token.py:10: AssertionError"
+          },
+          {
+            "file": "tests/test_auth.py",
+            "name": "test_valid_token",
+            "classname": "tests.test_auth",
+            "line": 5,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_auth.py",
+            "name": "test_missing_token",
+            "classname": "tests.test_auth",
+            "line": 11,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_profile_expired_token.py",
+            "name": "test_missing_authorization_returns_401_unauthorized",
+            "classname": "tests.test_profile_expired_token",
+            "line": 14,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_profile_expired_token.py",
+            "name": "test_invalid_token_returns_401_unauthorized",
+            "classname": "tests.test_profile_expired_token",
+            "line": 20,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_profile_expired_token.py",
+            "name": "test_malformed_authorization_header_returns_401_unauthorized",
+            "classname": "tests.test_profile_expired_token",
+            "line": 26,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          },
+          {
+            "file": "tests/test_profile_expired_token.py",
+            "name": "test_valid_token_returns_200_with_alice",
+            "classname": "tests.test_profile_expired_token",
+            "line": 32,
+            "status": "passed",
+            "message": "",
+            "details": ""
+          }
+        ],
+        "cases_truncated": false
+      },
+      "fail_to_pass_tests": [
+        "tests/test_profile_expired_token.py::tests.test_profile_expired_token::test_expired_token_returns_401_with_token_expired_detail"
+      ],
+      "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+      "attempt": 1,
+      "diff_digest": "0b9648f8b053430d34d94a33b569320a16a4c99ae1e71e5c1852e343ef5bc924",
+      "candidate_id": "d047d446-6b17-4659-b4ad-79b70fe8a4ec",
+      "candidate_number": 1
+    }
+  ],
+  "review_results": [
+    {
+      "approved": true,
+      "summary": "The candidate makes a single-line source change in auth.py: the expired-token branch now raises HTTPException(status_code=401, detail=\"Token expired\") instead of 500. This directly satisfies contract 1. The missing/invalid path is untouched and still raises 401 \"Unauthorized\" (contracts 2). The valid path is untouched and still returns {\"user\": \"alice\"} with 200 (contract 3). A new test file tests/test_profile_expired_token.py adds five regression tests covering expired (401 \"Token expired\"), missing (401 \"Unauthorized\"), invalid (401 \"Unauthorized\"), malformed header (401 \"Unauthorized\"), and valid (200 {\"user\": \"alice\"}) cases, with exact status codes and exact JSON bodies. Existing tests/test_auth.py is unmodified. Docker regression evidence shows the expired-token test failed on the original source (500 != 401) and passes on the candidate, while the other six tests pass on both. The change is limited to the authentication defect and its new regression tests.",
+      "concerns": [
+        "The repository uses a simplified string-matching auth stub rather than real JWT decoding, so the fix is scoped to the existing defect representation; this matches the issue's stated target and observed behavior.",
+        "The malformed-header test uses \"NotBearer\" rather than a header lacking the Bearer prefix entirely; both fall into the same != \"Bearer valid\" branch, so behavior is equivalent."
+      ],
+      "contract_checks": [
+        {
+          "requirement": "GET /profile with Authorization: Bearer <expired token> returns HTTP status 401.",
+          "satisfied": true,
+          "evidence": "auth.py now raises HTTPException(status_code=401, detail=\"Token expired\") for authorization == \"Bearer expired\". Test test_expired_token_returns_401_with_token_expired_detail asserts status_code == 401; Docker regression evidence shows it failed on baseline (assert 500 == 401) and passes on candidate."
+        },
+        {
+          "requirement": "The 401 response for an expired token has detail exactly \"Token expired\".",
+          "satisfied": true,
+          "evidence": "auth.py detail=\"Token expired\"; test asserts response.json() == {\"detail\": \"Token expired\"} exactly."
+        },
+        {
+          "requirement": "GET /profile with no Authorization header returns HTTP 401 with detail exactly \"Unauthorized\".",
+          "satisfied": true,
+          "evidence": "Header default=None, so authorization is None, which != \"Bearer valid\" and raises 401 \"Unauthorized\". Test test_missing_authorization_returns_401_unauthorized asserts status 401 and body {\"detail\": \"Unauthorized\"}; passes on both baseline and candidate."
+        },
+        {
+          "requirement": "GET /profile with an invalid/malformed Authorization header or token returns HTTP 401 with detail exactly \"Unauthorized\".",
+          "satisfied": true,
+          "evidence": "Any value other than \"Bearer expired\"/\"Bearer valid\" raises 401 \"Unauthorized\". Tests test_invalid_token_returns_401_unauthorized (\"Bearer invalid\") and test_malformed_authorization_header_returns_401_unauthorized (\"NotBearer\") assert exact 401 and {\"detail\": \"Unauthorized\"}."
+        },
+        {
+          "requirement": "GET /profile with Authorization: Bearer <valid token> returns HTTP 200 and JSON body {\"user\": \"alice\"}.",
+          "satisfied": true,
+          "evidence": "authenticate returns {\"user\": \"alice\"} for \"Bearer valid\"; test_valid_token_returns_200_with_alice asserts status 200 and response.json() == {\"user\": \"alice\"} exactly. Existing tests/test_auth.py::test_valid_token also covers this and is unmodified."
+        },
+        {
+          "requirement": "New regression tests are added under tests/ and no existing test is modified or deleted.",
+          "satisfied": true,
+          "evidence": "Diff adds tests/test_profile_expired_token.py with five tests; tests/test_auth.py is not in the diff and remains as shown in context. Docker run reports 7 passed (2 existing + 5 new)."
+        },
+        {
+          "requirement": "The repair is limited to the authentication defect and its new regression tests.",
+          "satisfied": true,
+          "evidence": "Diff contains only the one-line status-code change in auth.py and the new test file; no other files changed."
+        }
+      ],
+      "attempt": 1,
+      "candidate_id": "d047d446-6b17-4659-b4ad-79b70fe8a4ec",
+      "candidate_number": 1
+    }
+  ],
+  "retry_count": 0,
+  "attempts": 1,
+  "approval_status": "pending",
+  "execution_history": [
+    {
+      "node": "model",
+      "timestamp": 1792303299.5874693,
+      "schema": "Plan",
+      "calls": 1,
+      "input_tokens": 1055,
+      "output_tokens": 830,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-v4.1-flash",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "model_reported": "deepseek-v4.1-flash",
+      "provider_response_id": null,
+      "duration_seconds": 12.936781899999914
+    },
+    {
+      "node": "planner",
+      "timestamp": 1792303299.5875208,
+      "duration_seconds": 12.939062499999636
+    },
+    {
+      "node": "locator",
+      "timestamp": 1792303299.676961,
+      "duration_seconds": 0.0851570000004358
+    },
+    {
+      "node": "model",
+      "timestamp": 1792303313.303249,
+      "schema": "Patch",
+      "calls": 1,
+      "input_tokens": 2358,
+      "output_tokens": 879,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-v4.1-flash",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "model_reported": "deepseek-v4.1-flash",
+      "provider_response_id": null,
+      "duration_seconds": 13.615823000000091
+    },
+    {
+      "node": "coder",
+      "timestamp": 1792303313.3326445,
+      "duration_seconds": 13.652538800000002
+    },
+    {
+      "node": "test",
+      "timestamp": 1792303315.8156066,
+      "duration_seconds": 2.4774141999996573
+    },
+    {
+      "node": "regression",
+      "timestamp": 1792303318.722249,
+      "duration_seconds": 2.898145199999817
+    },
+    {
+      "node": "model",
+      "timestamp": 1792303341.4401474,
+      "schema": "Review",
+      "calls": 1,
+      "input_tokens": 4860,
+      "output_tokens": 1017,
+      "adapter": "live",
+      "usage_complete": true,
+      "model_requested": "deepseek-v4.1-flash",
+      "streaming": true,
+      "rate_limit_wait_seconds": 0.0,
+      "model_reported": "deepseek-v4.1-flash",
+      "provider_response_id": null,
+      "duration_seconds": 22.704364400000486
+    },
+    {
+      "node": "reviewer",
+      "timestamp": 1792303341.440202,
+      "duration_seconds": 22.714098999999806
+    }
+  ],
+  "retrieval_history": [
+    {
+      "tool": "search_code",
+      "keyword": "Read",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "Read",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "auth",
+      "matches": 8
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "auth",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "locate",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "locate",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "the",
+      "matches": 2
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "the",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "profile",
+      "matches": 4
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "profile",
+      "matches": 1
+    },
+    {
+      "tool": "search_code",
+      "keyword": "route",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "route",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "handler",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "handler",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "and",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "and",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "token",
+      "matches": 3
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "token",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "validation",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "validation",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "decoding",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "decoding",
+      "matches": 0
+    },
+    {
+      "tool": "search_code",
+      "keyword": "logic",
+      "matches": 0
+    },
+    {
+      "tool": "find_symbol",
+      "symbol": "logic",
+      "matches": 0
+    },
+    {
+      "tool": "read_file",
+      "path": "auth.py",
+      "chars": 504
+    },
+    {
+      "tool": "read_file",
+      "path": "tests/test_auth.py",
+      "chars": 307
+    },
+    {
+      "tool": "inspect_dependencies",
+      "files": [
+        "requirements.txt"
+      ]
+    }
+  ],
+  "model_calls": 3,
+  "input_tokens": 8273,
+  "output_tokens": 2726,
+  "token_usage_complete": true,
+  "error": null,
+  "failure": null,
+  "provider_retry_count": 0,
+  "next_node": "human",
+  "diff": "--- a/auth.py\n+++ b/auth.py\n@@ -5,7 +5,7 @@\n \n def authenticate(authorization: str | None) -> dict:\n     if authorization == \"Bearer expired\":\n-        raise HTTPException(status_code=500, detail=\"Token expired\")\n+        raise HTTPException(status_code=401, detail=\"Token expired\")\n     if authorization != \"Bearer valid\":\n         raise HTTPException(status_code=401, detail=\"Unauthorized\")\n     return {\"user\": \"alice\"}\n--- a/tests/test_profile_expired_token.py\n+++ b/tests/test_profile_expired_token.py\n@@ -0,0 +1,35 @@\n+from auth import app\n+from fastapi.testclient import TestClient\n+\n+\n+client = TestClient(app)\n+\n+\n+def test_expired_token_returns_401_with_token_expired_detail():\n+    response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer expired\"})\n+    assert response.status_code == 401\n+    assert response.json() == {\"detail\": \"Token expired\"}\n+\n+\n+def test_missing_authorization_returns_401_unauthorized():\n+    response = client.get(\"/profile\")\n+    assert response.status_code == 401\n+    assert response.json() == {\"detail\": \"Unauthorized\"}\n+\n+\n+def test_invalid_token_returns_401_unauthorized():\n+    response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer invalid\"})\n+    assert response.status_code == 401\n+    assert response.json() == {\"detail\": \"Unauthorized\"}\n+\n+\n+def test_malformed_authorization_header_returns_401_unauthorized():\n+    response = client.get(\"/profile\", headers={\"Authorization\": \"NotBearer\"})\n+    assert response.status_code == 401\n+    assert response.json() == {\"detail\": \"Unauthorized\"}\n+\n+\n+def test_valid_token_returns_200_with_alice():\n+    response = client.get(\"/profile\", headers={\"Authorization\": \"Bearer valid\"})\n+    assert response.status_code == 200\n+    assert response.json() == {\"user\": \"alice\"}\n",
+  "diff_digest": "0b9648f8b053430d34d94a33b569320a16a4c99ae1e71e5c1852e343ef5bc924"
+}

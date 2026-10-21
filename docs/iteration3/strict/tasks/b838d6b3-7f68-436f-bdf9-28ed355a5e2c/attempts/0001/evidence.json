@@ -1,0 +1,73 @@
+{
+  "candidate_id": "9c037f31-7d55-443d-8b1f-86e12fa48dcc",
+  "candidate_number": 1,
+  "diff": "--- a/cache.py\n+++ b/cache.py\n@@ -1,2 +1,2 @@\n def is_expired(inserted_at, ttl, now):\n-    return now > inserted_at + ttl\n+    return now >= inserted_at + ttl\n--- a/tests/test_cache_expiry.py\n+++ b/tests/test_cache_expiry.py\n@@ -0,0 +1,45 @@\n+from cache import is_expired\n+\n+\n+def test_alive_strictly_before_boundary():\n+    # now < inserted_at + ttl -> alive\n+    assert is_expired(10, 5, 14) is False\n+\n+\n+def test_expired_exactly_at_boundary():\n+    # now == inserted_at + ttl -> expired\n+    assert is_expired(10, 5, 15) is True\n+\n+\n+def test_expired_strictly_after_boundary():\n+    # now > inserted_at + ttl -> expired\n+    assert is_expired(10, 5, 16) is True\n+\n+\n+def test_zero_ttl_expired_at_inserted_at():\n+    # ttl == 0 -> expired at inserted_at\n+    assert is_expired(10, 0, 10) is True\n+\n+\n+def test_zero_ttl_alive_before_inserted_at():\n+    # ttl == 0, now < inserted_at -> alive\n+    assert is_expired(10, 0, 9) is False\n+\n+\n+def test_zero_ttl_expired_after_inserted_at():\n+    # ttl == 0, now > inserted_at -> expired\n+    assert is_expired(10, 0, 11) is True\n+\n+\n+def test_boundary_is_exactly_inserted_at_plus_ttl():\n+    # boundary is exactly inserted_at + ttl for nonzero ttl\n+    inserted_at, ttl = 100, 7\n+    boundary = inserted_at + ttl\n+    assert is_expired(inserted_at, ttl, boundary - 1) is False\n+    assert is_expired(inserted_at, ttl, boundary) is True\n+    assert is_expired(inserted_at, ttl, boundary + 1) is True\n+\n+\n+def test_result_type_is_bool():\n+    assert type(is_expired(10, 5, 15)) is bool\n+    assert type(is_expired(10, 5, 14)) is bool\n",
+  "diff_digest": "90b61a10f8d4bb279ecf75908d2158d04179efd04f2fc1822558d2abab0265ba",
+  "execution_status": "awaiting_approval",
+  "matches_recorded": true,
+  "model_calls_total": 2,
+  "patch_feedback": [],
+  "patches": [
+    {
+      "applied": true,
+      "candidate_id": "9c037f31-7d55-443d-8b1f-86e12fa48dcc",
+      "candidate_number": 1,
+      "changed_files": [
+        "cache.py",
+        "tests/test_cache_expiry.py"
+      ],
+      "contract_tests": [
+        "is_expired returns True when now == inserted_at + ttl (exact boundary), for ttl > 0 -> tests/test_cache_expiry.py::test_expired_exactly_at_boundary asserts is_expired(10, 5, 15) is True.",
+        "is_expired returns True when now == inserted_at + ttl with ttl == 0, i.e. at inserted_at -> tests/test_cache_expiry.py::test_zero_ttl_expired_at_inserted_at asserts is_expired(10, 0, 10) is True.",
+        "is_expired returns False when now < inserted_at + ttl (strictly before expiry) -> tests/test_cache_expiry.py::test_alive_strictly_before_boundary asserts is_expired(10, 5, 14) is False.",
+        "is_expired returns True when now > inserted_at + ttl (strictly after expiry) -> tests/test_cache_expiry.py::test_expired_strictly_after_boundary asserts is_expired(10, 5, 16) is True.",
+        "The expiry boundary is exactly inserted_at + ttl using the existing time type and arithmetic; no rounding or unit changes -> tests/test_cache_expiry.py::test_boundary_is_exactly_inserted_at_plus_ttl checks boundary-1 alive, boundary expired, boundary+1 expired with integer arithmetic.",
+        "The is_expired signature and clock/time source are unchanged -> tests/test_cache_expiry.py calls is_expired(inserted_at, ttl, now) positionally with the same three-argument signature; no clock is introduced.",
+        "Existing public callers of is_expired observe the corrected boundary behavior without API changes -> tests/test_cache_expiry.py::test_result_type_is_bool asserts type(is_expired(...)) is bool for both alive and expired inputs, confirming the return type is unchanged.",
+        "Regression tests exercise the real is_expired with the production time type for before, at, and after boundary, plus zero TTL -> tests/test_cache_expiry.py imports is_expired from cache and covers before/at/after boundary and ttl == 0 (test_zero_ttl_alive_before_inserted_at, test_zero_ttl_expired_at_inserted_at, test_zero_ttl_expired_after_inserted_at)."
+      ],
+      "edits": [
+        {
+          "new": "def is_expired(inserted_at, ttl, now):\n    return now >= inserted_at + ttl",
+          "old": "def is_expired(inserted_at, ttl, now):\n    return now > inserted_at + ttl",
+          "path": "cache.py"
+        },
+        {
+          "new": "from cache import is_expired\n\n\ndef test_alive_strictly_before_boundary():\n    # now < inserted_at + ttl -> alive\n    assert is_expired(10, 5, 14) is False\n\n\ndef test_expired_exactly_at_boundary():\n    # now == inserted_at + ttl -> expired\n    assert is_expired(10, 5, 15) is True\n\n\ndef test_expired_strictly_after_boundary():\n    # now > inserted_at + ttl -> expired\n    assert is_expired(10, 5, 16) is True\n\n\ndef test_zero_ttl_expired_at_inserted_at():\n    # ttl == 0 -> expired at inserted_at\n    assert is_expired(10, 0, 10) is True\n\n\ndef test_zero_ttl_alive_before_inserted_at():\n    # ttl == 0, now < inserted_at -> alive\n    assert is_expired(10, 0, 9) is False\n\n\ndef test_zero_ttl_expired_after_inserted_at():\n    # ttl == 0, now > inserted_at -> expired\n    assert is_expired(10, 0, 11) is True\n\n\ndef test_boundary_is_exactly_inserted_at_plus_ttl():\n    # boundary is exactly inserted_at + ttl for nonzero ttl\n    inserted_at, ttl = 100, 7\n    boundary = inserted_at + ttl\n    assert is_expired(inserted_at, ttl, boundary - 1) is False\n    assert is_expired(inserted_at, ttl, boundary) is True\n    assert is_expired(inserted_at, ttl, boundary + 1) is True\n\n\ndef test_result_type_is_bool():\n    assert type(is_expired(10, 5, 15)) is bool\n    assert type(is_expired(10, 5, 14)) is bool\n",
+          "old": "",
+          "path": "tests/test_cache_expiry.py"
+        }
+      ],
+      "rationale": "The bug is in cache.py: is_expired uses a strict '>' comparison, so an entry at exactly inserted_at + ttl is reported alive. The fix is to use '>=' so the boundary is inclusive, which also makes ttl == 0 expired at inserted_at. Behavior strictly before (alive) and strictly after (expired) is unchanged, and the signature/time arithmetic are untouched. New regression tests in a fresh file (tests/test_cache_expiry.py, not in existing_test_paths) exercise the real is_expired with integer time values for before/at/after boundary and zero TTL."
+    }
+  ],
+  "recorded_digest": "90b61a10f8d4bb279ecf75908d2158d04179efd04f2fc1822558d2abab0265ba",
+  "retry_count": 0,
+  "reviews": [],
+  "tests": [
+    {
+      "attempt": 1,
+      "candidate_id": "9c037f31-7d55-443d-8b1f-86e12fa48dcc",
+      "candidate_number": 1,
+      "duration_seconds": 1.0439296000004106,
+      "errors": 0,
+      "evidence": "docker",
+      "exit_code": 0,
+      "failed": 0,
+      "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+      "output_truncated": false,
+      "passed": 9,
+      "skipped": 0,
+      "status": "passed",
+      "stderr": "",
+      "stdout": ".........                                                                [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n9 passed in 0.13s\n"
+    }
+  ],
+  "workspace_manifest": {
+    "README.md": "5df6e0b360c1499f12b76cd1e19db36b54caa35249c673401a4d5bb58f0cd376",
+    "cache.py": "a5d39b8c40eebb25ccb14b044ee79a2c387b85172fcaa7d18d6ee5468bbe8157",
+    "legacy_examples.py": "864c4a803eac909ab87da30896061aa749e95ebc396a193de58e8ab912a8f025",
+    "tests/test_cache_expiry.py": "20fb979eba40b9c94f26d7c6ca8f41e2783429a13f437b63fd0a8570eacfe517",
+    "tests/test_contract.py": "cdb9dfe18c755cd72b92c4789ca7967e8c5ddafaafcfa443087e66eea344d5ec"
+  }
+}

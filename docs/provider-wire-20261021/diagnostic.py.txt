@@ -1,0 +1,108 @@
+"""One fresh Plan request with bounded wire observations, no payload logging."""
+import argparse
+import hashlib
+import json
+import os
+import time
+from pathlib import Path
+
+import httpx
+from app.evaluation.connectivity import runtime_digest
+from app.models.budgets import BudgetLimits
+from app.services.budget_audit import audit_ledger
+from app.services.budgets import BudgetExceeded, TaskBudget, budget_scope
+from app.services.provider_circuit import ProviderCircuit, ProviderCircuitOpen
+from dotenv import dotenv_values
+from pydantic import SecretStr
+
+from app.agents.model import LiveModel, ModelFailure
+from app.config.settings import Settings
+from app.models.schemas import Plan
+
+Q = Path(__file__).parent
+ROOT = Path('E:/multi-agent')
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cell', required=True)
+    parser.add_argument('--digest', required=True)
+    args = parser.parse_args()
+    assert sha(Q/'plan.json') == args.digest
+    p = read(Q/'plan.json')
+    assert runtime_digest() == p['runtime_sha256'] and sha(Path(__file__)) == p['diagnostic_sha256']
+    cell = next(c for c in p['diagnostics'] if c['id'] == args.cell)
+    out = Q/'diagnostics'/cell['id']
+    out.mkdir(parents=True, exist_ok=False)
+    config = dotenv_values(ROOT/'.env')
+    assert config['REPOPILOT_MODEL_NAME'] == p['model_name'] and config['REPOPILOT_MODEL_BASE_URL'] == p['model_base_url']
+    secret = config['OPENAI_API_KEY']
+    secrets = [config[k] for k in ['OPENAI_API_KEY', 'DEEPSEEK_API_KEY', 'SOL_API_KEY'] if config.get(k)]
+    def save(name, value):
+        text = json.dumps(value, ensure_ascii=False, indent=2)+'\n'
+        for key in secrets:
+            text = text.replace(key, '[REDACTED]')
+        (out/name).write_bytes(text.encode())
+    state = {'task_id': cell['id'], 'task_path': str(out), 'budget_deadline': time.time()+75,
+             'budget_limits': BudgetLimits(wall_seconds=75, model_requests=1, observed_tokens=32768, sandbox_runs=1).model_dump()}
+    budget = TaskBudget(state, create=True)
+    circuit = ProviderCircuit(1)
+    settings = Settings(_env_file=None, model_mode='live', model_name=p['model_name'], model_base_url=p['model_base_url'],
+        openai_api_key=SecretStr(secret), model_timeout=45, model_streaming=cell['streaming'],
+        model_min_interval=7.5, model_max_output_tokens=2048,
+        model_output_token_parameter=cell['parameter'], model_thinking=cell['thinking'])
+    os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
+    wire = []
+    def observe(request):
+        body = json.loads(request.content)
+        limits = [k for k in ['max_tokens', 'max_completion_tokens'] if k in body]
+        key = limits[0] if len(limits) == 1 else 'conflicting_or_missing'
+        value = body.get(key)
+        choice = body.get('tool_choice')
+        named = isinstance(choice, dict) and choice.get('type') == 'function' and choice.get('function', {}).get('name') == 'Plan'
+        thinking = body.get('thinking')
+        wire.append({'method_post': request.method == 'POST', 'limit_parameter': key,
+            'output_limit': value if type(value) is int and 0 < value <= 32768 else None,
+            'thinking': 'provider_default' if thinking is None else 'disabled' if thinking == {'type': 'disabled'} else 'other',
+            'named_expected_schema': named, 'parallel_tools_disabled': body.get('parallel_tool_calls') is False,
+            'streaming': body.get('stream') is True, 'model_matches': body.get('model') == p['model_name']})
+    stats, value, error = {}, None, None
+    save('dispatch-intent.json', {'cell': cell, 'status': 'unconfirmed', 'automatic_replay_allowed': False})
+    started = time.monotonic()
+    with httpx.Client(event_hooks={'request': [observe]}, timeout=45) as transport:
+        model = LiveModel(settings, dispatch_gate=circuit)
+        root = model.client.root_client.with_options(http_client=transport)
+        model.client = model.client.model_copy(update={'root_client': root, 'client': root.chat.completions})
+        try:
+            with budget_scope(budget):
+                value, stats = model.generate(Plan, p['payload'])
+                budget.check()
+        except (ModelFailure, BudgetExceeded, ProviderCircuitOpen) as exc:
+            stats = getattr(exc, 'stats', {})
+            error = type(exc).__name__
+    audit = audit_ledger(out)
+    wire_ok = len(wire) == 1 and wire[0] == {'method_post': True, 'limit_parameter': cell['parameter'],
+        'output_limit': 2048, 'thinking': cell['thinking'], 'named_expected_schema': True,
+        'parallel_tools_disabled': True, 'streaming': cell['streaming'], 'model_matches': True}
+    finish = (stats.get('structured_attempts') or [{}])[-1].get('finish_reason')
+    passed = bool(value is not None and not audit['usage_unknown'] and wire_ok and finish in {'stop', 'tool_calls', 'function_call'})
+    result = {**cell, 'status': 'passed' if passed else 'failed', 'error_type': error,
+        'stats': stats, 'wire': wire, 'wire_matches_plan': wire_ok, 'ledger': audit,
+        'circuit': circuit.snapshot(), 'duration_seconds': time.monotonic()-started,
+        'plan_result_recorded': False, 'scope': 'Only one fresh public-issue Plan request; no repair, target execution or GitHub write.'}
+    save('result.json', result)
+    print(json.dumps({'cell': cell['id'], 'status': result['status'], 'finish_reason': finish,
+                      'reasoning_status': (stats.get('response_shapes') or [{}])[-1].get('reasoning_status'),
+                      'known_tokens': audit['observed_tokens'], 'usage_unknown': audit['usage_unknown']}), flush=True)
+
+
+if __name__ == '__main__':
+    main()

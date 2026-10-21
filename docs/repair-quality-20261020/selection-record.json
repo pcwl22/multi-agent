@@ -1,0 +1,35 @@
+{
+  "implementation_frozen_before_selection": "a1c5b99abd3f8e58ffd5e2cc551325fe8ef84e8f",
+  "tuning_cases": [
+    "jsonpointer-large-index",
+    "itsdangerous-date-overflow",
+    "dotenv-empty-comment",
+    "slugify-uppercase-translations"
+  ],
+  "new_holdout_cases": [
+    "jsonpointer-subclass-join",
+    "jsonpointer-assignment-errors"
+  ],
+  "new_projects": 0,
+  "exclusions": [
+    {
+      "fix": "2f23599bfb2efe4ceecfad64997fda0a2c1f9f0d",
+      "repo": "un33k/python-slugify",
+      "reason": "Original test_release.py is outside current test.py collection adapter; no original suite silently omitted.",
+      "execution": "static exclusion before controls"
+    },
+    {
+      "fix": "709d2ee1063cc7f57377689607ac38d4bda94f24",
+      "repo": "stefankoegl/python-json-pointer",
+      "reason": "Fix changes bin/jsonpointer, an extensionless script outside Python-only edit policy.",
+      "execution": "static exclusion before controls"
+    },
+    {
+      "fix": "7edf477f64b65ffe22c966d6a8dcc3edd0fb6997",
+      "repo": "un33k/python-slugify",
+      "reason": "Reference adds regex_pattern=None to params but original tests compare exact old dict without that key; retaining original assertions conflicts with source-only reference control.",
+      "execution": "static exclusion before controls"
+    }
+  ],
+  "lock_sha256": "b025732d58b0c9d1d7f19a8f14e4595b0efa2e494b89da678ab3bf708caa27a1"
+}

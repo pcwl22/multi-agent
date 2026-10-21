@@ -1,0 +1,225 @@
+{
+  "experiment_type": "controlled_fault_injection_with_live_llm",
+  "note": "These are deliberately corrupted candidates, not naturally failed model repairs. Every request uses the live provider; recovery candidates are unmodified. The always policy replaces every candidate to verify finite termination. Do not include these experiments in benchmark success rates.",
+  "records": [
+    {
+      "policy": "first",
+      "task_id": "ae943ccd-184c-4f52-b87e-3f208d8c1bf6",
+      "execution_status": "awaiting_approval",
+      "error": null,
+      "attempts": 2,
+      "retry_count": 1,
+      "model_calls": 4,
+      "tokens": 5662,
+      "baseline": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "FF..F                                                                    [100%]\n=================================== FAILURES ===================================\n__________________________ test_expiry[10-5-15-True] ___________________________\n\ncreated = 10, ttl = 5, now = 15, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 5, 15)\n\ntests/test_acceptance.py:16: AssertionError\n__________________________ test_expiry[10-0-10-True] ___________________________\n\ncreated = 10, ttl = 0, now = 10, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 0, 10)\n\ntests/test_acceptance.py:16: AssertionError\n_________________________ test_expiry[0-0.5-0.5-True] __________________________\n\ncreated = 0, ttl = 0.5, now = 0.5, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(0, 0.5, 0.5)\n\ntests/test_acceptance.py:16: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_acceptance.py::test_expiry[10-5-15-True] - assert False is ...\nFAILED tests/test_acceptance.py::test_expiry[10-0-10-True] - assert False is ...\nFAILED tests/test_acceptance.py::test_expiry[0-0.5-0.5-True] - assert False i...\n3 failed, 2 passed in 0.12s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 2,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 1.0212656000003335,
+        "evidence": "docker"
+      },
+      "tests": [
+        {
+          "status": "failed",
+          "exit_code": 1,
+          "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________________________ test_existing_contract ____________________________\n\n    def test_existing_contract():\n        assert not is_expired(10, 5, 14)\n>       assert is_expired(10, 5, 16)\nE       assert False\nE        +  where False = is_expired(10, 5, 16)\n\ntests/test_contract.py:6: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_contract.py::test_existing_contract - assert False\n1 failed in 0.07s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 0,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 0.907304499998645,
+          "evidence": "docker",
+          "attempt": 1
+        },
+        {
+          "status": "passed",
+          "exit_code": 0,
+          "stdout": "......                                                                   [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n6 passed in 0.07s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 6,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 0.9527426000004198,
+          "evidence": "docker",
+          "attempt": 2
+        }
+      ],
+      "acceptance": {
+        "status": "passed",
+        "exit_code": 0,
+        "stdout": ".....                                                                    [100%]\n-------------------- generated xml file: /results/junit.xml --------------------\n5 passed in 0.07s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 5,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.8945893999989494,
+        "evidence": "docker"
+      },
+      "audit": [
+        {
+          "schema": "Plan",
+          "failed_test_feedback": [],
+          "payload_sha256": "fde53269d2178ca9457f9d294e63fb4985a78fd3c9c594040e224866b87b511f",
+          "injected": false,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1aaf85cc77"
+        },
+        {
+          "schema": "Patch",
+          "failed_test_feedback": [],
+          "payload_sha256": "ced1d2c2f61f73684c6e042edab189c1c13194ab2e4e9027076076b7d7afa647",
+          "injected": true,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1aafe5c247",
+          "model_candidate_sha256": "0046a6c1619ba35e625e2048e07ea49ab78a815d0d8a50273a1b29c255a6173e"
+        },
+        {
+          "schema": "Patch",
+          "failed_test_feedback": [
+            {
+              "attempt": 1,
+              "status": "failed",
+              "failed": 1,
+              "stdout_sha256": "5f7f4e0de1e3a711dbab59079bf008319ccc5fe7fab038b59f5666e587c7176f"
+            }
+          ],
+          "payload_sha256": "4eb39cbde8af5070a2733b14d2976126e84d059cd932fe7130a489837b772871",
+          "injected": false,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1ab075c25f"
+        },
+        {
+          "schema": "Review",
+          "failed_test_feedback": [],
+          "payload_sha256": "344d97b1b5b135c4d13d77b4d2edcace723b8fad7234093cc11e580beda1633e",
+          "injected": false,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1ab0d5c3c4"
+        }
+      ],
+      "expected_outcome_verified": true
+    },
+    {
+      "policy": "always",
+      "task_id": "050482d6-ceb0-4a68-8c0b-93a48747cf44",
+      "execution_status": "failed",
+      "error": "Test retry budget exhausted",
+      "attempts": 2,
+      "retry_count": 1,
+      "model_calls": 3,
+      "tokens": 4267,
+      "baseline": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "FF..F                                                                    [100%]\n=================================== FAILURES ===================================\n__________________________ test_expiry[10-5-15-True] ___________________________\n\ncreated = 10, ttl = 5, now = 15, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 5, 15)\n\ntests/test_acceptance.py:16: AssertionError\n__________________________ test_expiry[10-0-10-True] ___________________________\n\ncreated = 10, ttl = 0, now = 10, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 0, 10)\n\ntests/test_acceptance.py:16: AssertionError\n_________________________ test_expiry[0-0.5-0.5-True] __________________________\n\ncreated = 0, ttl = 0.5, now = 0.5, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(0, 0.5, 0.5)\n\ntests/test_acceptance.py:16: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_acceptance.py::test_expiry[10-5-15-True] - assert False is ...\nFAILED tests/test_acceptance.py::test_expiry[10-0-10-True] - assert False is ...\nFAILED tests/test_acceptance.py::test_expiry[0-0.5-0.5-True] - assert False i...\n3 failed, 2 passed in 0.12s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 2,
+        "failed": 3,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9477373000008811,
+        "evidence": "docker"
+      },
+      "tests": [
+        {
+          "status": "failed",
+          "exit_code": 1,
+          "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________________________ test_existing_contract ____________________________\n\n    def test_existing_contract():\n        assert not is_expired(10, 5, 14)\n>       assert is_expired(10, 5, 16)\nE       assert False\nE        +  where False = is_expired(10, 5, 16)\n\ntests/test_contract.py:6: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_contract.py::test_existing_contract - assert False\n1 failed in 0.07s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 0,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 0.9169113999996625,
+          "evidence": "docker",
+          "attempt": 1
+        },
+        {
+          "status": "failed",
+          "exit_code": 1,
+          "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____________________________ test_existing_contract ____________________________\n\n    def test_existing_contract():\n        assert not is_expired(10, 5, 14)\n>       assert is_expired(10, 5, 16)\nE       assert False\nE        +  where False = is_expired(10, 5, 16)\n\ntests/test_contract.py:6: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_contract.py::test_existing_contract - assert False\n1 failed in 0.09s\n",
+          "stderr": "",
+          "output_truncated": false,
+          "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+          "passed": 0,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0,
+          "duration_seconds": 0.9528857999994216,
+          "evidence": "docker",
+          "attempt": 2
+        }
+      ],
+      "acceptance": {
+        "status": "failed",
+        "exit_code": 1,
+        "stdout": "FF.FF                                                                    [100%]\n=================================== FAILURES ===================================\n__________________________ test_expiry[10-5-15-True] ___________________________\n\ncreated = 10, ttl = 5, now = 15, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 5, 15)\n\ntests/test_acceptance.py:16: AssertionError\n__________________________ test_expiry[10-0-10-True] ___________________________\n\ncreated = 10, ttl = 0, now = 10, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 0, 10)\n\ntests/test_acceptance.py:16: AssertionError\n________________________ test_expiry[10-5-15.001-True] _________________________\n\ncreated = 10, ttl = 5, now = 15.001, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(10, 5, 15.001)\n\ntests/test_acceptance.py:16: AssertionError\n_________________________ test_expiry[0-0.5-0.5-True] __________________________\n\ncreated = 0, ttl = 0.5, now = 0.5, expected = True\n\n    @pytest.mark.parametrize(\n        \"created,ttl,now,expected\",\n        [\n            (10, 5, 15, True),\n            (10, 0, 10, True),\n            (10, 5, 14.999, False),\n            (10, 5, 15.001, True),\n            (0, 0.5, 0.5, True),\n        ],\n    )\n    def test_expiry(created, ttl, now, expected):\n>       assert is_expired(created, ttl, now) is expected\nE       assert False is True\nE        +  where False = is_expired(0, 0.5, 0.5)\n\ntests/test_acceptance.py:16: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_acceptance.py::test_expiry[10-5-15-True] - assert False is ...\nFAILED tests/test_acceptance.py::test_expiry[10-0-10-True] - assert False is ...\nFAILED tests/test_acceptance.py::test_expiry[10-5-15.001-True] - assert False...\nFAILED tests/test_acceptance.py::test_expiry[0-0.5-0.5-True] - assert False i...\n4 failed, 1 passed in 0.14s\n",
+        "stderr": "",
+        "output_truncated": false,
+        "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+        "passed": 1,
+        "failed": 4,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 0.9539308000003075,
+        "evidence": "docker"
+      },
+      "audit": [
+        {
+          "schema": "Plan",
+          "failed_test_feedback": [],
+          "payload_sha256": "fde53269d2178ca9457f9d294e63fb4985a78fd3c9c594040e224866b87b511f",
+          "injected": false,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1ab165c28a"
+        },
+        {
+          "schema": "Patch",
+          "failed_test_feedback": [],
+          "payload_sha256": "ced1d2c2f61f73684c6e042edab189c1c13194ab2e4e9027076076b7d7afa647",
+          "injected": true,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1ab1c5b857",
+          "model_candidate_sha256": "0046a6c1619ba35e625e2048e07ea49ab78a815d0d8a50273a1b29c255a6173e"
+        },
+        {
+          "schema": "Patch",
+          "failed_test_feedback": [
+            {
+              "attempt": 1,
+              "status": "failed",
+              "failed": 1,
+              "stdout_sha256": "5f7f4e0de1e3a711dbab59079bf008319ccc5fe7fab038b59f5666e587c7176f"
+            }
+          ],
+          "payload_sha256": "232a2f18f76373651ffcf3921cb9d0eb0a42037e7e8294637d16c77456c04b30",
+          "injected": true,
+          "model_reported": "deepseek-v4.1-flash",
+          "provider_response_id": "chatcmpl-6ad1ab255c773",
+          "model_candidate_sha256": "1905d10808cf216be76935ee98acd4c7e1d90113c47966af9527d78f7274c199"
+        }
+      ],
+      "expected_outcome_verified": true
+    }
+  ]
+}

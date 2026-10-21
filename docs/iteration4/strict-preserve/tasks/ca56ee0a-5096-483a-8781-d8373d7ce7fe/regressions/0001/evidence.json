@@ -1,0 +1,95 @@
+{
+  "status": "demonstrated",
+  "generated_tests": [
+    "tests/test_events_timezone_regression.py"
+  ],
+  "baseline_workspace": "E:\\multi-agent\\.repopilot\\feedback4-strict-preserve-data\\tasks\\ca56ee0a-5096-483a-8781-d8373d7ce7fe\\regression\\attempt-1-80564b1e-c664-4a7c-8664-fcb0b9a8820a",
+  "baseline_result": {
+    "status": "failed",
+    "exit_code": 1,
+    "stdout": ".FF...F                                                                  [100%]\n=================================== FAILURES ===================================\n_____________________ test_positive_offset_converts_to_utc _____________________\n\n    def test_positive_offset_converts_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n        assert isinstance(result, datetime)\n        assert result.tzinfo == timezone.utc\n>       assert result.isoformat() == \"2026-04-01T10:00:00+00:00\"\nE       AssertionError: assert '2026-04-01T12:00:00+00:00' == '2026-04-01T10:00:00+00:00'\nE         \nE         - 2026-04-01T10:00:00+00:00\nE         ?             ^\nE         + 2026-04-01T12:00:00+00:00\nE         ?             ^\n\ntests/test_events_timezone_regression.py:10: AssertionError\n_____________________ test_negative_offset_converts_to_utc _____________________\n\n    def test_negative_offset_converts_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n        assert isinstance(result, datetime)\n        assert result.tzinfo == timezone.utc\n>       assert result.isoformat() == \"2026-04-01T17:00:00+00:00\"\nE       AssertionError: assert '2026-04-01T12:00:00+00:00' == '2026-04-01T17:00:00+00:00'\nE         \nE         - 2026-04-01T17:00:00+00:00\nE         ?             ^\nE         + 2026-04-01T12:00:00+00:00\nE         ?             ^\n\ntests/test_events_timezone_regression.py:17: AssertionError\n_______________________ test_same_instant_across_offsets _______________________\n\n    def test_same_instant_across_offsets():\n        a = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n        b = parse_event_time(\"2026-04-01T10:00:00Z\")\n        c = parse_event_time(\"2026-04-01T10:00:00\")\n>       assert a == b == c\nE       assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc)\n\ntests/test_events_timezone_regression.py:45: AssertionError\n-------------------- generated xml file: /results/junit.xml --------------------\n=========================== short test summary info ============================\nFAILED tests/test_events_timezone_regression.py::test_positive_offset_converts_to_utc\nFAILED tests/test_events_timezone_regression.py::test_negative_offset_converts_to_utc\nFAILED tests/test_events_timezone_regression.py::test_same_instant_across_offsets\n3 failed, 4 passed in 0.13s\n",
+    "stderr": "",
+    "output_truncated": false,
+    "image_id": "sha256:4c1f5b6bc19fbb4abc998f37ea2dd61e85bba8ec59f2771ebc3ecbf692bb2384",
+    "passed": 4,
+    "failed": 3,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 0.9681056999979774,
+    "evidence": "docker",
+    "cases": [
+      {
+        "file": "tests/test_events_timezone_regression.py",
+        "name": "test_positive_offset_converts_to_utc",
+        "classname": "tests.test_events_timezone_regression",
+        "line": 6,
+        "status": "failed",
+        "message": "AssertionError: assert '2026-04-01T12:00:00+00:00' == '2026-04-01T10:00:00+00:00'\n  \n  - 2026-04-01T10:00:00+00:00\n  ?             ^\n  + 2026-04-01T12:00:00+00:00\n  ?             ^",
+        "details": "def test_positive_offset_converts_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n        assert isinstance(result, datetime)\n        assert result.tzinfo == timezone.utc\n>       assert result.isoformat() == \"2026-04-01T10:00:00+00:00\"\nE       AssertionError: assert '2026-04-01T12:00:00+00:00' == '2026-04-01T10:00:00+00:00'\nE         \nE         - 2026-04-01T10:00:00+00:00\nE         ?             ^\nE         + 2026-04-01T12:00:00+00:00\nE         ?             ^\n\ntests/test_events_timezone_regression.py:10: AssertionError"
+      },
+      {
+        "file": "tests/test_events_timezone_regression.py",
+        "name": "test_negative_offset_converts_to_utc",
+        "classname": "tests.test_events_timezone_regression",
+        "line": 13,
+        "status": "failed",
+        "message": "AssertionError: assert '2026-04-01T12:00:00+00:00' == '2026-04-01T17:00:00+00:00'\n  \n  - 2026-04-01T17:00:00+00:00\n  ?             ^\n  + 2026-04-01T12:00:00+00:00\n  ?             ^",
+        "details": "def test_negative_offset_converts_to_utc():\n        result = parse_event_time(\"2026-04-01T12:00:00-05:00\")\n        assert isinstance(result, datetime)\n        assert result.tzinfo == timezone.utc\n>       assert result.isoformat() == \"2026-04-01T17:00:00+00:00\"\nE       AssertionError: assert '2026-04-01T12:00:00+00:00' == '2026-04-01T17:00:00+00:00'\nE         \nE         - 2026-04-01T17:00:00+00:00\nE         ?             ^\nE         + 2026-04-01T12:00:00+00:00\nE         ?             ^\n\ntests/test_events_timezone_regression.py:17: AssertionError"
+      },
+      {
+        "file": "tests/test_events_timezone_regression.py",
+        "name": "test_same_instant_across_offsets",
+        "classname": "tests.test_events_timezone_regression",
+        "line": 41,
+        "status": "failed",
+        "message": "assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc)",
+        "details": "def test_same_instant_across_offsets():\n        a = parse_event_time(\"2026-04-01T12:00:00+02:00\")\n        b = parse_event_time(\"2026-04-01T10:00:00Z\")\n        c = parse_event_time(\"2026-04-01T10:00:00\")\n>       assert a == b == c\nE       assert datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.timezone.utc) == datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.timezone.utc)\n\ntests/test_events_timezone_regression.py:45: AssertionError"
+      },
+      {
+        "file": "tests/test_contract.py",
+        "name": "test_existing_contract",
+        "classname": "tests.test_contract",
+        "line": 4,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_timezone_regression.py",
+        "name": "test_z_suffix_preserved",
+        "classname": "tests.test_events_timezone_regression",
+        "line": 20,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_timezone_regression.py",
+        "name": "test_naive_treated_as_utc",
+        "classname": "tests.test_events_timezone_regression",
+        "line": 27,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      },
+      {
+        "file": "tests/test_events_timezone_regression.py",
+        "name": "test_zero_offset_unchanged",
+        "classname": "tests.test_events_timezone_regression",
+        "line": 34,
+        "status": "passed",
+        "message": "",
+        "details": ""
+      }
+    ],
+    "cases_truncated": false
+  },
+  "fail_to_pass_tests": [
+    "tests/test_events_timezone_regression.py::tests.test_events_timezone_regression::test_positive_offset_converts_to_utc",
+    "tests/test_events_timezone_regression.py::tests.test_events_timezone_regression::test_negative_offset_converts_to_utc",
+    "tests/test_events_timezone_regression.py::tests.test_events_timezone_regression::test_same_instant_across_offsets"
+  ],
+  "note": "Same added test failed on original source and passed on this candidate. This is observed regression evidence, not proof of every issue contract. Collection errors, missing evidence, truncated cases and tests that pass on both versions do not demonstrate a regression.",
+  "attempt": 1,
+  "diff_digest": "37db53385ab3dae4ea55e9a18a987b0e9a3a5035254afd89ce5f10eb4d1b7ba6"
+}

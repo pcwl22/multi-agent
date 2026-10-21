@@ -1,0 +1,63 @@
+{
+  "task_id": "228ccf19-e883-46cb-a00b-580242aa740b",
+  "case_id": "recursive-config",
+  "mode": "multi_full",
+  "status": "failed",
+  "error": "Test retry budget exhausted",
+  "counted_as_failure": true,
+  "acceptance_ran": false,
+  "approval_status": "pending",
+  "diagnosis": "All three fresh source candidates preserve defaults at conflicting non-mapping leaves, rather than letting overrides win. Original contract test fails in every candidate. Generated tests also expose the same source error; this is not an incorrect generated-test-only failure.",
+  "automatic_approval_or_publication": false,
+  "candidates": [
+    {
+      "candidate_number": 1,
+      "candidate_id": "edf9f380-9dc1-4787-8c14-de56a003bca7",
+      "diff_digest": "5fbdb762c652fc0b4321505621aa3f369933cefd3cb68993d0556651ff7f90a8",
+      "source_sha256": "e357832acece3ada349e9f179af0d9a64f7cd3bf81053cc33b4465dcf60953ce",
+      "test_results": [
+        {
+          "status": "failed",
+          "passed": 0,
+          "failed": 1,
+          "errors": 0,
+          "evidence": "docker"
+        }
+      ],
+      "existing_test_sha256": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590"
+    },
+    {
+      "candidate_number": 2,
+      "candidate_id": "df7ef689-e864-463f-92e8-4280e0975629",
+      "diff_digest": "32bf5a224a5d6580bdeff958d462caf5fd42aea3104e51ec9764834d141c49ec",
+      "source_sha256": "e357832acece3ada349e9f179af0d9a64f7cd3bf81053cc33b4465dcf60953ce",
+      "test_results": [
+        {
+          "status": "failed",
+          "passed": 9,
+          "failed": 9,
+          "errors": 0,
+          "evidence": "docker"
+        }
+      ],
+      "existing_test_sha256": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590"
+    },
+    {
+      "candidate_number": 3,
+      "candidate_id": "bd13fa56-d8b2-4dad-942f-56b5466b602c",
+      "diff_digest": "32bf5a224a5d6580bdeff958d462caf5fd42aea3104e51ec9764834d141c49ec",
+      "source_sha256": "e357832acece3ada349e9f179af0d9a64f7cd3bf81053cc33b4465dcf60953ce",
+      "test_results": [
+        {
+          "status": "failed",
+          "passed": 9,
+          "failed": 9,
+          "errors": 0,
+          "evidence": "docker"
+        }
+      ],
+      "existing_test_sha256": "2ea9e4950204006a3db2f2e1a8042c3a04379c1bff65523f83e6de7e93ccb590"
+    }
+  ],
+  "posthoc_source_only_model_retry": false
+}

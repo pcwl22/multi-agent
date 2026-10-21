@@ -1,0 +1,281 @@
+--- a/tests/e2e/test_creation_process_recovery.py
++++ b/tests/e2e/test_creation_process_recovery.py
+@@ -18,7 +18,7 @@
+ def test_real_process_loss_before_creation_commit_keeps_intent_and_identity(tmp_path, point, code):
+     root = Path(__file__).parents[2]
+     data = tmp_path / 'data'
+-    source = root / 'demo_repository'
++    source = root / 'test_fixtures' / 'repair_repository'
+     env = dict(os.environ)
+     env.pop('OPENAI_API_KEY', None)
+     env.pop('GITHUB_TOKEN', None)
+--- a/tests/e2e/test_docker_repair.py
++++ b/tests/e2e/test_docker_repair.py
+@@ -17,7 +17,7 @@
+ )
+ def test_real_container_repair_and_holdout(tmp_path):
+     root = Path(__file__).parents[2]
+-    settings = Settings(repository_root=root / "demo_repository", data_dir=tmp_path / "data")
++    settings = Settings(repository_root=root / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
+     runner = DockerRunner(settings)
+     baseline = tmp_path / "baseline_holdout"
+     acceptance = root / "app/evaluation/acceptance/test_auth_acceptance.py"
+@@ -58,7 +58,7 @@
+     from app.api.main import create_app
+ 
+     root = Path(__file__).parents[2]
+-    settings = Settings(repository_root=root / "demo_repository", data_dir=tmp_path / "data")
++    settings = Settings(repository_root=root / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
+     service = TaskService(settings)
+     try:
+         with TestClient(create_app(service=service)) as api:
+@@ -66,6 +66,7 @@
+                 httpx, "request", lambda method, url, **kwargs: api.request(method, url, **kwargs)
+             )
+             demo = AppTest.from_file(str(root / "frontend/demo.py")).run(timeout=15)
++            demo.text_input[1].set_value(str(settings.repository_root)).run(timeout=15)
+             demo.button[0].click().run(timeout=30)
+             assert not demo.exception
+             task_id = demo.session_state["task_id"]
+--- a/tests/e2e/test_parallel_evaluation.py
++++ b/tests/e2e/test_parallel_evaluation.py
+@@ -11,7 +11,7 @@
+ @pytest.mark.docker
+ @pytest.mark.skipif(os.environ.get("REPOPILOT_RUN_DOCKER_TESTS") != "1", reason="Docker opt-in")
+ def test_parallel_cases_keep_unique_tasks_and_complete_jsonl(tmp_path):
+-    source = Path(__file__).parents[2] / "demo_repository"
++    source = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
+     output = tmp_path / "report"
+     report = run_evaluation(
+         Settings(repository_root=source, data_dir=tmp_path / "data"),
+--- a/tests/e2e/test_phase2_feedback.py
++++ b/tests/e2e/test_phase2_feedback.py
+@@ -36,7 +36,7 @@
+ 
+ 
+ def test_real_failed_test_feedback_and_approval_restart(tmp_path: Path):
+-    root = Path(__file__).parents[2] / "demo_repository"
++    root = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
+     settings = Settings(repository_root=root, data_dir=tmp_path / "data")
+     model = FeedbackModel()
+     service = TaskService(settings, model=model)
+@@ -67,7 +67,7 @@
+ 
+ def test_real_persistent_test_failure_exhausts_budget(tmp_path: Path):
+     source = tmp_path / "source"
+-    snapshot(Repository(Path(__file__).parents[2] / "demo_repository"), source)
++    snapshot(Repository(Path(__file__).parents[2] / "test_fixtures" / "repair_repository"), source)
+     (source / "tests/test_unsatisfied_contract.py").write_text(
+         'def test_unsatisfied_contract():\n    assert False, "Unrelated contract needs repair"\n',
+         encoding="utf-8",
+--- a/tests/e2e/test_phase3_boundaries.py
++++ b/tests/e2e/test_phase3_boundaries.py
+@@ -34,7 +34,7 @@
+ 
+ @pytest.fixture
+ def approved_task(tmp_path: Path):
+-    root = Path(__file__).parents[2] / "demo_repository"
++    root = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
+     settings = Settings(repository_root=root, data_dir=tmp_path / "data")
+     service = TaskService(settings)
+     task = service.create(
+--- a/tests/e2e/test_phase4_cases.py
++++ b/tests/e2e/test_phase4_cases.py
+@@ -25,7 +25,7 @@
+ @pytest.mark.parametrize("case", DATASET, ids=lambda case: case["id"])
+ def test_each_distinct_bug_fails_before_and_passes_after(case, tmp_path: Path):
+     root = Path(__file__).parents[2]
+-    settings = Settings(repository_root=root / "demo_repository", data_dir=tmp_path / "data")
++    settings = Settings(repository_root=root / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
+     acceptance = root / "app/evaluation/acceptance" / case["acceptance"]
+     holdout_workspace(settings.repository_root, tmp_path / "before", acceptance)
+     runner = DockerRunner(settings)
+--- a/tests/e2e/test_process_recovery.py
++++ b/tests/e2e/test_process_recovery.py
+@@ -20,7 +20,7 @@
+ 
+ @pytest.mark.parametrize("point,exit_code", [("before-test", 77), ("after-write", 78)])
+ def test_process_loss_resumes_recorded_patch_or_refuses_unrecorded_write(tmp_path, point, exit_code):
+-    settings = Settings(repository_root=ROOT / "demo_repository", data_dir=tmp_path / "data")
++    settings = Settings(repository_root=ROOT / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data")
+     service = TaskService(settings)
+     task = service.create(TaskRequest(
+         repository_path=str(settings.repository_root),
+--- a/tests/e2e/test_regression_witness.py
++++ b/tests/e2e/test_regression_witness.py
+@@ -31,10 +31,10 @@
+ def test_reviewer_gets_same_test_baseline_failure_and_candidate_pass_with_actual_docker(tmp_path):
+     root = Path(__file__).parents[2]
+     model = WitnessReviewer()
+-    service = TaskService(Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data',
++    service = TaskService(Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data',
+                                    retry_workspace_policy='isolated'), model=model)
+     try:
+-        task = service.create(TaskRequest(repository_path=str(root / 'demo_repository'),
++        task = service.create(TaskRequest(repository_path=str(root / 'test_fixtures' / 'repair_repository'),
+                                           issue_description='expired returns 500 expected 401'))
+         state = service.run(task['task_id'])
+         assert state['execution_status'] == 'awaiting_approval' and model.witness
+--- a/tests/integration/test_api.py
++++ b/tests/integration/test_api.py
+@@ -12,7 +12,7 @@
+ @pytest.fixture
+ def client(tmp_path):
+     settings = Settings(
+-        repository_root=Path(__file__).parents[2] / "demo_repository", data_dir=tmp_path / "data"
++        repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data"
+     )
+     service = TaskService(settings, runner=EvidenceDouble())
+     with TestClient(create_app(service=service)) as client:
+--- a/tests/integration/test_creation_recovery.py
++++ b/tests/integration/test_creation_recovery.py
+@@ -71,7 +71,7 @@
+         raise windows_denied()
+ 
+     monkeypatch.setattr(Path, 'rename', denied)
+-    settings = Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data',
++    settings = Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data',
+                         retry_workspace_policy='isolated')
+     service = TaskService(settings, model=CountedFixture(), runner=EvidenceDouble())
+     try:
+@@ -112,10 +112,10 @@
+         raise OSError('Controlled interruption during initial copy')
+ 
+     monkeypatch.setattr(module, 'snapshot', partial)
+-    service = TaskService(Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data'),
++    service = TaskService(Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data'),
+                           runner=EvidenceDouble())
+     try:
+-        task = service.create(TaskRequest(repository_path=str(root / 'demo_repository'),
++        task = service.create(TaskRequest(repository_path=str(root / 'test_fixtures' / 'repair_repository'),
+                                           issue_description='expired returns 500 expected 401'))
+         assert task['execution_status'] == 'creation_failed'
+         orphan = Path(task['task_path']) / 'baseline/partial.txt'
+@@ -136,7 +136,7 @@
+         raise windows_denied()
+ 
+     monkeypatch.setattr(Path, 'rename', denied)
+-    settings = Settings(repository_root=root / 'demo_repository', data_dir=tmp_path / 'data',
++    settings = Settings(repository_root=root / 'test_fixtures' / 'repair_repository', data_dir=tmp_path / 'data',
+                         retry_workspace_policy='isolated', max_retries=1)
+     service = TaskService(settings, runner=EvidenceDouble())
+     try:
+--- a/tests/integration/test_feedback.py
++++ b/tests/integration/test_feedback.py
+@@ -100,7 +100,7 @@
+ 
+ def settings(tmp_path):
+     return Settings(
+-        repository_root=Path(__file__).parents[2] / "demo_repository", data_dir=tmp_path / "data"
++        repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data"
+     )
+ 
+ 
+--- a/tests/integration/test_isolated_provider_resume.py
++++ b/tests/integration/test_isolated_provider_resume.py
+@@ -9,7 +9,7 @@
+ 
+ 
+ def test_transient_coder_failure_resumes_same_candidate_after_reopen(tmp_path):
+-    settings = Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
++    settings = Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
+                         data_dir=tmp_path / "data", retry_workspace_policy="isolated")
+     service = TaskService(settings, model=TemporaryFailure(Patch), runner=EvidenceDouble())
+     task = service.create(TaskRequest(repository_path=str(settings.repository_root),
+--- a/tests/integration/test_legacy_policy_compatibility.py
++++ b/tests/integration/test_legacy_policy_compatibility.py
+@@ -9,7 +9,7 @@
+ 
+ 
+ def test_task_without_new_fields_keeps_legacy_workspace_after_default_changes(tmp_path):
+-    settings = Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
++    settings = Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
+                         data_dir=tmp_path / "data")
+     service = TaskService(settings, model=MockModel(), runner=EvidenceDouble())
+     task = service.create(TaskRequest(repository_path=str(settings.repository_root),
+--- a/tests/integration/test_mcp.py
++++ b/tests/integration/test_mcp.py
+@@ -6,7 +6,7 @@
+ 
+ def test_mcp_schemas_calls_and_scope():
+     async def scenario():
+-        server = create_server(Path(__file__).parents[2] / "demo_repository")
++        server = create_server(Path(__file__).parents[2] / "test_fixtures" / "repair_repository")
+         tools = await server.list_tools()
+         assert {t.name for t in tools} == {
+             "list_files",
+@@ -37,7 +37,7 @@
+             command=sys.executable,
+             args=["-m", "app.mcp_server.server"],
+             cwd=str(root),
+-            env={"REPOPILOT_REPOSITORY_ROOT": str(root / "demo_repository")},
++            env={"REPOPILOT_REPOSITORY_ROOT": str(root / "test_fixtures" / "repair_repository")},
+         )
+         async with stdio_client(params) as (read, write):
+             async with ClientSession(read, write) as session:
+--- a/tests/integration/test_mvp.py
++++ b/tests/integration/test_mvp.py
+@@ -18,7 +18,7 @@
+ 
+ 
+ def initial(tmp_path, mode="multi_full"):
+-    repo = Repository(Path(__file__).parents[2] / "demo_repository")
++    repo = Repository(Path(__file__).parents[2] / "test_fixtures" / "repair_repository")
+     snapshot(repo, tmp_path / "baseline")
+     snapshot(repo, tmp_path / "workspace")
+     return dict(
+--- a/tests/integration/test_provider_http_recovery.py
++++ b/tests/integration/test_provider_http_recovery.py
+@@ -49,7 +49,7 @@
+             "usage": {"prompt_tokens": 8, "completion_tokens": 3, "total_tokens": 11},
+         })
+ 
+-    settings = Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
++    settings = Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
+                         data_dir=tmp_path / "data")
+     model = LiveModel(settings)
+     client = httpx.Client(transport=httpx.MockTransport(handler))
+--- a/tests/integration/test_provider_recovery.py
++++ b/tests/integration/test_provider_recovery.py
+@@ -31,7 +31,7 @@
+ 
+ 
+ def settings_for(tmp_path, **kwargs):
+-    return Settings(repository_root=Path(__file__).parents[2] / "demo_repository",
++    return Settings(repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository",
+                     data_dir=tmp_path / "data", **kwargs)
+ 
+ 
+--- a/tests/unit/test_evaluation.py
++++ b/tests/unit/test_evaluation.py
+@@ -41,7 +41,7 @@
+ 
+ 
+ def test_holdout_excludes_model_tests(tmp_path):
+-    source = Path(__file__).parents[2] / "demo_repository"
++    source = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
+     acceptance = Path(__file__).parents[2] / "app/evaluation/acceptance/test_auth_acceptance.py"
+     holdout_workspace(source, tmp_path / "holdout", acceptance)
+     assert list((tmp_path / "holdout/tests").iterdir()) == [
+--- a/tests/unit/test_evaluation_baseline_gate.py
++++ b/tests/unit/test_evaluation_baseline_gate.py
+@@ -15,7 +15,7 @@
+             return TestResult(status="passed", passed=1, evidence="test_double")
+ 
+     monkeypatch.setattr("app.evaluation.runner.DockerRunner", PassingBaselineDouble)
+-    source = Path(__file__).parents[2] / "demo_repository"
++    source = Path(__file__).parents[2] / "test_fixtures" / "repair_repository"
+     report = run_evaluation(
+         Settings(repository_root=source, data_dir=tmp_path / "data"), source, tmp_path / "report"
+     )
+--- a/tests/unit/test_repository.py
++++ b/tests/unit/test_repository.py
+@@ -9,7 +9,7 @@
+ 
+ @pytest.fixture
+ def copied(tmp_path):
+-    source = Repository(Path(__file__).parents[2] / "demo_repository")
++    source = Repository(Path(__file__).parents[2] / "test_fixtures" / "repair_repository")
+     snapshot(source, tmp_path / "baseline")
+     snapshot(source, tmp_path / "workspace")
+     return Repository(tmp_path / "workspace")

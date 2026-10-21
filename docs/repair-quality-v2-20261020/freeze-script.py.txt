@@ -1,0 +1,72 @@
+"""Freeze finite V2 calibration on already observed cases, before model dispatch."""
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import shutil
+import subprocess
+import xml.etree.ElementTree as ET
+from app.evaluation.historical import verify
+
+Q = Path('E:/multi-agent/.repopilot/quality-v2-20261020')
+R1 = Path('E:/multi-agent/.repopilot/quality-20261020')
+W = Path('C:/Users/14659/.codex/worktrees/ci-fixtures-model-scope/multi-agent')
+D = W / 'docs/repair-quality-v2-20261020'
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+assert not (Q / 'preregistration.json').exists()
+assert not (Q / 'data').exists() and not (Q / 'results/formal').exists()
+runtime = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=W, text=True).strip()
+assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=W), 'Freeze from a clean commit'
+old = read(R1 / 'preregistration.json')
+assert sha(R1 / 'preregistration.json') == '254b42efb31a55036d04a3a46f67b18f8259442154231cd45dc9b671d9463a44'
+rows = read(R1 / 'results/records.json')
+assert len(rows) == 72
+assert {v: sum(r['strict_success'] for r in rows if r['variant'] == v) for v in ['legacy', 'quality']} == {'legacy': 26, 'quality': 21}
+lock = verify(Path(old['corpus']), old['lock_sha256'])
+controls = read(R1 / 'results/controls/controls.json')
+assert controls['all_eligible'] and len(controls['cases']) == 6
+(Q / 'results/controls').mkdir(parents=True)
+shutil.copyfile(R1 / 'results/controls/controls.json', Q / 'results/controls/controls.json')
+shutil.copyfile(R1 / 'scope-note.json', Q / 'scope-note.json')
+wheel = read(Q / 'wheel-artifact.json')
+assert sha(Path(wheel['path'])) == wheel['sha256']
+for row in wheel['files']:
+    assert sha(W / row['path']) == sha(Path('E:/multi-agent/.repopilot/ci-isolation-venv/Lib/site-packages') / row['path']) == row['sha256']
+suite = list(ET.parse(Q / 'wheel-full-final.xml').getroot().iter('testsuite'))
+tests = {k: sum(int(s.get(k, 0)) for s in suite) for k in ['tests', 'failures', 'errors', 'skipped']}
+tests['passed'] = tests['tests'] - tests['skipped'] - tests['failures'] - tests['errors']
+assert tests == {'tests': 306, 'failures': 0, 'errors': 0, 'skipped': 2, 'passed': 304}, tests
+plan = {'version': 2, 'registered_at': datetime.now(timezone.utc).isoformat(), 'runtime_commit': runtime,
+    'model_name': old['model_name'], 'model_base_url': old['model_base_url'], 'corpus': old['corpus'], 'lock_sha256': old['lock_sha256'],
+    'image': old['image'], 'controls_sha256': sha(Q / 'results/controls/controls.json'),
+    'controls_provenance': {'kind': 'reused immutable fixed-reference controls, not newly executed', 'source': str(R1 / 'results/controls/controls.json'),
+        'probe_count': 24, 'same_corpus_and_image': True},
+    'wheel_sha256': wheel['sha256'], 'app_files': wheel['files'], 'verified_test_count': tests['tests'],
+    'installed_wheel_full_suite': tests, 'junit_sha256': sha(Q / 'wheel-full-final.xml'),
+    'planned_tasks': 36, 'modes': old['modes'],
+    'variants': {'legacy': {'repair_quality_checks': False, 'repair_quality_policy_version': 2},
+                 'quality': {'repair_quality_checks': True, 'repair_quality_policy_version': 2}},
+    'case_order': [r['case']['id'] for r in lock['cases']], 'cohorts': {'observed_calibration': old['case_order']},
+    'blocks': 2, 'repetitions_per_variant': 1, 'workers': 2,
+    'order': 'AB for even-index cases, BA for odd-index cases; rotate modes per block; one run per case/mode/arm',
+    'budget_limits': old['budget_limits'], 'profile': {**old['profile'], 'model_path_scope': True, 'repair_quality_policy_version': 2},
+    'primary_success': old['primary_success'], 'failure_policy': old['failure_policy'],
+    'additional_metrics': ['Current same-new-test fail-to-pass witness', 'Normalization and binding provenance', 'Known tokens, unknown usage and model calls'],
+    'prior_results_preserved': {'historical': '17/24', 'quality_v1': {'legacy': '26/36', 'quality': '21/36', 'records_sha256': sha(R1 / 'results/records.json')}},
+    'new_model_request_cap': 288, 'combined_formal_request_cap': 478, 'prior_formal_model_requests': 190,
+    'diagnostic': {'kind': 'reuse prior connection evidence; no new generation diagnostic', 'previous_calls': 1, 'previous_observed_tokens': 1215},
+    'limits': [*old['limits'], 'All six cases have now been observed. This is a calibration regression study, not a new-bug or unseen-repository holdout.',
+        'The initial V1 result was negative: 21/36 versus control 26/36; all 72 records remain immutable.',
+        'Control probes are reused with the exact frozen image and corpus; not counted as fresh executions.',
+        'The TestCase adapter does not execute unittest.load_tests extra doctests; no claim of complete native upstream-suite coverage.',
+        'Small, deterministically counterbalanced paired comparison; no significance or broad causal/generalization claim.']}
+raw = (json.dumps(plan, ensure_ascii=False, indent=2) + '\n').encode()
+(Q / 'preregistration.json').write_bytes(raw)
+(Q / 'preregistration.sha256').write_text(hashlib.sha256(raw).hexdigest() + '\n', encoding='utf-8')
+D.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(Q / 'preregistration.json', D / 'preregistration.json')
+print(json.dumps({'registered': True, 'runtime': runtime, 'planned_tasks': 36, 'sha256': hashlib.sha256(raw).hexdigest(), 'tests': tests}))

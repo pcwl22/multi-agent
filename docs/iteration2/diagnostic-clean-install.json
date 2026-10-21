@@ -1,0 +1,11 @@
+{
+  "status": "superseded diagnostic wheel before source-only retry correction",
+  "runtime_code_commit": "acb0b9a",
+  "wheel_sha256": "58dce4bde09dbac7fe43a180cb03ac0e0314c1e7e6b42325724280af8b4bc9ad",
+  "clean_tests": {
+    "passed": 123,
+    "skipped": 1,
+    "seconds": 117.41
+  },
+  "isolated_import_verified": true
+}

@@ -1,0 +1,50 @@
+--- a/slugs.py
++++ b/slugs.py
+@@ -1,5 +1,10 @@
+ import re
++import unicodedata
+ 
+ 
+ def slugify(value):
+-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
++    # Decompose accented characters into base letter + combining mark,
++    # then drop the combining marks so accents transliterate to ASCII.
++    decomposed = unicodedata.normalize("NFKD", value)
++    stripped = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
++    return re.sub(r"[^a-z0-9]+", "-", stripped.lower()).strip("-")
+--- a/tests/test_slugify_accents.py
++++ b/tests/test_slugify_accents.py
+@@ -0,0 +1,33 @@
++from slugs import slugify
++
++
++def test_precomposed_accented_phrase():
++    assert slugify("Caf\u00e9 d\u00e9j\u00e0 vu") == "cafe-deja-vu"
++
++
++def test_decomposed_combining_acute():
++    assert slugify("cafe" + "\u0301") == "cafe"
++
++
++def test_decomposed_matches_precomposed():
++    assert slugify("cafe" + "\u0301") == slugify("caf\u00e9")
++
++
++def test_output_is_ascii_only():
++    result = slugify("Caf\u00e9 d\u00e9j\u00e0 vu")
++    assert isinstance(result, str)
++    assert result.isascii()
++    assert all(ch.isalnum() or ch == "-" for ch in result)
++
++
++def test_ascii_word_separation_preserved():
++    assert slugify("Hello World") == "hello-world"
++
++
++def test_leading_and_trailing_dashes_trimmed():
++    assert slugify("--foo--") == "foo"
++
++
++def test_plain_ascii_unchanged():
++    assert slugify("Hello, World!") == "hello-world"
++    assert slugify("") == ""

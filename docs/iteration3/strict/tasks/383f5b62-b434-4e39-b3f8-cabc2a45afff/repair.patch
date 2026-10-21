@@ -1,0 +1,10 @@
+--- a/events.py
++++ b/events.py
+@@ -3,4 +3,6 @@
+ 
+ def parse_event_time(value):
+     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+-    return parsed.replace(tzinfo=timezone.utc)
++    if parsed.tzinfo is None:
++        return parsed.replace(tzinfo=timezone.utc)
++    return parsed.astimezone(timezone.utc)

@@ -1,0 +1,123 @@
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,20 @@
++from collections.abc import Mapping
++
++
++def _deep_copy(value):
++    if isinstance(value, Mapping):
++        return {key: _deep_copy(item) for key, item in value.items()}
++    if isinstance(value, list):
++        return [_deep_copy(item) for item in value]
++    return value
++
++
+ def merge_config(defaults, overrides):
+-    result = dict(defaults)
+-    result.update(overrides)
++    result = {key: _deep_copy(value) for key, value in defaults.items()}
++    for key, override_value in overrides.items():
++        base_value = result.get(key)
++        if isinstance(base_value, Mapping) and isinstance(override_value, Mapping):
++            result[key] = merge_config(base_value, override_value)
++        else:
++            result[key] = _deep_copy(override_value)
+     return result
+--- a/tests/test_merge_config_regression.py
++++ b/tests/test_merge_config_regression.py
+@@ -0,0 +1,95 @@
++from config import merge_config
++
++
++def test_returns_all_keys_from_both_inputs():
++    base = {"a": 1, "b": 2}
++    overrides = {"b": 20, "c": 30}
++    result = merge_config(base, overrides)
++    assert result == {"a": 1, "b": 20, "c": 30}
++    assert set(result) == {"a", "b", "c"}
++
++
++def test_nested_mappings_are_merged_recursively():
++    base = {"db": {"host": "localhost", "port": 5432, "opts": {"ssl": False}}}
++    overrides = {"db": {"port": 6543, "opts": {"ssl": True}}}
++    result = merge_config(base, overrides)
++    assert result == {
++        "db": {"host": "localhost", "port": 6543, "opts": {"ssl": True}}
++    }
++
++
++def test_override_wins_at_leaf_keys():
++    base = {"a": 1, "nested": {"x": "base"}}
++    overrides = {"a": 2, "nested": {"x": "override"}}
++    result = merge_config(base, overrides)
++    assert result["a"] == 2
++    assert result["nested"]["x"] == "override"
++
++
++def test_keys_only_in_base_are_preserved():
++    base = {"keep": {"inner": 1}}
++    overrides = {"other": 2}
++    result = merge_config(base, overrides)
++    assert result["keep"] == {"inner": 1}
++
++
++def test_keys_only_in_overrides_are_added():
++    base = {"a": 1}
++    overrides = {"new": {"deep": {"value": 5}}}
++    result = merge_config(base, overrides)
++    assert result["new"] == {"deep": {"value": 5}}
++
++
++def test_lists_are_replaced_not_concatenated():
++    base = {"items": [1, 2, 3]}
++    overrides = {"items": [9]}
++    result = merge_config(base, overrides)
++    assert result["items"] == [9]
++    assert len(result["items"]) == 1
++
++
++def test_result_is_a_new_object():
++    base = {"a": 1}
++    overrides = {"b": 2}
++    result = merge_config(base, overrides)
++    assert result is not base
++    assert result is not overrides
++
++
++def test_mutating_result_does_not_affect_inputs():
++    base = {"nested": {"value": 1}, "items": [1, 2]}
++    overrides = {"nested": {"other": 2}, "items": [3]}
++    result = merge_config(base, overrides)
++    result["nested"]["value"] = 999
++    result["nested"]["other"] = 999
++    result["items"].append(4)
++    assert base == {"nested": {"value": 1}, "items": [1, 2]}
++    assert overrides == {"nested": {"other": 2}, "items": [3]}
++
++
++def test_inputs_are_not_mutated_by_call():
++    base = {"nested": {"value": 1}, "items": [1, 2]}
++    overrides = {"nested": {"other": 2}, "items": [3]}
++    base_snapshot = {"nested": {"value": 1}, "items": [1, 2]}
++    overrides_snapshot = {"nested": {"other": 2}, "items": [3]}
++    merge_config(base, overrides)
++    assert base == base_snapshot
++    assert overrides == overrides_snapshot
++
++
++def test_result_nested_objects_are_not_shared_with_inputs():
++    base = {"nested": {"value": 1}}
++    overrides = {"nested": {"other": 2}}
++    result = merge_config(base, overrides)
++    assert result["nested"] is not base["nested"]
++    assert result["nested"] is not overrides["nested"]
++
++
++def test_simple_overrides_still_work():
++    assert merge_config({"a": 1}, {"a": 2, "b": 3}) == {"a": 2, "b": 3}
++    assert merge_config({}, {}) == {}
++
++
++def test_return_type_is_dict():
++    result = merge_config({"a": 1}, {"b": 2})
++    assert isinstance(result, dict)

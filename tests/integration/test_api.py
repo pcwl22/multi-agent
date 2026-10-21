@@ -12,7 +12,7 @@ from tests.integration.test_mvp import EvidenceDouble
 @pytest.fixture
 def client(tmp_path):
     settings = Settings(
-        repository_root=Path(__file__).parents[2] / "demo_repository", data_dir=tmp_path / "data"
+        repository_root=Path(__file__).parents[2] / "test_fixtures" / "repair_repository", data_dir=tmp_path / "data"
     )
     service = TaskService(settings, runner=EvidenceDouble())
     with TestClient(create_app(service=service)) as client:

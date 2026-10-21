@@ -1,0 +1,114 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -124,7 +124,15 @@
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OverflowError, OSError):
++                    # The decoded timestamp is outside the range supported
++                    # by ``datetime``. Treat it as malformed rather than
++                    # leaking the underlying error, and report no date.
++                    raise BadTimeSignature(
++                        "Malformed timestamp", payload=value, date_signed=None
++                    )
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+--- a/tests/test_itsdangerous/test_timed_regression.py
++++ b/tests/test_itsdangerous/test_timed_regression.py
+@@ -0,0 +1,92 @@
++import sys
++from datetime import datetime
++from datetime import timezone
++
++import pytest
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++
++
++@pytest.fixture
++def signer():
++    return TimestampSigner("secret-key")
++
++
++@pytest.mark.skipif(
++    sys.platform == "win32", reason="Freezegun Invalid argument occurs on Windows"
++)
++def test_malformed_future_timestamp_message_payload_and_date(signer):
++    # Exact input from the original issue: decoded timestamp is outside
++    # datetime's supported year range and the signature is invalid.
++    signed = b"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY"
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(signed)
++
++    exc = exc_info.value
++    assert "Malformed" in str(exc)
++    assert exc.payload == b"value"
++    assert exc.date_signed is None
++
++
++def test_valid_roundtrip_returns_bytes_and_aware_datetime(signer):
++    signed = signer.sign(b"value")
++    result = signer.unsign(signed)
++    assert isinstance(result, bytes)
++    assert result == b"value"
++
++    value, ts = signer.unsign(signed, return_timestamp=True)
++    assert isinstance(value, bytes)
++    assert value == b"value"
++    assert isinstance(ts, datetime)
++    assert ts.tzinfo is timezone.utc
++
++
++def test_ordinary_invalid_signature_preserves_date_signed(signer):
++    signed = signer.sign(b"value")
++    # Corrupt the signature portion while keeping a valid timestamp.
++    head, ts, sig = signed.rsplit(b".", 2)
++    tampered = b".".join([head, ts, b"0" * len(sig)])
++
++    with pytest.raises(BadTimeSignature) as exc_info:
++        signer.unsign(tampered)
++
++    exc = exc_info.value
++    assert exc.payload == b"value"
++    assert isinstance(exc.date_signed, datetime)
++    assert exc.date_signed.tzinfo is timezone.utc
++
++
++def test_expired_signature_raises_signature_expired_with_date(signer):
++    signed = signer.sign(b"value")
++
++    with pytest.raises(SignatureExpired) as exc_info:
++        signer.unsign(signed, max_age=-1)
++
++    exc = exc_info.value
++    assert exc.payload == b"value"
++    assert isinstance(exc.date_signed, datetime)
++    assert exc.date_signed.tzinfo is timezone.utc
++
++
++def test_timed_serializer_retains_bad_signature_contract():
++    serializer = TimedSerializer("secret-key")
++    signed = serializer.dumps({"a": 1})
++
++    # Valid roundtrip still works.
++    assert serializer.loads(signed) == {"a": 1}
++
++    # Tampered signature raises a BadSignature-family error.
++    tampered = signed[:-1] + ("A" if signed[-1] != "A" else "B")
++    with pytest.raises(BadSignature):
++        serializer.loads(tampered)
++
++    # Malformed timestamp on the invalid-signature path also raises a
++    # BadSignature-family error rather than leaking a datetime error.
++    malformed = b"value.TgPVoaGhoQ.AGBfQ6G6cr07byTRt0zAdPljHOY"
++    with pytest.raises(BadSignature):
++        serializer.loads(malformed)

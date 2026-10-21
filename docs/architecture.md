@@ -15,7 +15,7 @@ flowchart LR
   Supervisor --> End
 ```
 
-所有业务节点返回自己的字段更新，列表通过 reducer 追加；Supervisor 只做确定性路由、状态终止和重试计数。Single 跳过 Planner/Reviewer，无审核 Multi 跳过 Reviewer。Test 失败或 Reviewer 拒绝时共享 `max_retries` 预算，最多生成 `1 + max_retries` 个补丁。模型解析失败最多尝试两次，模型网络超时和 SDK 传输重试单独受限。
+所有业务节点返回自己的字段更新，列表通过 reducer 追加；Supervisor 只做确定性路由、状态终止和重试计数。Single 跳过 Planner/Reviewer，无审核 Multi 跳过 Reviewer。补丁预校验拒绝、Test 失败或 Reviewer 拒绝共用 `max_retries` 预算，最多生成 `1 + max_retries` 个补丁。预校验拒绝不写文件、不运行未应用补丁的测试，将具体错误放入 patch_feedback 后交还 Coder。模型解析失败最多尝试两次，模型网络超时和 SDK 传输重试单独受限。
 
 人工节点使用 `interrupt()`，审批用同一个 thread_id 和 `Command(resume=...)` 继续。依据官方 [LangGraph 中断说明](https://docs.langchain.com/oss/python/langgraph/interrupts)，节点从中断点所在节点的开头重放，因此 Human 在 interrupt 前没有外部副作用。
 
@@ -27,15 +27,15 @@ Docker 不可用产生 `blocked` 及实际补丁。resume 从 Test 继续，不�
 
 ## 模型与工具边界
 
-Model Protocol 接受 Schema/payload，返回 Pydantic 结果与真实计量。Live 使用 LangChain 结构化输出；Mock 是显式样例规则。Locator 用关键词/AST 查找排名，读取前 12 个相关文件，上下文预算默认 24000 字符。Token 统计取自模型实际 usage，不用字符数伪装 Token。
+Model Protocol 接受 Schema/payload，返回 Pydantic 结果与真实计量。Live 使用 LangChain 结构化输出；Mock 是显式样例规则。Locator 将自然语言策略转换为有界关键词，优先检索 suspected_modules，再用关键词/AST 排名，读取前 12 个相关文件，上下文预算默认 24000 字符。Token 统计取自模型实际 usage，不用字符数伪装 Token；事件保留请求/响应模型标识与 provider response ID。
 
 Repository 不导入目标代码。它提供受控相对路径、UTF-8 读取、字面搜索、AST 定义定位、依赖清单、Python 文本替换。MCP 服务以 [官方 Python SDK](https://github.com/modelcontextprotocol/python-sdk/tree/v1.x) FastMCP 标准传输公开只读能力；Graph 和 MCP 复用底层实现，适合独立测试。
 
 ## 执行边界
 
-宿主机只运行自身服务与固定 Git/Docker 命令。所有目标仓库测试运行在非 root Docker 内。网络关闭，源码只读，根文件系统只读；临时文件放 tmpfs；仅独立临时 results 目录可写。测试命令由开发者固定，模型不能提供 shell。只使用维护者构建的镜像，运行时不安装仓库依赖。
+宿主机只运行自身服务与固定 Git/Docker 命令。所有目标仓库测试运行在非 root Docker 内。网络关闭，源码只读，根文件系统只读；临时文件放 tmpfs；仅独立临时 results 目录可写。测试命令由开发者固定，模型不能提供 shell。只使用维护者构建的镜像，运行时不安装仓库依赖。stdout/stderr 管道各只保留 20000 字节，其余持续丢弃，Docker 日志驱动关闭；结果目录磁盘配额仍是后续强化项。
 
-Docker 的 JUnit 和退出码是测试证据，不是语义正确性的证明。Reviewer 检查原需求、Diff、测试；独立评测使用未提供给 Coder 的验收用例。当前一个 Bug 的评测只足以验证运行路径。
+Docker 的 JUnit 和退出码是测试证据，不是语义正确性的证明。Reviewer 检查原需求、Diff、测试；独立评测使用未提供给 Coder 的验收用例。当前三类 Bug 的评测先证明失败基线，再执行三模式修复，失败修复纳入成功率分母。27 次确定性运行只足以验证这些已知案例的运行路径，不代表真实 LLM 泛化能力。
 
 ## 审批与外部操作
 

@@ -1,0 +1,125 @@
+--- a/pricing.py
++++ b/pricing.py
+@@ -1,2 +1,16 @@
+ def discounted_total(amount, discount_percent):
+-    return round(amount * (1 - discount_percent), 2)
++    """Return the total after applying a percentage discount.
++
++    ``discount_percent`` is a percentage in the range 0 to 100, so a
++    discount of 20 on an amount of 100 yields 80. A zero amount or a zero
++    discount leaves the amount unchanged. Inputs are never mutated.
++
++    The return type follows the input ``amount`` type: an ``int`` amount
++    yields an ``int`` result when the discounted value is integral, while
++    a ``float`` amount yields a ``float`` result.
++    """
++    result = round(amount * (1 - discount_percent / 100), 2)
++    if isinstance(amount, int) and not isinstance(amount, bool):
++        if result == int(result):
++            return int(result)
++    return result
+--- a/tests/test_pricing_regression.py
++++ b/tests/test_pricing_regression.py
+@@ -0,0 +1,53 @@
++from pricing import discounted_total
++
++
++def test_literal_example_from_issue():
++    # Literal example: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, int)
++
++
++def test_zero_amount_is_preserved():
++    result = discounted_total(0, 20)
++    assert result == 0
++    assert isinstance(result, int)
++
++
++def test_no_discount_is_preserved():
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, int)
++
++
++def test_full_discount_boundary():
++    result = discounted_total(100, 100)
++    assert result == 0
++    assert isinstance(result, int)
++
++
++def test_zero_discount_boundary():
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, int)
++
++
++def test_discount_is_percentage_not_fraction():
++    # A 50 percent discount halves the amount; a fraction interpretation
++    # would have produced 50 * (1 - 50) = -2450.
++    assert discounted_total(50, 50) == 25
++    assert discounted_total(200, 25) == 150
++
++
++def test_float_amount_returns_float():
++    result = discounted_total(12.5, 0)
++    assert result == 12.5
++    assert isinstance(result, float)
++
++
++def test_inputs_are_not_mutated():
++    amount = 100
++    discount = 20
++    discounted_total(amount, discount)
++    assert amount == 100
++    assert discount == 20
+--- a/tests/test_pricing_regression_issue.py
++++ b/tests/test_pricing_regression_issue.py
+@@ -0,0 +1,46 @@
++from pricing import discounted_total
++
++
++def test_literal_example_from_issue():
++    # Literal example: 100 with discount 20 must equal 80.
++    result = discounted_total(100, 20)
++    assert result == 80
++    assert isinstance(result, int)
++
++
++def test_zero_amount_is_preserved():
++    result = discounted_total(0, 20)
++    assert result == 0
++    assert isinstance(result, int)
++
++
++def test_no_discount_is_preserved():
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, int)
++
++
++def test_full_discount_boundary():
++    result = discounted_total(100, 100)
++    assert result == 0
++    assert isinstance(result, int)
++
++
++def test_zero_discount_boundary():
++    result = discounted_total(100, 0)
++    assert result == 100
++    assert isinstance(result, int)
++
++
++def test_float_amount_returns_float():
++    result = discounted_total(12.5, 0)
++    assert result == 12.5
++    assert isinstance(result, float)
++
++
++def test_inputs_are_not_mutated():
++    amount = 100
++    discount = 20
++    discounted_total(amount, discount)
++    assert amount == 100
++    assert discount == 20

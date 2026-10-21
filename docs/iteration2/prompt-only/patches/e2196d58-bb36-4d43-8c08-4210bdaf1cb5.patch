@@ -1,0 +1,34 @@
+--- a/checkout.py
++++ b/checkout.py
+@@ -1,6 +1,19 @@
+ from money import discounted
+ 
+ 
++def _tax_fraction(tax_rate):
++    """Normalize a tax rate to a fraction.
++
++    Values greater than 1 are treated as percentages (10 -> 0.10), while
++    values at or below 1 are treated as already-fractional rates
++    (0.1 -> 0.10).
++    """
++    if tax_rate > 1:
++        return tax_rate / 100.0
++    return tax_rate
++
++
+ def invoice_total(amount, discount_percent, tax_rate):
++    """Return the invoice total: tax applied to the discounted subtotal."""
+     subtotal = discounted(amount, discount_percent)
+-    return round(subtotal + amount * tax_rate, 2)
++    return round(subtotal + subtotal * _tax_fraction(tax_rate), 2)
+--- a/money.py
++++ b/money.py
+@@ -1,2 +1,7 @@
+ def discounted(amount, percent):
+-    return amount * (1 - percent)
++    """Return the amount after applying ``percent`` as a percentage discount.
++
++    A ``percent`` of 20 means 20% off, so ``discounted(100, 20) == 80``.
++    A ``percent`` of 0 leaves the amount unchanged.
++    """
++    return amount * (1 - percent / 100.0)

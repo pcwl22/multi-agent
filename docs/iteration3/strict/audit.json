@@ -1,0 +1,734 @@
+[
+  {
+    "task_id": "5cbff7a7-29f5-41a7-a06d-a28e007f9b41",
+    "case_id": "percent-discount",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "7937c9f2-8ca8-403f-925e-41f99482af86",
+        "candidate_number": 1,
+        "diff_digest": "9988bbe10cc4f3b26c242121616d531aab47f145e2d7beb317a47515697c62c6",
+        "evidence_sha256": "75ff31de40e546b6145efa0599d5e2ce52454442a78fc83bfe0eaabe040e9db4",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_discounted_total_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "eca596c1-eee7-420a-8a90-ea11997b35b9",
+    "case_id": "expired-status",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "22b8231a-3647-44c3-b490-a27f6b1c8e77",
+        "candidate_number": 1,
+        "diff_digest": "54ae15f39bd6dd448656cdea7f6d69b21ce68e22a37bf178db6debeabc9c138b",
+        "evidence_sha256": "25811220bcda476248e7617685e68a9c529e838170902e3b7b1a43e3746b6e57",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_expired_token_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "739cab37-c4bc-4ab7-b3c2-08f124f20d07",
+    "case_id": "expired-status",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "48f29c20-a542-4515-bea1-4cd3b32076fd",
+        "candidate_number": 1,
+        "diff_digest": "6dbfa666b66f016932748c9e20c9d6ebd848198d1912e3e53e6994a88d68c410",
+        "evidence_sha256": "0c62c667257a234f44ab22a3edc8ab8136a17103dfd05d6b0bd5e8fc787c5677",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_auth_expired_token.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "f13677c9-23f2-4c3d-a15a-243d3b6ec57f",
+    "case_id": "one-based-page",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "b6852f91-935d-4145-9e10-097947457e07",
+        "candidate_number": 1,
+        "diff_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "evidence_sha256": "ca47d199a21acc395d7d8af164dccbe3bf6af79b8bbe856b21841ea57bbdeaf5",
+        "test_statuses": [],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "0c264a87-f3b5-48b0-af68-719d2b805e33",
+        "candidate_number": 2,
+        "diff_digest": "f7e16943b102db782ddd230dc71bffacb6e13a8ac93ccdd058681709287c2da3",
+        "evidence_sha256": "33f5094eff364e882be69c0bc772d71b3e1c356d5d6075f976fa6178ffe96d8b",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_pagination_regression.py"
+        ]
+      },
+      {
+        "candidate_id": "70016bbf-fd3c-4422-8d75-0f5c144815a6",
+        "candidate_number": 3,
+        "diff_digest": "c7876b31941a576ddf22e226d8618ccbf934a2b4979df19048494ae7dc46f969",
+        "evidence_sha256": "dec64c712508221714fb90fc7271b438dd35c386e3ecfeeb1598a063c21ed278",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_pagination_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": true
+  },
+  {
+    "task_id": "7339802e-8204-4262-999d-eb8b733be1a6",
+    "case_id": "percent-discount",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "0739c137-1317-4801-b5d9-5336809cc2ea",
+        "candidate_number": 1,
+        "diff_digest": "c903d66f288b25a19ba5e4ccf7f80596a82e3b758fb79a040be330939aa7702a",
+        "evidence_sha256": "382ba277c20c18fd5a3a049baf29c2078010db0f9bc7c17dad33cbc8b9da36ac",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_pricing_regression.py"
+        ]
+      },
+      {
+        "candidate_id": "b91844d4-6f50-4738-8aa2-9fba129fde2c",
+        "candidate_number": 2,
+        "diff_digest": "64779b795fd440df65320cc35a2bdebfa3823b39f8edca778e74a573962c9383",
+        "evidence_sha256": "4cd6a75e95d21b46680170fc42d23992c79ff312263e44e2379b0a4a760992b0",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_pricing_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": true
+  },
+  {
+    "task_id": "71310047-cbb7-4649-bfd2-d7a93bca63dd",
+    "case_id": "expired-status",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "e05560d7-4fda-44a0-a865-a36f5b8bdc80",
+        "candidate_number": 1,
+        "diff_digest": "fdbf4a282c555af9b4110967fb143331260e39a7c29da188718766bde2f59997",
+        "evidence_sha256": "d16adb58409cf11fed44189de5e8e7953b84f597f3e2c20cfee97e8e3d2b9d9c",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_auth_expired_token.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "4e0df9ca-1cf4-4403-8663-cf4a32e6b13d",
+    "case_id": "one-based-page",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "fd669a31-59d2-44da-a021-ea1256f371f3",
+        "candidate_number": 1,
+        "diff_digest": "d7c58cd5bd1700032b96aa45587060e66c254796865e1b697337a4d3ca5afde6",
+        "evidence_sha256": "a0ab4eab59536dbca5593bbc52a70b5e7b2f6c98d1422a686197fc3181bd9a3d",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_pagination_regression.py"
+        ]
+      },
+      {
+        "candidate_id": "9e155a7d-3a51-4ba7-afbf-64108d2bf9a3",
+        "candidate_number": 2,
+        "diff_digest": "78a16670607dbd61c8be36997363a35373b83519c4cc42c3e67854acc9a29763",
+        "evidence_sha256": "564caacee0adf6b0f180b8a75c901852db35c8457c386a8a57fee6befbd1b8e4",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_pagination_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": true
+  },
+  {
+    "task_id": "09d78657-0271-4805-a0eb-a6b69fe44965",
+    "case_id": "percent-discount",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "007fce50-d17a-4ffa-a80d-ff31212ad7dd",
+        "candidate_number": 1,
+        "diff_digest": "d6a9fac495da7f7d00a79150c6bf7b8b631fa505d1409abecf9574e9d71b6cc6",
+        "evidence_sha256": "7f3367c126a88f9dc3d4c8f14b428a7551fe9e172c39c4b23ab46795ba37414f",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_pricing_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "0c44c89a-8b25-4cdc-904b-c3c77aa26026",
+    "case_id": "offset-to-utc",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "f16d640d-f216-488d-91f4-6a7d54f98bbd",
+        "candidate_number": 1,
+        "diff_digest": "981d6b8e8e6749f399c50db762d3612e90cae4ed78212fb86919f5ba36168266",
+        "evidence_sha256": "76a8889e9b0c5279dfd83862f93b96e83a450120b9dfb295da270eea87d17816",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_event_time_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "bbabe012-b7ba-40df-a1f5-873f9c09d82a",
+    "case_id": "csv-roundtrip",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "de2b623d-3784-4cb6-97dc-603446996140",
+        "candidate_number": 1,
+        "diff_digest": "e01389170b63a6265a32b6d127b0d6a32233edbdd110f0a8dfecb0c19a284fb2",
+        "evidence_sha256": "7acdf2f25a9512ba1b3a068f5a89787afc2b8d28281c063a0c3920d95ba766f8",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "1ccfa7be-02c1-49ba-97fa-4b9834213fe3",
+    "case_id": "offset-to-utc",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "9e0dcc30-357f-4b9e-86d7-2c88ed3c6449",
+        "candidate_number": 1,
+        "diff_digest": "4e634787014a7161d84569f309b6e90ada9be3a9e023609eae4387e1618bfc19",
+        "evidence_sha256": "f7d1f65bb8c24d356b08ac81a35f76cabecc084a98a615b6756e70b9b345b6cf",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "6ed6e45a-9e99-4511-a0fe-912df71ac6d3",
+    "case_id": "csv-roundtrip",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "8a5a3738-7bbd-4bcd-99eb-cc9a64b713df",
+        "candidate_number": 1,
+        "diff_digest": "e01389170b63a6265a32b6d127b0d6a32233edbdd110f0a8dfecb0c19a284fb2",
+        "evidence_sha256": "f285a1e2e53fea2d38f0c1a87e3aa5a49bdc00bbf471ad2e0bfefd2dc7191e73",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "c3c6b7a7-aa68-4afa-9dc2-d62d2a49e1d6",
+    "case_id": "one-based-page",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "26b69f38-5aba-4d8f-b409-3c3c6faeddd0",
+        "candidate_number": 1,
+        "diff_digest": "dd2895feab5ece5a77b63e9e4dd41c4963b43f8a966b25ccbe3606412dfb21eb",
+        "evidence_sha256": "5740b2c65cc5895a3bb4a9af615b01592c28dd9e5d9733315ad5099349e689d2",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_pagination_regression.py"
+        ]
+      },
+      {
+        "candidate_id": "d2dbccd8-ee20-4418-9b3d-c7f55d420ebd",
+        "candidate_number": 2,
+        "diff_digest": "e5fa3e22c358a8c2e53582efe44b90155a8aed661d74fd0cbcb71e67694aa85d",
+        "evidence_sha256": "837548a855808cad6fa76ea54a168373c69ba8c6a393f98fd689c5827c91bf27",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_pagination_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": true
+  },
+  {
+    "task_id": "64f991d8-a98a-432a-8424-180663caa42d",
+    "case_id": "checkout-two-files",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "50223e19-2ec0-460a-82cd-6ae8ee5d123c",
+        "candidate_number": 1,
+        "diff_digest": "9f5316bb75f09f1303c989e81049a4b96ff3f82ac8ee9ca74be5c969651095b6",
+        "evidence_sha256": "5bd90b0cc4182a2503d703d35faf6ff1945ec551b0adfd267637d315622dec6b",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "383f5b62-b434-4e39-b3f8-cabc2a45afff",
+    "case_id": "offset-to-utc",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "764b82b1-1c26-4f42-b397-f49bf65080c7",
+        "candidate_number": 1,
+        "diff_digest": "4e634787014a7161d84569f309b6e90ada9be3a9e023609eae4387e1618bfc19",
+        "evidence_sha256": "4aa91b6f16f7f61c543f645f8834feed82b4ecf4b8ac717acf54bdb37fa782a8",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "df8abf9d-3112-4b2c-9adf-dbaf1fa1e78a",
+    "case_id": "reservation-sum",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "f3e7ffbc-0566-4158-845a-bdbb18d0c90a",
+        "candidate_number": 1,
+        "diff_digest": "1a515f73180714568dc5804c440c3615851a79f58ad1f4faaecef73512866949",
+        "evidence_sha256": "ac81d8ce344d8203de9141808192e3649b92ef4752f4175698f203a5b7c6e773",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_available_units_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "767462d8-d76c-4a5f-9ca4-21f934642824",
+    "case_id": "csv-roundtrip",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "f277301f-d323-463a-8a3f-745e2a944db8",
+        "candidate_number": 1,
+        "diff_digest": "e01389170b63a6265a32b6d127b0d6a32233edbdd110f0a8dfecb0c19a284fb2",
+        "evidence_sha256": "5b26207255144c1d5616074106eb850cf20d00234f2a8815852f1802433aa11d",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "815049d2-b591-4fd4-ad77-920717ab1457",
+    "case_id": "ttl-equality",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "841ce66d-89b3-4f67-a178-af3ed76c5838",
+        "candidate_number": 1,
+        "diff_digest": "38ca77a462c91d3344c859ebfd9433300cfc33c3d1781b02c393fa2c40e14cb3",
+        "evidence_sha256": "12439340413aab5d4a8de77da82d641ba4011a01b9e6a7ccae86dc828752b722",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_expiry_boundary.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "7c56f77e-3a37-4fa8-9888-5abbae1af8e2",
+    "case_id": "accent-slug",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "b5f69cf1-26d0-49d7-9bbc-de89f2752a10",
+        "candidate_number": 1,
+        "diff_digest": "ac476be98a5475bc00a51dded711e04a35637d3634fc0713bfb9679ae9a0d48a",
+        "evidence_sha256": "75201f38d8fca6f318b0af6a4d36274d63944778eec1d786c6ed95bf98edf986",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "572bf963-d47e-489b-a682-18a71dfeb6de",
+    "case_id": "reservation-sum",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "1a20f45d-da86-4309-8541-4bb2c5adff79",
+        "candidate_number": 1,
+        "diff_digest": "152ebb855c0515a1869c095baa1e66a7f1a4e930e643637c641b5e4e9a193a53",
+        "evidence_sha256": "622f81eaf5334d01f29bef2d5eb5aabc6616504665a9444a1f66c094d6b4ac77",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_available_units_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "b838d6b3-7f68-436f-bdf9-28ed355a5e2c",
+    "case_id": "ttl-equality",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "9c037f31-7d55-443d-8b1f-86e12fa48dcc",
+        "candidate_number": 1,
+        "diff_digest": "90b61a10f8d4bb279ecf75908d2158d04179efd04f2fc1822558d2abab0265ba",
+        "evidence_sha256": "65d0d7b6a8c1d1e0b68ec3839ecd425284429e9db10d3402e4a6299688a1f424",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_cache_expiry.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "b2926c31-8443-46fd-ae28-c2ac28d4a8ab",
+    "case_id": "accent-slug",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "d8227665-9beb-4290-a955-aa755e643525",
+        "candidate_number": 1,
+        "diff_digest": "2fb89d5a47ff0ab6abb8d68f34be538755309a56312125c0496d1134068e69c6",
+        "evidence_sha256": "9f5983a972f9ce0e3bcd8d656f34671412d04dc856b3efd6d16ac9042c487e47",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_slugify_unicode.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "d0228499-36b3-4ad4-8f3d-5522d3e19a97",
+    "case_id": "reservation-sum",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "911e8498-3615-4ec8-831f-a741c5ddc190",
+        "candidate_number": 1,
+        "diff_digest": "ee871768d14c8520f00bf7721fef97c6d1371faec0789a2a32f379ce47f0bdd6",
+        "evidence_sha256": "b9e320a03690b8e405bf582b3801f8a9c9f327bf67bb3b8735513084d1950067",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "b91ae420-5669-4b9a-b506-3f897fba6fc1",
+    "case_id": "ttl-equality",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "a236fc84-168a-411c-80d0-2e86f63add1e",
+        "candidate_number": 1,
+        "diff_digest": "bc0540cafed20dc6d9e390a81aedadb4b6f55ddf51c02b1a62ffe523d47cf5ea",
+        "evidence_sha256": "25a3462aba91c2643de35d11099d273d8b68957a5905ae51b61b04b38d4ec384",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_cache_expiry_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "4e925484-948e-4ca9-8df7-8dfe9e8ee326",
+    "case_id": "accent-slug",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "caaa1f08-9baa-499a-9c68-3e0954f5aa01",
+        "candidate_number": 1,
+        "diff_digest": "c69cdfb571fc1714ef0d3edda8aa6bdffbfb9be5e050e13750e207af197d9dee",
+        "evidence_sha256": "5cffd92dfff1d7e1df7da146865c4675d2981000dd756ce77e6c3f85f8681862",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "9b24577d-6fc8-4469-96d7-ad7e887a0f3a",
+        "candidate_number": 2,
+        "diff_digest": "63ddfe5c31d83bf873105a21b8dc04e257983b2a2d5b26b12b0a41ad395a7cc1",
+        "evidence_sha256": "5ec84c79ea6b78499cf65c6e9821a248074670e097dabc38f21db7ef27c2cefb",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_slugify_unicode.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "6c2f716b-547c-44b2-b5e9-dfe1cf33880c",
+    "case_id": "recursive-config",
+    "mode": "single",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "1ca156d2-cdbc-4296-8d47-2fd44d8c2465",
+        "candidate_number": 1,
+        "diff_digest": "0e6e6486dbcb38cc045e1a39d566656394182deb2ce80d2eefc0445dd40ac010",
+        "evidence_sha256": "bf2651c4d8183fd1aca1b740998649cf4d7c6d44787a0b7565308cce8c4050ea",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_merge_config_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "8834b408-b908-4c48-91ec-471f0f3b3dc6",
+    "case_id": "checkout-two-files",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "4dbe1463-2ac5-47ce-a04b-7167db422422",
+        "candidate_number": 1,
+        "diff_digest": "8a1e7350baf181fd4d90e6a466d3a4e37acabe5ad03332963686ba0e3a924fd9",
+        "evidence_sha256": "45c3b7f28421d55b2d405a206cc8722d5b69d8565457f3d18d7f48ccb0fe2efa",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_regression_checkout.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "f49d31d8-bcb1-440d-812e-ec0849e3c7b2",
+    "case_id": "recursive-config",
+    "mode": "multi_no_review",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "9dc10603-7fac-4545-a1ab-b4ea88bc78f2",
+        "candidate_number": 1,
+        "diff_digest": "952b21d84c02fe2ab2fb7e25126521b858087205af214f76423575d745ff0dd1",
+        "evidence_sha256": "c024e1ef6b5bd4176629fa2a027ba7cfcd8a4092b769a4ea6ece7c2c199de452",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_merge_config_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "a7146d29-79ac-49ae-9f65-0b568180ceeb",
+    "case_id": "checkout-two-files",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "2e2d7ab3-ae51-43eb-b04a-761d694d0e24",
+        "candidate_number": 1,
+        "diff_digest": "a59510d87513282b5e9ff2f5e741539da0e86e0bc7d16722a75d39560f7acf5a",
+        "evidence_sha256": "815f4d930c85c1f0adb9e96715e6714c5f7137e9724e50ae164da2e328b94015",
+        "test_statuses": [
+          "passed"
+        ],
+        "generated_tests": [
+          "tests/test_regression_checkout.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  },
+  {
+    "task_id": "228ccf19-e883-46cb-a00b-580242aa740b",
+    "case_id": "recursive-config",
+    "mode": "multi_full",
+    "baseline_and_archived_evidence_verified": true,
+    "original_test_files_unchanged": 1,
+    "candidates": [
+      {
+        "candidate_id": "edf9f380-9dc1-4787-8c14-de56a003bca7",
+        "candidate_number": 1,
+        "diff_digest": "5fbdb762c652fc0b4321505621aa3f369933cefd3cb68993d0556651ff7f90a8",
+        "evidence_sha256": "b915f1ba265f62181f2f805b1edc50582e2745b77da35c8723cf4d785771d7f2",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": []
+      },
+      {
+        "candidate_id": "df7ef689-e864-463f-92e8-4280e0975629",
+        "candidate_number": 2,
+        "diff_digest": "32bf5a224a5d6580bdeff958d462caf5fd42aea3104e51ec9764834d141c49ec",
+        "evidence_sha256": "b64eb8b1cecd0b42464309cba3f8a6c82e304889aeeef651b9463abd6ed73d24",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_merge_config_regression.py"
+        ]
+      },
+      {
+        "candidate_id": "bd13fa56-d8b2-4dad-942f-56b5466b602c",
+        "candidate_number": 3,
+        "diff_digest": "32bf5a224a5d6580bdeff958d462caf5fd42aea3104e51ec9764834d141c49ec",
+        "evidence_sha256": "0f9be331ae03c5cc3aba8fce36c494fad52058f831330c9d58e38708c5cd00dc",
+        "test_statuses": [
+          "failed"
+        ],
+        "generated_tests": [
+          "tests/test_merge_config_regression.py"
+        ]
+      }
+    ],
+    "recovered_after_failed_docker": false
+  }
+]

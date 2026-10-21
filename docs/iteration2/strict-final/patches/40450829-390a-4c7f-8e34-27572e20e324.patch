@@ -1,0 +1,69 @@
+--- a/exporter.py
++++ b/exporter.py
+@@ -1,2 +1,10 @@
++import csv
++import io
++
++
+ def export_rows(rows):
+-    return "".join(",".join(str(cell) for cell in row) + "\n" for row in rows)
++    buffer = io.StringIO()
++    writer = csv.writer(buffer, lineterminator="\n")
++    for row in rows:
++        writer.writerow([str(cell) for cell in row])
++    return buffer.getvalue()
+--- a/tests/test_csv_export.py
++++ b/tests/test_csv_export.py
+@@ -0,0 +1,52 @@
++import csv
++import io
++
++from exporter import export_rows
++
++
++def test_empty_rows_returns_empty_string():
++    result = export_rows([])
++    assert result == ""
++    assert isinstance(result, str)
++
++
++def test_simple_rows_preserved():
++    result = export_rows([["a", 1], ["b", 2]])
++    assert result == "a,1\nb,2\n"
++    assert isinstance(result, str)
++
++
++def test_cell_with_comma_is_quoted():
++    result = export_rows([["a,b", "c"]])
++    assert result == '"a,b",c\n'
++    assert list(csv.reader(io.StringIO(result))) == [["a,b", "c"]]
++
++
++def test_cell_with_quote_is_escaped():
++    result = export_rows([['say "hi"', "x"]])
++    assert result == '"say ""hi""",x\n'
++    assert list(csv.reader(io.StringIO(result))) == [['say "hi"', "x"]]
++
++
++def test_cell_with_newline_is_quoted():
++    result = export_rows([["line1\nline2", "z"]])
++    assert result == '"line1\nline2",z\n'
++    assert list(csv.reader(io.StringIO(result))) == [["line1\nline2", "z"]]
++
++
++def test_unicode_preserved():
++    result = export_rows([["caf\u00e9", "\u4f60\u597d"]])
++    assert result == "caf\u00e9,\u4f60\u597d\n"
++    assert list(csv.reader(io.StringIO(result))) == [["caf\u00e9", "\u4f60\u597d"]]
++
++
++def test_round_trip_with_csv_reader():
++    rows = [["a,b", 'q"q', "n\nm"], ["plain", "1", "2"]]
++    result = export_rows(rows)
++    assert list(csv.reader(io.StringIO(result))) == rows
++
++
++def test_lf_line_endings():
++    result = export_rows([["a"], ["b"]])
++    assert result == "a\nb\n"
++    assert "\r" not in result
