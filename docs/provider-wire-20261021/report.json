@@ -1,0 +1,18 @@
+{
+  "completed_at": "2026-10-21T02:00:13.840470+00:00",
+  "plan_sha256": "aa969799ac9fa5a4030745fd4368862d41b8809e07c22bed030727ed2a65d9a2",
+  "selected_profile": null,
+  "stop_reason": "no_profile_passed_both_complete_output_modes",
+  "prior_sixteen_ledgers_unchanged": true,
+  "configuration_unchanged": true,
+  "runtime_unchanged": true,
+  "github_writes": false,
+  "diagnostic_requests": 6,
+  "diagnostic_known_tokens": 18864,
+  "repairs_completed": 0,
+  "strict_repairs": 0,
+  "repair_requests": 0,
+  "repair_known_tokens": 0,
+  "full_matrix_started": false,
+  "repair_quality_improvement_established": false
+}

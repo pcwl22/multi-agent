@@ -37,3 +37,7 @@ docs/connectivity-collection-20261020/spec/acceptance/*.txt -text whitespace=cr-
 docs/output-diagnostics-20261021/** -text whitespace=cr-at-eol
 docs/output-diagnostics-20261021/initial-source-full.xml -whitespace
 docs/output-diagnostics-20261021/*.patch -whitespace
+
+# Preserve this stage's exact parameter experiment and diagnostic evidence.
+docs/provider-wire-20261021/** -text whitespace=cr-at-eol
+docs/provider-wire-20261021/*.patch -whitespace

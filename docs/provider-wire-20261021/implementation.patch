@@ -1,0 +1,383 @@
+diff --git a/.env.example b/.env.example
+index be9834b..2919239 100644
+--- a/.env.example
++++ b/.env.example
+@@ -13,6 +13,10 @@ REPOPILOT_MODEL_STREAM_USAGE=true
+ # Optional explicit per-response output ceiling (1..32768). Budgeted calls default
+ # to 4096 when unset; remaining observed-token budget can lower the ceiling.
+ # REPOPILOT_MODEL_MAX_OUTPUT_TOKENS=8192
++# Opt-in vendor dialect; default keeps the existing ChatOpenAI parameter mapping.
++# REPOPILOT_MODEL_OUTPUT_TOKEN_PARAMETER=max_tokens
++# Only set if the configured provider explicitly supports this thinking toggle.
++# REPOPILOT_MODEL_THINKING=disabled
+ # Include bounded workspace paths and remote subdirectory mappings.
+ REPOPILOT_MODEL_PATH_SCOPE=true
+ REPOPILOT_SANDBOX_IMAGE=repopilot-sandbox:local
+diff --git a/app/agents/model.py b/app/agents/model.py
+index 31de6b9..30d6d7e 100644
+--- a/app/agents/model.py
++++ b/app/agents/model.py
+@@ -8,8 +8,9 @@ from pydantic import BaseModel
+ from app.agents.demo_fixtures import select_fixture
+ from app.agents.failures import provider_failure
+ from app.agents.instructions import system_instructions
+-from app.agents.output_diagnostics import observe_output
++from app.agents.output_diagnostics import observe_output, response_shape
+ from app.agents.pacing import endpoint_pacer
++from app.agents.provider_options import output_options
+ from app.agents.quality import test_functions
+ from app.agents.transport import sdk_versions
+ from app.config.settings import Settings
+@@ -106,6 +107,8 @@ class LiveModel:
+         self.pacer = endpoint_pacer(settings.model_base_url)
+         self.min_interval = settings.model_min_interval
+         self.max_output_tokens = settings.model_max_output_tokens
++        self.output_token_parameter = settings.model_output_token_parameter
++        self.thinking = settings.model_thinking
+         self.client = ChatOpenAI(
+             model=settings.model_name,
+             temperature=0,
+@@ -115,7 +118,7 @@ class LiveModel:
+             max_retries=1,
+             base_url=settings.model_base_url,
+             api_key=settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
+-            **({'max_tokens': self.max_output_tokens} if self.max_output_tokens is not None else {}),
++            **output_options(self.max_output_tokens, self.output_token_parameter, self.thinking),
+         )
+ 
+     def generate(self, schema: type[T], payload: dict) -> tuple[T, dict]:
+@@ -126,6 +129,9 @@ class LiveModel:
+             "streaming": self.streaming, "rate_limit_wait_seconds": 0.0,
+             "transport_attempts": [],
+             "structured_attempts": [],
++            "response_shapes": [],
++            "request_policy": {"output_token_parameter": self.output_token_parameter,
++                               "thinking": self.thinking, "structured_method": "function_calling"},
+             "sdk_versions": sdk_versions(),
+         }
+         messages = [("system", system_instructions(schema.__name__)),
+@@ -150,7 +156,7 @@ class LiveModel:
+                     client = self.client.model_copy(update={
+                         "root_client": root, "client": root.chat.completions,
+                         "request_timeout": timeout, "max_retries": 0,
+-                        **({"max_tokens": output_limit} if output_limit is not None else {})})
++                        **output_options(output_limit, self.output_token_parameter, self.thinking)})
+                 reserve = (lambda: budget.reserve("model_requests")) if budget else (lambda: None)
+                 if self.dispatch_gate:
+                     attempt_id, reservation = self.dispatch_gate.admit(reserve)
+@@ -183,6 +189,7 @@ class LiveModel:
+                 budget.complete(reservation, {"input_tokens": usage.get("input_tokens", 0),
+                     "output_tokens": usage.get("output_tokens", 0), "usage_complete": bool(usage)})
+             metadata = getattr(response["raw"], "response_metadata", {}) or {}
++            stats['response_shapes'].append(response_shape(response['raw']))
+             stats["model_reported"] = metadata.get("model_name") or metadata.get("model")
+             stats["provider_response_id"] = metadata.get("id")
+             stats["usage_complete"] &= bool(usage)
+diff --git a/app/agents/output_diagnostics.py b/app/agents/output_diagnostics.py
+index 7678bd1..ef9a6e4 100644
+--- a/app/agents/output_diagnostics.py
++++ b/app/agents/output_diagnostics.py
+@@ -23,3 +23,51 @@ def observe_output(schema_name: str, metadata: dict, parse_status: str,
+         } else 'unknown' if reason is None else 'other'),
+         parse_status=parse_status, output_limit=output_limit,
+     ).model_dump()
++
++
++class ResponseShape(StrictModel):
++    text_characters: int = Field(ge=0, le=10000000)
++    text_measurement: Literal['complete', 'capped', 'unavailable']
++    tool_calls: int = Field(ge=0, le=128)
++    invalid_tool_calls: int = Field(ge=0, le=128)
++    tool_count_capped: bool
++    reasoning_tokens: int | None = Field(default=None, ge=0)
++    reasoning_status: Literal['reported', 'missing', 'invalid']
++
++
++def response_shape(raw) -> dict:
++    """Count SDK-visible fields only; provider-specific reasoning text is not read."""
++    content = getattr(raw, 'content', None)
++    chars, measurement = 0, 'unavailable'
++    if isinstance(content, str):
++        chars, measurement = len(content), 'complete'
++    elif isinstance(content, list):
++        measurement = 'complete' if len(content) <= 128 else 'capped'
++        for block in content[:128]:
++            if isinstance(block, str):
++                chars += len(block)
++            elif isinstance(block, dict) and block.get('type') == 'text' and isinstance(block.get('text'), str):
++                chars += len(block['text'])
++            else:
++                measurement = 'capped'  # Other block kinds are not interpreted.
++    if chars > 10000000:
++        chars, measurement = 10000000, 'capped'
++    tools, invalid = getattr(raw, 'tool_calls', []), getattr(raw, 'invalid_tool_calls', [])
++    n_tools = len(tools) if isinstance(tools, list) else 0
++    n_invalid = len(invalid) if isinstance(invalid, list) else 0
++    usage = getattr(raw, 'usage_metadata', None)
++    usage = usage if isinstance(usage, dict) else {}
++    details = usage.get('output_token_details')
++    details = details if isinstance(details, dict) else {}
++    reasoning = details.get('reasoning')
++    total = usage.get('output_tokens')
++    status = 'missing'
++    if reasoning is not None:
++        if type(reasoning) is int and type(total) is int and 0 <= reasoning <= total:
++            status = 'reported'
++        else:
++            reasoning, status = None, 'invalid'
++    return ResponseShape(text_characters=chars, text_measurement=measurement,
++        tool_calls=min(n_tools, 128), invalid_tool_calls=min(n_invalid, 128),
++        tool_count_capped=n_tools > 128 or n_invalid > 128,
++        reasoning_tokens=reasoning, reasoning_status=status).model_dump()
+diff --git a/app/agents/provider_options.py b/app/agents/provider_options.py
+new file mode 100644
+index 0000000..418b680
+--- /dev/null
++++ b/app/agents/provider_options.py
+@@ -0,0 +1,21 @@
++"""Explicit opt-in wire dialect; never infer capabilities from a model alias."""
++from typing import Literal
++
++TokenParameter = Literal['max_completion_tokens', 'max_tokens']
++ThinkingMode = Literal['provider_default', 'disabled']
++
++
++def output_options(limit: int | None, parameter: TokenParameter, thinking: ThinkingMode) -> dict:
++    extra = {}
++    if parameter == 'max_tokens' and limit is not None:
++        # ChatOpenAI rewrites its own max_tokens field. SDK extra_body merges this
++        # legacy key at the HTTP JSON root without sending BOTH limit parameters.
++        extra['max_tokens'] = limit
++    if thinking == 'disabled':
++        extra['thinking'] = {'type': 'disabled'}
++    options = {}
++    if limit is not None or parameter == 'max_tokens':
++        options['max_tokens'] = limit if parameter == 'max_completion_tokens' else None
++    if extra:
++        options['extra_body'] = extra
++    return options
+diff --git a/app/config/settings.py b/app/config/settings.py
+index 0f2584d..772b845 100644
+--- a/app/config/settings.py
++++ b/app/config/settings.py
+@@ -28,6 +28,8 @@ class Settings(BaseSettings):
+     context_chars: int = Field(default=24000, ge=2000, le=100000)
+     model_timeout: float = Field(default=45, ge=1, le=180)
+     model_max_output_tokens: int | None = Field(default=None, ge=1, le=32768)
++    model_output_token_parameter: Literal['max_completion_tokens', 'max_tokens'] = 'max_completion_tokens'
++    model_thinking: Literal['provider_default', 'disabled'] = 'provider_default'
+     model_streaming: bool = False
+     model_stream_usage: bool = True
+     model_path_scope: bool = True
+diff --git a/docs/provider-wire-compatibility.md b/docs/provider-wire-compatibility.md
+new file mode 100644
+index 0000000..d36b858
+--- /dev/null
++++ b/docs/provider-wire-compatibility.md
+@@ -0,0 +1,54 @@
++# Explicit provider request compatibility
++
++The default remains ChatOpenAI's `max_completion_tokens` dialect and the
++provider's default thinking behavior. The deployed alias does not select or prove
++provider capabilities. Two settings are opt-in:
++
++```dotenv
++REPOPILOT_MODEL_OUTPUT_TOKEN_PARAMETER=max_tokens
++REPOPILOT_MODEL_THINKING=disabled
++```
++
++The first setting uses the SDK's `extra_body` root merge to send the legacy
++`max_tokens` field without also sending `max_completion_tokens`. The same
++per-response ceiling and remaining observed-token task allowance apply. Unset
++unbudgeted ceilings stay unset. The second setting sends only the explicit
++`thinking: {type: disabled}` object; use it only when the configured endpoint
++supports that option. No alias inference, automatic fallback, or unsupported
++option retry is added. Structured tool selection and schema remain unchanged.
++
++Controlled HTTP/SSE tests inspect the actual serialized request, not just client
++attributes. Live experiments must distinguish configured policy from HTTP wire
++observations, and local serialization from what a proxy ultimately forwards.
++
++Each returned response records SDK-visible text-character and tool-call counts,
++with explicit measurement caps, and a validated reasoning-token breakdown when
++reported. Absent reasoning usage remains `missing`, invalid or out-of-range
++values remain `invalid`, and neither becomes an inferred zero. Character counts
++are not token counts. Other output tokens can include formatting and tool-call
++structure, so a difference from reasoning tokens is not necessarily visible text.
++Generic ChatOpenAI can discard provider-specific reasoning content; this code
++does not capture or reconstruct that content.
++
++No message text, tool names/arguments, reasoning text, headers, or raw provider
++errors enter the new shape diagnostics. The previous `length` rejection and
++unknown-usage protections remain in force. The new fields supplement, rather
++than rewrite, old observations.
++
++Evidence and scope:
++
++- Local inspected runtime: langchain-openai 1.7.2 and openai 2.45.0. Its
++  ChatOpenAI payload builder explicitly rewrites `max_tokens` and its structured
++  adapter binds a named tool with `parallel_tool_calls=False`.
++- [OpenAI Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)
++  documents `max_completion_tokens` and the deprecated `max_tokens` field.
++- [OpenAI token accounting](https://developers.openai.com/api/docs/guides/token-counting)
++  explains that output allowance includes non-visible tokens; reasoning and
++  visible text are not interchangeable totals.
++- [DeepSeek Chat Completions reference](https://api-docs.deepseek.com/api/create-chat-completion/)
++  documents its vendor options. These public requirements do not establish what
++  the configured third-party gateway accepts, honors, or forwards.
++
++Until a separately frozen live experiment passes complete-output checks, no
++claim is made that either switch fixes the configured channel or improves repair
++quality. Root private `.env` values are not changed by this implementation.
+diff --git a/tests/integration/test_provider_wire_compat.py b/tests/integration/test_provider_wire_compat.py
+new file mode 100644
+index 0000000..5e5551b
+--- /dev/null
++++ b/tests/integration/test_provider_wire_compat.py
+@@ -0,0 +1,146 @@
++"""Actual SDK wire/SSE with controlled HTTP, not live provider evidence."""
++import json
++import time
++from types import SimpleNamespace
++
++import httpx
++import langchain_openai
++import pytest
++from langchain_openai import ChatOpenAI
++from pydantic import SecretStr, ValidationError
++
++from app.agents.model import LiveModel, ModelFailure
++from app.agents.output_diagnostics import response_shape
++from app.config.settings import Settings
++from app.models.budgets import BudgetLimits
++from app.models.schemas import Plan
++from app.services.budgets import TaskBudget, budget_scope
++
++PLAN = dict(issue_summary='probe', suspected_modules=[], search_strategy=['inspect'],
++            repair_steps=['repair'], validation_strategy=['Docker'])
++
++
++def response(streaming, reasoning=12):
++    base = {'id': 'controlled', 'created': 0, 'model': 'controlled'}
++    tool = {'id': 'call', 'type': 'function', 'function': {'name': 'Plan', 'arguments': json.dumps(PLAN)}}
++    usage = {'prompt_tokens': 7, 'completion_tokens': 17, 'total_tokens': 24}
++    if reasoning is not None:
++        usage['completion_tokens_details'] = {'reasoning_tokens': reasoning}
++    if not streaming:
++        return httpx.Response(200, json={**base, 'object': 'chat.completion',
++            'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {
++                'role': 'assistant', 'content': None, 'tool_calls': [tool]}}], 'usage': usage})
++    chunks = [{**base, 'object': 'chat.completion.chunk', 'choices': [{'index': 0,
++        'finish_reason': None, 'delta': {'role': 'assistant', 'tool_calls': [{'index': 0, **tool}]}}]},
++        {**base, 'object': 'chat.completion.chunk', 'choices': [{'index': 0,
++          'finish_reason': 'tool_calls', 'delta': {}}]},
++        {**base, 'object': 'chat.completion.chunk', 'choices': [], 'usage': usage}]
++    return httpx.Response(200, text=''.join('data: '+json.dumps(x)+'\n\n' for x in chunks)+'data: [DONE]\n\n',
++                          headers={'content-type': 'text/event-stream'})
++
++
++def model_for(monkeypatch, client, **kwargs):
++    def constructor(**options):
++        return ChatOpenAI(**options, http_client=client)
++    monkeypatch.setattr(langchain_openai, 'ChatOpenAI', constructor)
++    return LiveModel(Settings(_env_file=None, model_name='controlled',
++                             openai_api_key=SecretStr('test-only-key'), **kwargs))
++
++
++def budget_for(path, tokens=250):
++    return TaskBudget({'task_path': str(path), 'task_id': 'wire', 'budget_deadline': time.time()+30,
++        'budget_limits': BudgetLimits(model_requests=1, observed_tokens=tokens).model_dump()}, create=True)
++
++
++@pytest.mark.parametrize('streaming', [False, True])
++@pytest.mark.parametrize('parameter', ['max_completion_tokens', 'max_tokens'])
++@pytest.mark.parametrize('thinking', ['provider_default', 'disabled'])
++def test_sdk_sends_one_bounded_limit_and_explicit_vendor_toggle(tmp_path, monkeypatch, streaming, parameter, thinking):
++    seen = []
++    def handler(request):
++        seen.append(json.loads(request.content))
++        return response(streaming)
++    budget = budget_for(tmp_path)
++    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
++        model = model_for(monkeypatch, client, model_streaming=streaming,
++                          model_max_output_tokens=8192, model_output_token_parameter=parameter,
++                          model_thinking=thinking)
++        with budget_scope(budget):
++            value, stats = model.generate(Plan, {'issue_description': 'probe'})
++    assert value.issue_summary == 'probe' and len(seen) == stats['calls'] == 1
++    body = seen[0]
++    other = 'max_tokens' if parameter == 'max_completion_tokens' else 'max_completion_tokens'
++    assert body[parameter] == 250 and other not in body and 'extra_body' not in body
++    assert body['tool_choice'] == {'type': 'function', 'function': {'name': 'Plan'}}
++    assert body['parallel_tool_calls'] is False
++    assert body.get('thinking') == ({'type': 'disabled'} if thinking == 'disabled' else None)
++    assert stats['request_policy']['output_token_parameter'] == parameter
++    shape = stats['response_shapes'][0]
++    assert shape['reasoning_tokens'] == 12 and shape['reasoning_status'] == 'reported'
++    assert shape['tool_calls'] == 1 and shape['invalid_tool_calls'] == 0
++    assert budget.view()['observed_tokens'] == 24 and budget.view()['usage_complete']
++
++
++@pytest.mark.parametrize('parameter', ['max_completion_tokens', 'max_tokens'])
++@pytest.mark.parametrize('limit', [None, 128])
++def test_unbudgeted_wire_does_not_invent_an_output_ceiling(monkeypatch, parameter, limit):
++    seen = []
++    def handler(request):
++        seen.append(json.loads(request.content))
++        return response(False)
++    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
++        model = model_for(monkeypatch, client, model_output_token_parameter=parameter,
++                          model_max_output_tokens=limit)
++        model.generate(Plan, {})
++    assert seen[0].get(parameter) == limit
++    other = 'max_tokens' if parameter == 'max_completion_tokens' else 'max_completion_tokens'
++    assert other not in seen[0]
++
++
++@pytest.mark.parametrize('streaming', [False, True])
++def test_absent_reasoning_breakdown_is_missing_not_zero(monkeypatch, streaming):
++    with httpx.Client(transport=httpx.MockTransport(lambda request: response(streaming, None))) as client:
++        model = model_for(monkeypatch, client, model_streaming=streaming)
++        _, stats = model.generate(Plan, {})
++    assert stats['response_shapes'][0]['reasoning_tokens'] is None
++    assert stats['response_shapes'][0]['reasoning_status'] == 'missing'
++
++
++@pytest.mark.parametrize('reasoning', [-1, 18, 'private-reasoning', True])
++def test_invalid_reasoning_breakdown_is_not_attributed_to_visible_output(reasoning):
++    raw = SimpleNamespace(content='', tool_calls=[], invalid_tool_calls=[],
++                          usage_metadata={'output_tokens': 17, 'output_token_details': {'reasoning': reasoning}})
++    shape = response_shape(raw)
++    assert shape['reasoning_tokens'] is None and shape['reasoning_status'] == 'invalid'
++
++
++def test_response_shape_never_copies_body_tool_arguments_or_reasoning_text():
++    secret = 'private-body-or-reasoning'
++    raw = SimpleNamespace(content=[{'type': 'text', 'text': secret}]*129,
++        tool_calls=[{'name': secret, 'args': {'value': secret}}]*129, invalid_tool_calls=[],
++        additional_kwargs={'reasoning_content': secret}, usage_metadata={})
++    shape = response_shape(raw)
++    assert secret not in json.dumps(shape)
++    assert shape['text_characters'] == len(secret)*128 and shape['text_measurement'] == 'capped'
++    assert shape['tool_calls'] == 128 and shape['tool_count_capped']
++    assert shape['reasoning_tokens'] is None
++
++
++def test_unsupported_vendor_options_do_not_trigger_a_fallback_request(tmp_path, monkeypatch):
++    seen = []
++    def handler(request):
++        seen.append(json.loads(request.content))
++        return httpx.Response(400, json={'error': {'message': 'controlled unsupported option'}})
++    budget = budget_for(tmp_path)
++    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
++        model = model_for(monkeypatch, client, model_output_token_parameter='max_tokens', model_thinking='disabled')
++        with budget_scope(budget), pytest.raises(ModelFailure) as caught:
++            model.generate(Plan, {})
++    assert len(seen) == caught.value.stats['calls'] == 1
++    assert budget.view()['model_requests'] == 1 and not budget.view()['usage_complete']
++
++
++@pytest.mark.parametrize('kwargs', [{'model_output_token_parameter': 'automatic'}, {'model_thinking': 'enabled'}])
++def test_vendor_switches_require_allowlisted_explicit_values(kwargs):
++    with pytest.raises(ValidationError):
++        Settings(_env_file=None, **kwargs)

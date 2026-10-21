@@ -1,0 +1,229 @@
+"""Frozen, finite vendor-parameter experiment and conditional two-case repair pilot."""
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+from pathlib import Path
+
+from app.agents.scope import repository_path_scope
+from app.evaluation.connectivity import runtime_digest
+from app.evaluation.historical import verify
+from app.services.budget_audit import audit_ledger
+from dotenv import dotenv_values
+
+from app.tools.repository import Repository
+
+Q = Path(__file__).parent
+ROOT = Path('E:/multi-agent')
+W = Path('E:/Agent/rp-wire21')
+CORPUS = ROOT/'.repopilot/connectivity-collection-20261020/corpus'
+HEAD = '610136f4c9faa5005ef7cf7298c633e9866bf507'
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save(path, value):
+    tmp = path.with_suffix('.tmp')
+    tmp.write_bytes((json.dumps(value, ensure_ascii=False, indent=2)+'\n').encode())
+    tmp.replace(path)
+
+
+def main():
+    assert not (Q/'plan.json').exists(), 'Sealed experiment cannot be resumed or replayed'
+    suites = list(ET.parse(Q/'wheel-full.xml').getroot().iter('testsuite'))
+    assert sum(int(s.get('tests', 0)) for s in suites) == 413
+    assert sum(int(s.get('failures', 0))+int(s.get('errors', 0)) for s in suites) == 0
+    assert sum(int(s.get('skipped', 0)) for s in suites) == 2
+    assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=W).decode().strip() == HEAD
+    assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=W).strip()
+    import app
+    installed = Path(app.__file__).parent.parent
+    artifact = read(Q/'runtime-artifact.json')
+    assert len(artifact['files']) == 120
+    for f in artifact['files']:
+        assert sha(W/f['path']) == sha(installed/f['path']) == f['sha256']
+    before = (ROOT/'.env').read_bytes()
+    config = dotenv_values(ROOT/'.env')
+    assert config['REPOPILOT_MODEL_MODE'] == 'live'
+    assert config['REPOPILOT_MODEL_NAME'] == 'deepseek-4.1-flash-background'
+    assert config['REPOPILOT_MODEL_BASE_URL'] == 'https://gw.lunaroute.com/v1'
+    assert config['OPENAI_API_KEY'] == config['DEEPSEEK_API_KEY']
+    secrets = [config[k] for k in ['OPENAI_API_KEY', 'DEEPSEEK_API_KEY', 'SOL_API_KEY'] if config.get(k)]
+    old = read(ROOT/'.repopilot/nc21-r2/prior-ledgers.json')
+    for r in read(ROOT/'.repopilot/nc21-r2/records.json'):
+        if r['status'] == 'completed':
+            state = read(ROOT/'.repopilot/nc21-r2'/r['phase']/r['id']/'state.json')
+            old.append({'path': state['task_path'], 'audit': audit_ledger(Path(state['task_path']))})
+    assert len(old) == 16
+    for item in old:
+        assert audit_ledger(Path(item['path'])) == item['audit']
+    save(Q/'prior-ledgers.json', old)
+    lock_sha = sha(CORPUS/'lock.json')
+    lock = verify(CORPUS, lock_sha)
+    first = lock['cases'][0]['case']
+    payload = {'issue_description': first['issue'],
+               'repository_path_scope': repository_path_scope(Repository(CORPUS/'sources'/first['id']), '')}
+    profiles = [{'name': 'A', 'parameter': 'max_completion_tokens', 'thinking': 'provider_default'},
+                {'name': 'B', 'parameter': 'max_tokens', 'thinking': 'provider_default'},
+                {'name': 'C', 'parameter': 'max_tokens', 'thinking': 'disabled'}]
+    diagnostics = [{'id': p['name']+('-stream' if streaming else '-nonstream'), 'profile': p['name'],
+                    'parameter': p['parameter'], 'thinking': p['thinking'], 'streaming': streaming}
+                   for p in profiles for streaming in [False, True]]
+    pilots = [{'id': f'{i+1:02d}-'+c['case']['id'], 'phase': 'pilot', 'case_id': c['case']['id'],
+               'variant': 'legacy', 'mode': 'multi_full'} for i, c in enumerate(lock['cases'][:2])]
+    plan = {'registered_at': datetime.now(timezone.utc).isoformat(), 'runtime_commit': HEAD,
+        'runtime_sha256': runtime_digest(), 'diagnostic_sha256': sha(Q/'diagnostic.py'),
+        'worker_sha256': sha(Q/'repair.py'), 'controller_sha256': sha(Path(__file__)),
+        'verified_junit_sha256': sha(Q/'wheel-full.xml'), 'payload': payload,
+        'corpus': str(CORPUS), 'lock_sha256': lock_sha,
+        'image': 'sha256:2b48c63b1c99c916b93a1ad6ccfaaef70b95de86a47dc4daee880f744e36bd5d',
+        'model_name': config['REPOPILOT_MODEL_NAME'], 'model_base_url': config['REPOPILOT_MODEL_BASE_URL'],
+        'diagnostics': diagnostics, 'pilot': pilots, 'formal': [], 'task_storage': 'E:/Agent/w21data',
+        'model_max_output_tokens': 4096,
+        'budget_limits': {'wall_seconds': 360, 'model_requests': 8, 'observed_tokens': 100000,
+                         'sandbox_runs': 10, 'artifact_bytes': 268435456, 'result_bytes': 8388608},
+        'diagnostic_output_limit': 2048, 'diagnostic_request_cap': 6, 'diagnostic_observed_tokens_per_cell': 32768,
+        'diagnostic_phase_seconds': 900, 'pilot_phase_seconds': 1800,
+        'selection_rule': 'Run A/B nonstream+stream pairs on the SAME frozen issue payload. If A passes both select A; otherwise if B passes both select B. Only if neither pair passes, run C pair and select C only if both pass. Remaining C cells are conditional, not failures. Then run two NEW multi_full legacy-policy repairs with selected profile and 4096 output ceiling. No full matrix.',
+        'diagnostic_success': 'Schema parsed, explicit complete finish reason stop/tool_calls/function_call, complete usage, exact observed outgoing HTTP dialect/toggle/limit/stream/model/tool binding.',
+        'stop_rules': 'Transport/provider error, unknown/pending usage, worker interruption, wire mismatch, sandbox unavailable/timeout, changed config/runtime/corpus, or phase deadline stops the whole experiment. Expected known-usage length/schema failures may advance the preregistered parameter experiment. No automatic fallback or replacement request.',
+        'limitations': 'Six short probes cannot establish sustained reliability, proxy forwarding, actual model weights, reasoning content, monetary spend, or repair-quality gain. Output shapes are SDK-visible counts only. Missing reasoning breakdown is not zero. Controls reused from previous immutable 24-run corpus/image evidence; not new executions.'}
+    save(Q/'plan.json', plan)
+    digest = sha(Q/'plan.json')
+    (Q/'plan.sha256').write_bytes((digest+'\n').encode())
+    controls = ROOT/'.repopilot/new-channel-evaluation-20261021/controls/controls.json'
+    assert sha(controls) == read(ROOT/'.repopilot/new-channel-evaluation-20261021/controls-binding.json')['sha256']
+    (Q/'controls').mkdir()
+    shutil.copy2(controls, Q/'controls/controls.json')
+    save(Q/'controls-binding.json', {'sha256': sha(controls), 'reused_control_runs': 24, 'newly_executed': False})
+    rows = [{**c, 'kind': 'diagnostic', 'status': 'not_run', 'reason': 'not_admitted'} for c in diagnostics]
+    rows += [{**c, 'kind': 'repair', 'status': 'not_run', 'reason': 'pending_complete_output_gate'} for c in pilots]
+    save(Q/'records.json', rows)
+    env = dict(os.environ, PYTHONIOENCODING='utf-8', HTTPS_PROXY='http://127.0.0.1:7890')
+    def guard(script, args, seconds, name):
+        process = subprocess.Popen([sys.executable, '-I', str(Q/script), *args], cwd=Q, env=env,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        timed_out = False
+        try:
+            out, err = process.communicate(timeout=seconds)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            process.kill()
+            out, err = process.communicate(timeout=15)
+        for channel, raw in [('stdout', out), ('stderr', err)]:
+            text = raw.decode('utf-8', errors='replace')
+            for secret in secrets:
+                text = text.replace(secret, '[REDACTED]')
+            (Q/(name+'-'+channel+'.log')).write_bytes(text.encode())
+        return {'exit_code': process.returncode, 'hard_timeout': timed_out}
+    print(json.dumps({'frozen': True, 'plan_sha256': digest, 'diagnostic_max_requests': 6, 'conditional_repair_tasks': 2}), flush=True)
+    stop, selected = None, None
+    deadline = time.monotonic()+900
+    for profile in profiles:
+        if profile['name'] == 'C' and selected:
+            break
+        for cell in [c for c in diagnostics if c['profile'] == profile['name']]:
+            if time.monotonic() >= deadline:
+                stop = 'diagnostic_phase_deadline'
+                break
+            assert (ROOT/'.env').read_bytes() == before
+            row = next(r for r in rows if r['id'] == cell['id'])
+            row.update(status='dispatch_uncertain', reason='owned_worker_running_no_replay')
+            save(Q/'records.json', rows)
+            status = guard('diagnostic.py', ['--cell', cell['id'], '--digest', digest], min(135, deadline-time.monotonic()), cell['id'])
+            result_path = Q/'diagnostics'/cell['id']/'result.json'
+            row['worker'] = status
+            if status['exit_code'] or status['hard_timeout'] or not result_path.exists():
+                stop = 'diagnostic_worker_interrupted'
+                break
+            result = read(result_path)
+            row.update(result, outcome=result['status'], status='completed', reason=None)
+            if result['ledger']['usage_unknown'] or result['ledger']['pending_model_reservations']:
+                stop = 'usage_unknown_or_dispatch_pending'
+            elif result['stats'].get('failure') or result['circuit']['opened']:
+                stop = 'provider_failure'
+            elif not result['wire_matches_plan']:
+                stop = 'wire_did_not_match_plan'
+            save(Q/'records.json', rows)
+            print(json.dumps({'diagnostic': cell['id'], 'outcome': row['outcome'],
+                              'tokens': row['ledger']['observed_tokens'], 'stop': stop}), flush=True)
+            if stop:
+                break
+        if stop:
+            break
+        if profile['name'] in {'B', 'C'}:
+            for preferred in ['A', 'B'] if profile['name'] == 'B' else ['C']:
+                pair = [r for r in rows if r.get('profile') == preferred]
+                if len(pair) == 2 and all(r['status'] == 'completed' and r['outcome'] == 'passed' for r in pair):
+                    selected = next(p for p in profiles if p['name'] == preferred)
+                    break
+    if selected and not stop:
+        save(Q/'selection.json', {**selected, 'rule': plan['selection_rule'], 'plan_sha256': digest})
+        selection_sha = sha(Q/'selection.json')
+        print(json.dumps({'selected_profile': selected['name'], 'selection_sha256': selection_sha}), flush=True)
+        deadline = time.monotonic()+1800
+        for cell in pilots:
+            row = next(r for r in rows if r['kind'] == 'repair' and r['id'] == cell['id'])
+            if time.monotonic() >= deadline:
+                stop = 'pilot_deadline'
+                break
+            row.update(status='dispatch_uncertain', reason='owned_repair_worker_no_replay')
+            save(Q/'records.json', rows)
+            status = guard('repair.py', ['cell', '--cell', cell['id'], '--digest', digest,
+                '--selection-digest', selection_sha], min(660, deadline-time.monotonic()), cell['id'])
+            row['worker'] = status
+            result_path = Q/'pilot'/cell['id']/'result.json'
+            if status['exit_code'] or status['hard_timeout'] or not result_path.exists():
+                stop = 'repair_worker_interrupted'
+                break
+            result = read(result_path)
+            row.update(result, status='completed', reason=None)
+            if result['usage_unknown'] or result['ledger']['pending_model_reservations']:
+                stop = 'repair_usage_unknown'
+            elif result['provider_failure'] or result['circuit']['opened']:
+                stop = 'repair_provider_failure'
+            elif result['execution_status'] in {'blocked', 'creation_failed'} or (result.get('test_result') or {}).get('status') in {'unavailable', 'timeout'}:
+                stop = 'repair_infrastructure_failure'
+            save(Q/'records.json', rows)
+            print(json.dumps({'repair': cell['id'], 'strict_success': result['strict_success'],
+                              'requests': result['model_calls'], 'tokens': result['observed_tokens'], 'stop': stop}), flush=True)
+            if stop:
+                break
+    elif not stop:
+        stop = 'no_profile_passed_both_complete_output_modes'
+    for row in rows:
+        if row['status'] == 'not_run':
+            row['reason'] = stop or 'conditional_profile_not_needed'
+    save(Q/'records.json', rows)
+    assert (ROOT/'.env').read_bytes() == before and runtime_digest() == plan['runtime_sha256']
+    verify(CORPUS, lock_sha)
+    for item in old:
+        assert audit_ledger(Path(item['path'])) == item['audit']
+    assert not any(s.encode() in f.read_bytes() for f in Q.rglob('*') if f.is_file() for s in secrets)
+    summary = {'completed_at': datetime.now(timezone.utc).isoformat(), 'plan_sha256': digest,
+        'selected_profile': selected, 'stop_reason': stop, 'prior_sixteen_ledgers_unchanged': True,
+        'configuration_unchanged': True, 'runtime_unchanged': True, 'github_writes': False,
+        'diagnostic_requests': sum(r.get('ledger', {}).get('model_request_reservations', 0) for r in rows if r['kind'] == 'diagnostic'),
+        'diagnostic_known_tokens': sum(r.get('ledger', {}).get('observed_tokens', 0) for r in rows if r['kind'] == 'diagnostic'),
+        'repairs_completed': sum(r['status'] == 'completed' for r in rows if r['kind'] == 'repair'),
+        'strict_repairs': sum(bool(r.get('strict_success')) for r in rows if r['kind'] == 'repair'),
+        'repair_requests': sum(r.get('model_calls', 0) for r in rows if r['kind'] == 'repair'),
+        'repair_known_tokens': sum(r.get('observed_tokens', 0) for r in rows if r['kind'] == 'repair'),
+        'full_matrix_started': False, 'repair_quality_improvement_established': False}
+    save(Q/'report.json', summary)
+    print(json.dumps(summary), flush=True)
+
+
+if __name__ == '__main__':
+    main()

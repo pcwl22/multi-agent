@@ -1,0 +1,80 @@
+{
+  "observations": [
+    {
+      "id": "A-nonstream",
+      "outgoing_parameter": "max_completion_tokens",
+      "outgoing_thinking": "provider_default",
+      "output_tokens_reported": 2048,
+      "reasoning_tokens_reported": 2048,
+      "text_characters_observed": 0,
+      "tool_calls_observed": 0,
+      "finish_reason": "length",
+      "usage_known": true
+    },
+    {
+      "id": "A-stream",
+      "outgoing_parameter": "max_completion_tokens",
+      "outgoing_thinking": "provider_default",
+      "output_tokens_reported": 2048,
+      "reasoning_tokens_reported": 2048,
+      "text_characters_observed": 0,
+      "tool_calls_observed": 0,
+      "finish_reason": "length",
+      "usage_known": true
+    },
+    {
+      "id": "B-nonstream",
+      "outgoing_parameter": "max_tokens",
+      "outgoing_thinking": "provider_default",
+      "output_tokens_reported": 2048,
+      "reasoning_tokens_reported": 2048,
+      "text_characters_observed": 0,
+      "tool_calls_observed": 0,
+      "finish_reason": "length",
+      "usage_known": true
+    },
+    {
+      "id": "B-stream",
+      "outgoing_parameter": "max_tokens",
+      "outgoing_thinking": "provider_default",
+      "output_tokens_reported": 2048,
+      "reasoning_tokens_reported": 2048,
+      "text_characters_observed": 0,
+      "tool_calls_observed": 0,
+      "finish_reason": "length",
+      "usage_known": true
+    },
+    {
+      "id": "C-nonstream",
+      "outgoing_parameter": "max_tokens",
+      "outgoing_thinking": "disabled",
+      "output_tokens_reported": 2048,
+      "reasoning_tokens_reported": 2048,
+      "text_characters_observed": 0,
+      "tool_calls_observed": 0,
+      "finish_reason": "length",
+      "usage_known": true
+    },
+    {
+      "id": "C-stream",
+      "outgoing_parameter": "max_tokens",
+      "outgoing_thinking": "disabled",
+      "output_tokens_reported": 2048,
+      "reasoning_tokens_reported": 2048,
+      "text_characters_observed": 0,
+      "tool_calls_observed": 0,
+      "finish_reason": "length",
+      "usage_known": true
+    }
+  ],
+  "new_requests": 6,
+  "known_tokens": 18864,
+  "new_unknown_usage": 0,
+  "reasoning_only_output_limit_responses": 6,
+  "disabled_thinking_wire_confirmed": 2,
+  "disabled_still_reported_reasoning": 2,
+  "repair_pilot_started": false,
+  "root_configuration_changed": false,
+  "interpretation": "At this frozen input and 2048 ceiling, both token dialects and explicit thinking.disabled returned length with all output usage attributed to reasoning. The client sent the requested options; the experiment does not establish proxy forwarding or internal cause. Increasing caps or substituting aliases is not justified by this experiment.",
+  "next_priority": "Provider/operator must confirm alias mapping, thinking override/forwarding and support for non-thinking named-tool calls before another fresh bounded probe. Preserve the explicitly configured model alias."
+}

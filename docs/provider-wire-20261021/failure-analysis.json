@@ -1,0 +1,176 @@
+[
+  {
+    "id": "A-nonstream",
+    "kind": "diagnostic",
+    "error_type": "ModelFailure",
+    "output_failure": {
+      "kind": "output_truncated",
+      "schema": "Plan"
+    },
+    "provider_failure": null,
+    "structured_attempts": [
+      {
+        "schema_name": "Plan",
+        "finish_reason": "length",
+        "parse_status": "missing",
+        "output_limit": 2048
+      }
+    ],
+    "response_shapes": [
+      {
+        "text_characters": 0,
+        "text_measurement": "complete",
+        "tool_calls": 0,
+        "invalid_tool_calls": 0,
+        "tool_count_capped": false,
+        "reasoning_tokens": 2048,
+        "reasoning_status": "reported"
+      }
+    ]
+  },
+  {
+    "id": "A-stream",
+    "kind": "diagnostic",
+    "error_type": "ModelFailure",
+    "output_failure": {
+      "kind": "output_truncated",
+      "schema": "Plan"
+    },
+    "provider_failure": null,
+    "structured_attempts": [
+      {
+        "schema_name": "Plan",
+        "finish_reason": "length",
+        "parse_status": "missing",
+        "output_limit": 2048
+      }
+    ],
+    "response_shapes": [
+      {
+        "text_characters": 0,
+        "text_measurement": "complete",
+        "tool_calls": 0,
+        "invalid_tool_calls": 0,
+        "tool_count_capped": false,
+        "reasoning_tokens": 2048,
+        "reasoning_status": "reported"
+      }
+    ]
+  },
+  {
+    "id": "B-nonstream",
+    "kind": "diagnostic",
+    "error_type": "ModelFailure",
+    "output_failure": {
+      "kind": "output_truncated",
+      "schema": "Plan"
+    },
+    "provider_failure": null,
+    "structured_attempts": [
+      {
+        "schema_name": "Plan",
+        "finish_reason": "length",
+        "parse_status": "missing",
+        "output_limit": 2048
+      }
+    ],
+    "response_shapes": [
+      {
+        "text_characters": 0,
+        "text_measurement": "complete",
+        "tool_calls": 0,
+        "invalid_tool_calls": 0,
+        "tool_count_capped": false,
+        "reasoning_tokens": 2048,
+        "reasoning_status": "reported"
+      }
+    ]
+  },
+  {
+    "id": "B-stream",
+    "kind": "diagnostic",
+    "error_type": "ModelFailure",
+    "output_failure": {
+      "kind": "output_truncated",
+      "schema": "Plan"
+    },
+    "provider_failure": null,
+    "structured_attempts": [
+      {
+        "schema_name": "Plan",
+        "finish_reason": "length",
+        "parse_status": "missing",
+        "output_limit": 2048
+      }
+    ],
+    "response_shapes": [
+      {
+        "text_characters": 0,
+        "text_measurement": "complete",
+        "tool_calls": 0,
+        "invalid_tool_calls": 0,
+        "tool_count_capped": false,
+        "reasoning_tokens": 2048,
+        "reasoning_status": "reported"
+      }
+    ]
+  },
+  {
+    "id": "C-nonstream",
+    "kind": "diagnostic",
+    "error_type": "ModelFailure",
+    "output_failure": {
+      "kind": "output_truncated",
+      "schema": "Plan"
+    },
+    "provider_failure": null,
+    "structured_attempts": [
+      {
+        "schema_name": "Plan",
+        "finish_reason": "length",
+        "parse_status": "missing",
+        "output_limit": 2048
+      }
+    ],
+    "response_shapes": [
+      {
+        "text_characters": 0,
+        "text_measurement": "complete",
+        "tool_calls": 0,
+        "invalid_tool_calls": 0,
+        "tool_count_capped": false,
+        "reasoning_tokens": 2048,
+        "reasoning_status": "reported"
+      }
+    ]
+  },
+  {
+    "id": "C-stream",
+    "kind": "diagnostic",
+    "error_type": "ModelFailure",
+    "output_failure": {
+      "kind": "output_truncated",
+      "schema": "Plan"
+    },
+    "provider_failure": null,
+    "structured_attempts": [
+      {
+        "schema_name": "Plan",
+        "finish_reason": "length",
+        "parse_status": "missing",
+        "output_limit": 2048
+      }
+    ],
+    "response_shapes": [
+      {
+        "text_characters": 0,
+        "text_measurement": "complete",
+        "tool_calls": 0,
+        "invalid_tool_calls": 0,
+        "tool_count_capped": false,
+        "reasoning_tokens": 2048,
+        "reasoning_status": "reported"
+      }
+    ]
+  }
+]

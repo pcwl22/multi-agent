@@ -1,0 +1,80 @@
+{
+  "files": [
+    {
+      "path": "candidate-patches.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "controller.py.txt",
+      "sha256": "37440111863307d5cc7cfc628420c1247ca40497946ad3bacc136be772c10fd9"
+    },
+    {
+      "path": "controls-binding.json",
+      "sha256": "d7f020062d73554e18843ea698199b220780b185ebc09f55d93ae22ae3b23c19"
+    },
+    {
+      "path": "diagnostic.py.txt",
+      "sha256": "e491aec67bae2ca86635c51427586472218e227280b8ee569c9a73c1055b736f"
+    },
+    {
+      "path": "failure-analysis.json",
+      "sha256": "431d8118432767dc68f5bf9e2b6665f13512d094d16af27938825783be02511d"
+    },
+    {
+      "path": "implementation-notes.md",
+      "sha256": "d44675820ecbd9abbbdc1bc19896cd62d271dad686d7c84c6a703eec48b0a762"
+    },
+    {
+      "path": "implementation.patch",
+      "sha256": "1b30daf73649020b91a1d08ca8b96df6785695371a92d3ed4481c0a7791d6b93"
+    },
+    {
+      "path": "model-events.json",
+      "sha256": "200e21e1861d2a2ff8f97d2df23ef4ec45939ddb6c7b6401f0e62074256816d4"
+    },
+    {
+      "path": "plan.json",
+      "sha256": "aa969799ac9fa5a4030745fd4368862d41b8809e07c22bed030727ed2a65d9a2"
+    },
+    {
+      "path": "plan.sha256",
+      "sha256": "1a380ecf1133631c21fa5cc3924bc79ef0766af27e6a00145495881a8d2de68a"
+    },
+    {
+      "path": "prior-ledgers.json",
+      "sha256": "1c5988579244a10a4365b9123156712ed4e35b6150a98ff3c2077ec636bb2f60"
+    },
+    {
+      "path": "records.json",
+      "sha256": "85ca7d8cb06da591de37facdd98cf19545ce08adc2f9f3d01272b12bd422efa9"
+    },
+    {
+      "path": "repair.py.txt",
+      "sha256": "30da880fd62193c95a5633e471dc1d0f00543fbbcb855187c33da934fdd5d3b9"
+    },
+    {
+      "path": "report.json",
+      "sha256": "487b45ebc15c596c6a02a91186bde78223b7cc6252c6f401ee3a236723b19d4d"
+    },
+    {
+      "path": "report.md",
+      "sha256": "0b29fb1e2f02f36fed27f816b25f01ec2bee1a6eaf05172943bdffb9163ce3eb"
+    },
+    {
+      "path": "runtime-artifact.json",
+      "sha256": "a2a1e980741907f1280b3b1a4500db5fbba749f284509a0d8a6a3e5dcf44a913"
+    },
+    {
+      "path": "seal.py.txt",
+      "sha256": "49d0895ad3eb95c188c3501b50211e251983d43036aabe0b5bef3904c1d4edfc"
+    },
+    {
+      "path": "verification.json",
+      "sha256": "4e498f96dab95d07aa651e3b9177de7bfe895f92cf2e6cd1f87d2db207751753"
+    },
+    {
+      "path": "wheel-full.xml",
+      "sha256": "1fbceadab8cddb3e774010229f6698c4530a22854da5bd2a73b5efa93a3a8e02"
+    }
+  ]
+}
